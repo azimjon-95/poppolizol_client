@@ -20,6 +20,6 @@ const baseQueryWithRetry = retry(baseQuery, { maxRetries: 2 });
 export const api = createApi({
   reducerPath: "splitApi",
   baseQuery: baseQueryWithRetry,
-  tagTypes: ['Workers', 'Potsents', "Room", "Expenses"], // kerakli taglar
+  tagTypes: ["Workers", "Potsents", "Room", "Expenses"], // kerakli taglar
   endpoints: () => ({}), // endpointlar keyinchalik qo‘shiladi
 });

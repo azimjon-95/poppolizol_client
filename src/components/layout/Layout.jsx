@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 
 import "./Layout.css";
 import { menuItems } from "../../utils/SidebarMenu";
@@ -17,21 +17,24 @@ function Layout() {
     }
   }, [role, navigate]);
 
-  const isDirectorPath = location.pathname === '/director' || "/expense";
-
+  const isDirectorPath = location.pathname === "/director" || "/expense";
   return (
     <div className="layout">
-
       <div className="layout_left">
         <Sidebar />
       </div>
 
       <div className="layout_right">
         <Header />
-        <main style={{
-          background: '##0f172a',
-          padding: isDirectorPath ? "0px" : "15px"
-        }} className="main-content">
+        <main
+          style={{
+            background: ["director", "expense"].includes(isDirectorPath)
+              ? "#0f172a"
+              : "#f1f5f9",
+            padding: isDirectorPath ? "0px" : "15px",
+          }}
+          className="main-content"
+        >
           <Outlet />
         </main>
       </div>

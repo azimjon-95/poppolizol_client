@@ -12,6 +12,7 @@ import Attendance from "../pages/reseption/attendance/Attendance";
 import ExpenseManager from "../pages/reseption/expense/ExpenseManager";
 import Service from "../pages/reseption/service/Service";
 import NightShiftScheduler from "../pages/reseption/nightShift/NightShiftScheduler";
+import Materials from "../pages/materials/Materials";
 
 export const routes = [
   {
@@ -73,8 +74,7 @@ export const routes = [
     element: <Attendance />,
     role: ["reception", "director"],
     private: true,
-  }
-  ,
+  },
   {
     path: "/expense",
     element: <ExpenseManager />,
@@ -92,5 +92,11 @@ export const routes = [
     element: <NightShiftScheduler />,
     role: ["reception", "director"],
     private: true,
-  }
+  },
+  {
+    path: "/warehouse",
+    element: <Materials />,
+    role: ["reception", "director"],
+    private: true,
+  },
 ];

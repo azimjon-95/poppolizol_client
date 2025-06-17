@@ -7,11 +7,10 @@ import {
   FaNotesMedical,
   FaHistory,
   FaBed,
-  FaCalendarCheck, FaMoneyBillWave
+  FaCalendarCheck,
+  FaMoneyBillWave,
 } from "react-icons/fa";
-import {
-  Moon
-} from 'lucide-react';
+import { Moon } from "lucide-react";
 import { MdOutlineMedicalServices, MdDashboard } from "react-icons/md";
 import { BsPeopleFill } from "react-icons/bs";
 
@@ -70,6 +69,11 @@ export const menuItems = {
       icon: <BsPeopleFill size={20} />,
       path: "/workers",
       label: "Xodimlar",
+    },
+    {
+      icon: <BsPeopleFill size={20} />,
+      path: "/warehouse",
+      label: "Ombor",
     },
     {
       icon: <FaCog size={20} />,
