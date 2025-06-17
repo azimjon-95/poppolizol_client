@@ -1,0 +1,355 @@
+.xarajatBoshqaruvKonteyner {
+    background: linear-gradient(135deg, #e6f0fa 0%, #f0f7ff 100%);
+    padding: 10px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.xarajatGridTartibi {
+    width: 100%;
+    margin: 0 auto;
+    display: grid;
+    gap: 24px;
+}
+
+@media (min-width: 768px) {
+    .xarajatGridTartibi {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.formaBlokiKonteyner,
+.jadvalBlokiKonteyner {
+    background-color: #ffffff;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 48, 73, 0.1);
+    border-left: 4px solid #2563eb;
+    transition: transform 0.3s ease;
+}
+
+.jadvalBlokiKonteyner {
+    border-left-color: #16a34a;
+}
+
+.formaBlokiKonteyner:hover,
+.jadvalBlokiKonteyner:hover {
+    transform: translateY(-4px);
+}
+
+.formaSarlavhaMatni,
+.jadvalSarlavhaMatni {
+    font-size: 28px;
+    font-weight: bold;
+    color: #1e3a8a;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+}
+
+.jadvalSarlavhaMatni {
+    color: #166534;
+}
+
+.ikonaElementi {
+    margin-right: 8px;
+    font-size: 24px;
+    color: #2563eb;
+}
+
+.xarajatFormasi {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.formaGuruhiflexBox {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+}
+
+.formaGuruhiBlok {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.formaGuruhiBlok>div {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.formaYorligiMatn {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.formaKiritishMaydoni,
+.formaTanlovMaydoni,
+.formaMatnMaydoni {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: #f9fafb;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.formaKiritishMaydoni:hover,
+.formaTanlovMaydoni:hover,
+.formaMatnMaydoni:hover {
+    border-color: #93c5fd;
+    background-color: #ffffff;
+}
+
+.formaKiritishMaydoni:focus,
+.formaTanlovMaydoni:focus,
+.formaMatnMaydoni:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    background-color: #ffffff;
+}
+
+.formaMatnMaydoni {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.formaTanlovKonteyner {
+    font-size: 14px;
+    width: 100%;
+}
+
+.react-select__control {
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    background-color: #f9fafb !important;
+    transition: all 0.3s ease;
+}
+
+.react-select__control:hover {
+    border-color: #93c5fd !important;
+    background-color: #ffffff !important;
+}
+
+.react-select__control--is-focused {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+}
+
+.react-select__menu {
+    background-color: #ffffff;
+    border: 1px solid #60a5fa;
+    border-radius: 8px;
+}
+
+.react-select__option--is-focused {
+    background-color: #dbeafe !important;
+}
+
+.react-select__option--is-selected {
+    background-color: #2563eb !important;
+    color: white !important;
+}
+
+.formaTugmaElementi {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.formaTugmaElementi:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+.formaTugmaElementi:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.jadvalOralganKonteyner {
+    width: 100%;
+    height: calc(100vh - 170px);
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* Scrollbar styling */
+.jadvalOralganKonteyner::-webkit-scrollbar {
+    width: 4px;
+    /* Width of the vertical scrollbar */
+}
+
+.jadvalOralganKonteyner::-webkit-scrollbar-track {
+    background: #ffffff;
+    /* Background of the scrollbar track */
+    border-radius: 4px;
+}
+
+.jadvalOralganKonteyner::-webkit-scrollbar-thumb {
+    background: dodgerblue;
+    /* Color of the scrollbar thumb */
+    border-radius: 4px;
+}
+
+.xarajatJadvali {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+}
+
+.jadvalSarlavhaQatori {
+    background-color: #f3f4f6;
+    color: #374151;
+    text-align: left;
+}
+
+.jadvalUyasigi {
+    padding: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: #6b7280;
+}
+
+.jadvalTanaQismi {
+    background-color: #ffffff;
+}
+
+.jadvalQatorElementi {
+    border-bottom: 1px solid #e5e7eb;
+    transition: background-color 0.2s ease;
+}
+
+.jadvalQatorElementi:hover {
+    background-color: #f9fafb;
+}
+
+.jadvalUyasigiMatn {
+    padding: 12px;
+    font-size: 14px;
+    color: #333333;
+}
+
+.maLumatYoqUyasigi {
+    text-align: center;
+    color: #6b7280;
+    padding: 16px;
+}
+
+.yuklashMatni {
+    color: #6b7280;
+    text-align: center;
+    padding: 16px;
+}
+
+.formaTanlovMaydoni {
+    display: flex;
+    gap: 10px;
+}
+
+.selectionButton {
+    padding: 9px 16px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #333;
+    cursor: pointer;
+    font-size: 1rem;
+    text-wrap: nowrap;
+    transition: all 0.3s;
+}
+
+.selectionButton:hover {
+    background-color: #f0f0f0;
+}
+
+.selectionButton.active {
+    background-color: #1890ff;
+    /* Blue for active state, matches Ant Design primary color */
+    color: #fff;
+    border-color: #1890ff;
+}
+
+.selectionButton:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #52c41a;
+    /* Green for success, matches Ant Design success color */
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+}
+
+.notification.error {
+    background-color: #ff4d4f;
+    /* Red for error */
+}
+
+.notificationClose {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+.notificationClose:hover {
+    color: #f0f0f0;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}

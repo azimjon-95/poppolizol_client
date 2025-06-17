@@ -1,0 +1,268 @@
+/* Container */
+.PatientAddRoomForm-container {
+    max-width: 100%;
+    min-height: 100vh;
+}
+
+/* Card */
+.PatientAddRoomForm-card {
+    background-color: #ffffff;
+    border-radius: 0.5rem;
+}
+
+/* Titles */
+.PatientAddRoomForm-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    text-align: center;
+}
+
+/* Header */
+.PatientAddRoomForm-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.PatientAddRoomForm-header button {
+    position: absolute;
+    left: 0;
+}
+
+/* Table */
+.PatientAddRoomForm-tableWrapper {
+    overflow-x: auto;
+    border: 1px solid #e5e7eb;
+    width: 100%;
+    border-radius: 0.5rem;
+}
+
+.PatientAddRoomForm-table {
+    width: 100%;
+    background-color: #ffffff;
+}
+
+.PatientAddRoomForm-tableHeader {
+    background-color: #f9fafb;
+}
+
+.PatientAddRoomForm-tableHeaderCell {
+    padding: 0.75rem 1.5rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+}
+
+.PatientAddRoomForm-tableRow:hover {
+    background-color: #f9fafb;
+}
+
+.PatientAddRoomForm-tableRowSelected {
+    background-color: #eff6ff;
+}
+
+.PatientAddRoomForm-tableCell {
+    padding: .5rem 1.5rem;
+    text-wrap: nowrap;
+}
+
+.patientAddRoomForm-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.PatientAddRoomForm-cellContent {
+    display: flex;
+    align-items: center;
+}
+
+.PatientAddRoomForm-icon {
+    height: 1rem;
+    width: 1rem;
+    color: #9ca3af;
+    margin-right: 0.5rem;
+}
+
+.PatientAddRoomForm-iconSmall {
+    height: 20px;
+    width: 20px;
+    color: #9ca3af;
+}
+
+.PatientAddRoomForm-cellText {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #111827;
+}
+
+/* Input and Select */
+.PatientAddRoomForm-numberInput {
+    width: 100%;
+    padding: 0.56rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    outline: none;
+}
+
+.PatientAddRoomForm-numberInput:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.PatientAddRoomForm-doctorSelect {
+    width: 100% !important;
+}
+
+/* Modal */
+.PatientAddRoomForm-modalContent {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.PatientAddRoomForm-modalField {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.PatientAddRoomForm-modalField label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1f2937;
+}
+
+/* Buttons */
+.PatientAddRoomForm-selectButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 5px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.PatientAddRoomForm-selectButton:hover {
+    background-color: #f7fafc;
+    border-color: #cbd5e0;
+}
+
+.PatientAddRoomForm-selectButtonActive {
+    background-color: #e6fffa;
+    border-color: #38b2ac;
+    color: #2c7a7b;
+}
+
+.PatientAddRoomForm-checkIcon {
+    color: #38b2ac;
+}
+
+.PatientAddRoomForm-backButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.PatientAddRoomForm-backButton:hover {
+    background-color: #f7fafc;
+    border-color: #cbd5e0;
+}
+
+.PatientAddRoomForm-backButton .PatientAddRoomForm-iconSmall {
+    color: #4a5568;
+    font-size: 20px;
+}
+
+.PatientAddRoomForm-submitButton {
+    padding: 0.2rem 1rem;
+    background-color: green;
+    color: #ffffff;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.PatientAddRoomForm-submitButton:hover {
+    background-color: rgb(0, 255, 17);
+}
+
+.PatientAddRoomForm-submitButton:disabled {
+    background-color: #d1d5db;
+    cursor: not-allowed;
+    color: #ffffff !important;
+}
+
+.PatientAddRoomForm-cancelButton {
+    padding: 0.2rem 1rem;
+    background-color: #e2e8f0;
+    color: #1f2937;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.PatientAddRoomForm-cancelButton:hover {
+    background-color: #cbd5e0;
+}
+
+/* Empty State */
+.PatientAddRoomForm-emptyState {
+    text-align: center;
+    padding: 2rem;
+    color: #6b7280;
+}
+
+.PatientAddRoomForm-editIdContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.PatientAddRoomForm-idInput {
+    width: 120px;
+    height: 32px;
+}
+
+.PatientAddRoomForm-loading {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.PatientAddRoomForm-saveIdButton,
+.PatientAddRoomForm-editIdButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.PatientAddRoomForm-saveIdButton:hover,
+.PatientAddRoomForm-editIdButton:hover {
+    opacity: 0.7;
+}

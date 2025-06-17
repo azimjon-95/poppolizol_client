@@ -1,0 +1,227 @@
+.main-registration {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+
+.form_line {
+    display: flex;
+    width: 100%;
+    /* gap: 7px; */
+}
+
+/* General container styling */
+.registration-container {
+    width: 100%;
+    height: calc(100vh - 70px);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow-x: auto;
+}
+
+.registration-container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.registration-container::-webkit-scrollbar-track {
+    background: #f5f7fa;
+    border-radius: 8px;
+}
+
+.registration-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 8px;
+}
+
+.registration-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.registration-container .ant-form-item {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    color: rgba(0, 0, 0, 0.88);
+    font-size: 14px;
+    line-height: 1.5714285714285714;
+    list-style: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    margin-bottom: 10px !important;
+    vertical-align: top;
+}
+
+.form_line .ant-form-item {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    color: rgba(0, 0, 0, 0.88);
+    font-size: 14px;
+    line-height: 1.5714285714285714;
+    list-style: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    margin-bottom: 0px !important;
+    vertical-align: top;
+}
+
+.registration-container .ant-form-item-label,
+.registration-container .ant-col-24.ant-form-item-label,
+.registration-container .ant-col-xl-24.ant-form-item-label {
+    padding: 0 0 2px !important;
+    margin: 0;
+    white-space: initial;
+    text-align: start;
+}
+
+/* Title styling */
+.registration-title {
+    text-align: center;
+    color: #2c3e50;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Form styling */
+.registration-form {
+    background: #ffffff;
+    padding: 0 10px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.form-rowbox {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    width: 49.7%;
+}
+
+/* Form row for side-by-side fields */
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-row .ant-form-item {
+    flex: 1;
+}
+
+/* Input and Select styling */
+.ant-input,
+.ant-select-selector {
+    border-radius: 8px !important;
+    border: 1px solid #d9e1e8 !important;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ant-input:focus,
+.ant-select-selector:hover {
+    border-color: #1890ff !important;
+    box-shadow: 0 0 8px rgba(24, 144, 255, 0.2) !important;
+}
+
+/* Checkbox styling */
+.ant-checkbox-wrapper {
+    margin-right: 16px;
+    font-size: 16px;
+    color: #34495e;
+}
+
+.ant-checkbox-checked .ant-checkbox-inner {
+    background-color: #1890ff;
+    border-color: #1890ff;
+}
+
+/* Button styling */
+.submit-button {
+    height: 48px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #1890ff 0%, #40c4ff 100%);
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.submit-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+/* Success message styling */
+.success-message {
+    text-align: center;
+    margin-top: 32px;
+    padding: 16px;
+    background: #e6f7ff;
+    border-radius: 12px;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.success-title {
+    color: #1890ff;
+    font-weight: 700;
+    animation: bounce 0.3s ease;
+}
+
+.ant-select-selection-placeholder {
+    color: #bfbfbf !important;
+    /* Adjust color as needed */
+    opacity: 1 !important;
+}
+
+/* Spinner styling */
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid rgba(128, 128, 128, 0.169);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .registration-container {
+        margin: 20px;
+        padding: 16px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .submit-button {
+        height: 40px;
+        font-size: 14px;
+    }
+}
