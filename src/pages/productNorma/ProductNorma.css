@@ -1,0 +1,14 @@
+.product_norma {
+  svg {
+    font-size: 19px;
+  }
+  .norma_actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .delete_btn {
+      color: red;
+    }
+  }
+}

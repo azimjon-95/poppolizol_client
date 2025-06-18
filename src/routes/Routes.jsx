@@ -13,6 +13,7 @@ import ExpenseManager from "../pages/reseption/expense/ExpenseManager";
 import Service from "../pages/reseption/service/Service";
 import NightShiftScheduler from "../pages/reseption/nightShift/NightShiftScheduler";
 import Materials from "../pages/materials/Materials";
+import Norma from "../pages/productNorma/ProductNormaMain";
 
 export const routes = [
   {
@@ -96,6 +97,12 @@ export const routes = [
   {
     path: "/warehouse",
     element: <Materials />,
+    role: ["reception", "director"],
+    private: true,
+  },
+  {
+    path: "/norma",
+    element: <Norma />,
     role: ["reception", "director"],
     private: true,
   },

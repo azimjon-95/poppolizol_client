@@ -76,6 +76,11 @@ export const menuItems = {
       label: "Ombor",
     },
     {
+      icon: <BsPeopleFill size={20} />,
+      path: "/norma",
+      label: "Normalar",
+    },
+    {
       icon: <FaCog size={20} />,
       path: "/setting",
       label: "Sozlamalar",
