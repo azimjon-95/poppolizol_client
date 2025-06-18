@@ -65,7 +65,7 @@ const Materials = () => {
       dataIndex: "quantity",
       key: "quantity",
     },
-    { title: "unit", dataIndex: "unit", key: "unit" },
+    { title: "O'lchov birlik", dataIndex: "unit", key: "unit" },
     {
       title: "Amallar",
       key: "actions",
