@@ -32,6 +32,46 @@ export const materialApi = api.injectEndpoints({
       }),
       invalidatesTags: ["Materials"],
     }),
+
+
+    // =====================================
+    // Kirim qo‘shish
+    createIncome: builder.mutation({
+      query: (data) => ({
+        url: "/material/incomes",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Incomes"],
+    }),
+
+    // Firma qo‘shish
+    createFirm: builder.mutation({
+      query: (data) => ({
+        url: "/material/firms",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Firms"],
+    }),
+
+    // Firmalar ro‘yxatini olish
+    getFirms: builder.query({
+      query: () => "/material/firms",
+      providesTags: ["Firms"],
+    }),
+
+    // Kirimlar ro‘yxatini olish
+    getIncomes: builder.query({
+      query: () => "/material/getincomes",
+      providesTags: ["Incomes"],
+    }),
+
+    // Kirimlar ro‘yxatini olish
+    getFilteredMaterials: builder.query({
+      query: () => "/material/filtered-materials",
+      providesTags: ["Incomes"],
+    }),
   }),
 });
 export const {
@@ -39,4 +79,12 @@ export const {
   useCreateMaterialMutation,
   useUpdateMaterialMutation,
   useDeleteMaterialMutation,
+
+  //=======================
+
+  useCreateIncomeMutation,
+  useCreateFirmMutation,
+  useGetFirmsQuery,
+  useGetIncomesQuery,
+  useGetFilteredMaterialsQuery
 } = materialApi;

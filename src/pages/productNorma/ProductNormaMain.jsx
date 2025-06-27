@@ -31,6 +31,7 @@ import { toast } from "react-toastify";
 
 const { Option } = Select;
 
+
 const ProductNorma = () => {
   const [updateForm] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -211,6 +212,7 @@ const ProductNorma = () => {
             loading={normasLoading}
             rowKey="_id"
             pagination={false}
+            bordered
             size="small"
           />
           <Modal

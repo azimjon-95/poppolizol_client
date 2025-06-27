@@ -1,379 +1,548 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Form, Input, Checkbox, Button, TimePicker, Table, Spin, Typography, Card, Row, Col, Space, Upload, message, Popconfirm } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusCircleOutlined, MedicineBoxOutlined, UploadOutlined } from '@ant-design/icons';
-import { useGetClinicsQuery, useCreateClinicMutation, useUpdateClinicMutation, useDeleteClinicMutation } from '../../../context/clinicApi';
-import { handleUpload } from '../../../utils/handleUpload';
-import { PhoneNumberFormat } from '../../../hook/NumberFormat';
-import moment from 'moment';
+import React, { useState } from 'react';
+import { Factory, Clock, Zap, Flame, Coins, Package, Settings, Save, List, Plus, Trash2, Edit3, Phone } from 'lucide-react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './style.css';
+import {
+    useCreateFactoryMutation,
+    useGetFactoriesQuery,
+    useUpdateFactoryMutation,
+    useDeleteFactoryMutation,
+} from '../../../context/clinicApi';
 
-const { Title } = Typography;
-
-// Work days mapping
-const WORK_DAYS = [
-    { label: 'Dushanba', value: 'monday' },
-    { label: 'Seshanba', value: 'tuesday' },
-    { label: 'Chorshanba', value: 'wednesday' },
-    { label: 'Payshanba', value: 'thursday' },
-    { label: 'Juma', value: 'friday' },
-    { label: 'Shanba', value: 'saturday' },
-    { label: 'Yakshanba', value: 'sunday' },
-];
-
-// Form validation rules
-const FORM_RULES = {
-    clinicName: [{ required: true, message: 'Iltimos, klinika nomini kiriting' }],
-    work_schedule_start_time: [{ required: true, message: 'Iltimos, boshlanish vaqtini tanlang' }],
-    work_schedule_end_time: [{ required: true, message: 'Iltimos, tugash vaqtini tanlang' }],
-    address: [{ required: true, message: 'Iltimos, manzilni kiriting' }],
-    phone: [
-        { required: true, message: 'Iltimos, telefon raqamini kiriting' },
-        { pattern: /^\+?\d{10,15}$/, message: 'Noto\'g\'ri telefon raqami' },
-    ],
-    lunch_break_start_time: [{ required: false }],
-    lunch_break_end_time: [{ required: false }],
+const initialFormData = {
+    factoryName: '',
+    location: '',
+    capacity: '',
+    workingHours: { startTime: '', endTime: '' },
+    phone: '',
+    electricityPrice: '',
+    methaneGasPrice: '',
+    bitumenMarkFive: { costPrice: '', profitMargin: '' },
+    ruberoidBlackPaper: { costPrice: '', profitMargin: '' },
+    otherInfo: '',
 };
 
-const ClinicManagement = () => {
-    const [form] = Form.useForm();
-    const [clinicToEdit, setClinicToEdit] = useState(null);
-    const [fileList, setFileList] = useState([]);
-    const [uploading, setUploading] = useState(false);
-    const [selectedDays, setSelectedDays] = useState([]);
+const FactoryConfigPanel = () => {
+    const [activeTab, setActiveTab] = useState('list');
+    const [formData, setFormData] = useState(initialFormData);
+    const [editingId, setEditingId] = useState(null);
 
     // RTK Query hooks
-    const { data: clinics, isLoading, error } = useGetClinicsQuery();
-    const [createClinic, { isLoading: isCreating }] = useCreateClinicMutation();
-    const [updateClinic, { isLoading: isUpdating }] = useUpdateClinicMutation();
-    const [deleteClinic] = useDeleteClinicMutation();
+    const { data: factories = [], isLoading, error } = useGetFactoriesQuery();
+    const [createFactory, { isLoading: isCreating }] = useCreateFactoryMutation();
+    const [updateFactory, { isLoading: isUpdating }] = useUpdateFactoryMutation();
+    const [deleteFactory, { isLoading: isDeleting }] = useDeleteFactoryMutation();
 
-    // Set form values when editing
-    useEffect(() => {
-        if (clinicToEdit) {
-            const workDays = clinicToEdit.work_schedule?.work_days || [];
-            setSelectedDays(workDays);
-            form.setFieldsValue({
-                clinicName: clinicToEdit.clinicName,
-                address: clinicToEdit.address,
-                phone: clinicToEdit.phone,
-                work_schedule: {
-                    start_time: clinicToEdit.work_schedule?.start_time ? moment(clinicToEdit.work_schedule.start_time, 'HH:mm') : null,
-                    end_time: clinicToEdit.work_schedule?.end_time ? moment(clinicToEdit.work_schedule.end_time, 'HH:mm') : null,
-                    work_days: workDays,
-                    lunch_break: {
-                        start_time: clinicToEdit.work_schedule?.lunch_break?.start_time ? moment(clinicToEdit.work_schedule.lunch_break.start_time, 'HH:mm') : null,
-                        end_time: clinicToEdit.work_schedule?.lunch_break?.end_time ? moment(clinicToEdit.work_schedule.lunch_break.end_time, 'HH:mm') : null,
-                        enabled: clinicToEdit.work_schedule?.lunch_break?.enabled ?? true,
-                    },
+    const handleInputChange = (e, field) => {
+        const value = e.target.value;
+        if (field.includes('.')) {
+            const [parent, child, subChild] = field.split('.');
+            setFormData((prev) => ({
+                ...prev,
+                [parent]: {
+                    ...prev[parent],
+                    [child]: subChild ? { ...prev[parent][child], [subChild]: value } : value,
                 },
-            });
-            setFileList(clinicToEdit.logo ? [{ uid: '-1', name: 'logotip.jpg', status: 'done', url: clinicToEdit.logo }] : []);
+            }));
         } else {
-            form.resetFields();
-            setFileList([]);
-            setSelectedDays(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']);
-        }
-    }, [clinicToEdit, form]);
-
-    // Handle day selection
-    const handleDayToggle = useCallback((day) => {
-        setSelectedDays((prev) => {
-            const newDays = prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day];
-            form.setFieldsValue({ work_schedule: { ...form.getFieldValue('work_schedule'), work_days: newDays } });
-            return newDays;
-        });
-    }, [form]);
-
-    // Handle form submission
-    const handleSubmit = useCallback(
-        async (values) => {
-            let logoUrl = clinicToEdit?.logo || '';
-            if (fileList.length > 0 && fileList[0].originFileObj) {
-                try {
-                    logoUrl = await handleUpload({ file: fileList[0].originFileObj, setUploading });
-                } catch (error) {
-                    return;
-                }
-            }
-
-            const formattedValues = {
-                clinicName: values.clinicName,
-                address: values.address,
-                phone: values.phone,
-                logo: logoUrl,
-                work_schedule: {
-                    start_time: values.work_schedule?.start_time ? values.work_schedule.start_time.format('HH:mm') : '08:00',
-                    end_time: values.work_schedule?.end_time ? values.work_schedule.end_time.format('HH:mm') : '17:00',
-                    work_days: values.work_schedule?.work_days || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
-                    lunch_break: {
-                        start_time: values.work_schedule?.lunch_break?.start_time ? values.work_schedule.lunch_break.start_time.format('HH:mm') : '12:00',
-                        end_time: values.work_schedule?.lunch_break?.end_time ? values.work_schedule.lunch_break.end_time.format('HH:mm') : '13:00',
-                        enabled: values.work_schedule?.lunch_break?.enabled ?? true,
-                    },
-                },
-            };
-
-            try {
-                if (clinicToEdit) {
-                    await updateClinic({ id: clinicToEdit._id, ...formattedValues }).unwrap();
-                    message.success('Klinika muvaffaqiyatli yangilandi');
-                } else {
-                    await createClinic(formattedValues).unwrap();
-                    message.success('Klinika muvaffaqiyatli yaratildi');
-                }
-                form.resetFields();
-                setFileList([]);
-                setClinicToEdit(null);
-                setSelectedDays(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']);
-            } catch (error) {
-                message.error(`Klinikani saqlashda xatolik: ${error?.data?.message || error.message}`);
-            }
-        },
-        [clinicToEdit, fileList, form, createClinic, updateClinic]
-    );
-
-    // Handle edit
-    const handleEdit = useCallback((clinic) => {
-        setClinicToEdit(clinic);
-    }, []);
-
-    // Handle delete with confirmation
-    const handleDelete = async (id) => {
-        try {
-            await deleteClinic(id).unwrap();
-            message.success('Klinika muvaffaqiyatli o\'chirildi');
-        } catch (error) {
-            message.error(`Klinikani o\'chirishda xatolik: ${error?.data?.message || error.message}`);
+            setFormData((prev) => ({ ...prev, [field]: value }));
         }
     };
 
-    // Handle cancel
-    const handleCancel = useCallback(() => {
-        form.resetFields();
-        setFileList([]);
-        setClinicToEdit(null);
-        setSelectedDays(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']);
-    }, [form]);
-
-    // Upload props
-    const uploadProps = useMemo(
-        () => ({
-            onRemove: () => setFileList([]),
-            beforeUpload: (file) => {
-                const isImage = file.type.startsWith('image/');
-                const isLt2M = file.size / 1024 / 1024 < 2;
-                if (!isImage) {
-                    message.error('Faqat rasm fayllarini yuklash mumkin!');
-                    return false;
-                }
-                if (!isLt2M) {
-                    message.error('Rasm hajmi 2MB dan kichik bo\'lishi kerak!');
-                    return false;
-                }
-                setFileList([file]);
-                return false;
-            },
-            fileList,
-            accept: 'image/*',
-            maxCount: 1,
-            showUploadList: { showPreviewIcon: true },
-        }),
-        [fileList]
-    );
-
-    // Table columns
-    const columns = useMemo(
-        () => [
-            {
-                title: 'Logotip',
-                dataIndex: 'logo',
-                key: 'logo',
-                render: (logo) => (logo ? <img src={logo} alt="logotip" style={{ width: 50, borderRadius: 4 }} /> : 'Logotip Yo\'q'),
-            },
-            {
-                title: 'Klinika Nomi',
-                dataIndex: 'clinicName',
-                key: 'clinicName',
-            },
-            {
-                title: 'Ish Vaqti',
-                dataIndex: 'work_schedule',
-                key: 'work_schedule',
-                render: (work_schedule) => `${work_schedule.start_time} - ${work_schedule.end_time}`,
-            },
-            {
-                title: 'Ish Kunlari',
-                dataIndex: ['work_schedule', 'work_days'],
-                key: 'work_days',
-                render: (work_days) => {
-                    const selectedCount = work_days.length;
-                    const totalCount = 7; // Total possible days (monday to sunday)
-                    const unselectedCount = totalCount - selectedCount;
-                    return `${selectedCount}/${unselectedCount}`;
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            // Convert string inputs to numbers where required
+            const payload = {
+                ...formData,
+                electricityPrice: Number(formData.electricityPrice),
+                methaneGasPrice: Number(formData.methaneGasPrice),
+                bitumenMarkFive: {
+                    costPrice: Number(formData.bitumenMarkFive.costPrice),
+                    profitMargin: Number(formData.bitumenMarkFive.profitMargin),
                 },
-            },
-            {
-                title: 'Tushlik Vaqti',
-                dataIndex: ['work_schedule', 'lunch_break'],
-                key: 'lunch_break',
-                render: (lunch_break) => (lunch_break.enabled ? `${lunch_break.start_time} - ${lunch_break.end_time}` : 'Yo\'q'),
-            },
-            {
-                title: 'Manzil',
-                dataIndex: 'address',
-                key: 'address',
-            },
-            {
-                title: 'Telefon',
-                dataIndex: 'phone',
-                key: 'phone',
-                render: (phone) => (phone ? PhoneNumberFormat(phone) : 'Telefon Yo\'q'),
-            },
-            {
-                title: 'Amallar',
-                key: 'actions',
-                render: (_, record) => (
-                    <Space>
-                        <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
-                            Tahrirlash
-                        </Button>
-                        <Popconfirm
-                            title="Klinikani o'chirishni xohlaysizmi?"
-                            onConfirm={() => handleDelete(record._id)}
-                            okText="Ha"
-                            cancelText="Yo'q"
-                        >
-                            <Button type="link" icon={<DeleteOutlined />} danger>
-                                O'chirish
-                            </Button>
-                        </Popconfirm>
-                    </Space>
-                ),
-            },
-        ],
-        [handleEdit, handleDelete]
-    );
+                ruberoidBlackPaper: {
+                    costPrice: Number(formData.ruberoidBlackPaper.costPrice),
+                    profitMargin: Number(formData.ruberoidBlackPaper.profitMargin),
+                },
+            };
 
-    // Ensure dataSource is an array
-    const tableData = Array.isArray(clinics?.innerData)
-        ? clinics?.innerData
-        : clinics?.innerData && typeof clinics?.innerData === 'object' && Object.keys(clinics?.innerData).length > 0
-            ? [clinics?.innerData]
-            : [];
+            if (editingId) {
+                await updateFactory({ id: editingId, ...payload }).unwrap();
+                toast.success('Konfiguratsiya muvaffaqiyatli yangilandi!');
+            } else {
+                await createFactory(payload).unwrap();
+                toast.success('Konfiguratsiya muvaffaqiyatli saqlandi!');
+            }
+            resetForm();
+        } catch (err) {
+            toast.error(`Xato yuz berdi: ${err.message || 'Server xatosi'}`);
+        }
+    };
+
+    const resetForm = () => {
+        setFormData(initialFormData);
+        setEditingId(null);
+    };
+
+    const handleEdit = (config) => {
+        setFormData({
+            ...config,
+            electricityPrice: String(config.electricityPrice),
+            methaneGasPrice: String(config.methaneGasPrice),
+            bitumenMarkFive: {
+                costPrice: String(config.bitumenMarkFive.costPrice),
+                profitMargin: String(config.bitumenMarkFive.profitMargin),
+            },
+            ruberoidBlackPaper: {
+                costPrice: String(config.ruberoidBlackPaper.costPrice),
+                profitMargin: String(config.ruberoidBlackPaper.profitMargin),
+            },
+        });
+        setEditingId(config._id);
+        setActiveTab('register');
+    };
+
+    const handleDelete = (id) => {
+        // Create a custom toast with confirm/cancel buttons
+        const toastId = toast(
+            <div>
+                <p>Haqiqatan ham o'chirmoqchimisiz?</p>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                    <button
+                        style={{
+                            padding: '5px 10px',
+                            background: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                        }}
+                        onClick={async () => {
+                            try {
+                                await deleteFactory(id).unwrap();
+                                toast.dismiss(toastId);
+                                toast.success('Konfiguratsiya muvaffaqiyatli o\'chirildi!');
+                            } catch (err) {
+                                toast.dismiss(toastId);
+                                toast.error(`O'chirishda xato: ${err.message || 'Server xatosi'}`);
+                            }
+                        }}
+                    >
+                        O'chirish
+                    </button>
+                    <button
+                        style={{
+                            padding: '5px 10px',
+                            background: '#6c757d',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                        }}
+                        onClick={() => toast.dismiss(toastId)}
+                    >
+                        Bekor
+                    </button>
+                </div>
+            </div>,
+            {
+                autoClose: false,
+                closeOnClick: false,
+                draggable: false,
+                position: 'top-right',
+            }
+        );
+    };
+
+    // Show error toast if fetching factories fails
+    if (error) {
+        toast.error(`Ma'lumotlarni yuklashda xato: ${error.message || 'Server xatosi'}`, {
+            toastId: 'fetch-error',
+        });
+    }
 
     return (
-        <div style={{ padding: '24px', background: '#f0f2f5', minHeight: '100vh' }}>
-            <Title level={3} style={{ display: 'flex', alignItems: 'center', color: '#1890ff' }}>
-                <MedicineBoxOutlined style={{ marginRight: 8 }} /> Klinika Boshqaruvi
-            </Title>
+        <>
+            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+            <div className="qora-qogoz-zavod-konteyner">
+                <div className="zavod-sarlavha-blok">
+                    <div className="zavod-logo-qism">
+                        <Factory className="zavod-ikonka" />
+                        <h1 className="zavod-sarlavha-matn">Qora Qog'oz Zavodi Konfiguratsiya</h1>
+                    </div>
+                    <div className="zavod-tab-tugmalar">
+                        <button
+                            className={`zavod-tab-tugma ${activeTab === 'register' ? 'zavod-aktiv-tab' : ''}`}
+                            onClick={() => setActiveTab('register')}
+                        >
+                            <Plus className="zavod-tab-ikonka" />
+                            Ro'yxatga Olish
+                        </button>
+                        <button
+                            className={`zavod-tab-tugma ${activeTab === 'list' ? 'zavod-aktiv-tab' : ''}`}
+                            onClick={() => setActiveTab('list')}
+                        >
+                            <List className="zavod-tab-ikonka" />
+                            Ro'yxat Ko'rish
+                        </button>
+                    </div>
+                </div>
 
-            <Card
-                className="clinic-card"
-                title={clinicToEdit ? 'Klinikani Tahrirlash' : 'Yangi Klinika Qo\'shish'}
-                style={{ marginBottom: 24, borderRadius: 8, boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}
-            >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    onFinish={handleSubmit}
-                    initialValues={{
-                        clinicName: '',
-                        address: '',
-                        phone: '',
-                        work_schedule: {
-                            work_days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
-                            lunch_break: { enabled: true },
-                        },
-                    }}
-                >
-                    <Row gutter={16}>
-                        <Col xs={24} md={12}>
-                            <Form.Item label="Klinika Nomi" name="clinicName" rules={FORM_RULES.clinicName}>
-                                <Input prefix={<MedicineBoxOutlined />} placeholder="Klinika nomini kiriting" />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item label="Manzil" name="address" rules={FORM_RULES.address}>
-                                <Input placeholder="Manzilni kiriting" />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item label="Telefon" name="phone" rules={FORM_RULES.phone}>
-                                <Input placeholder="Telefon raqamini kiriting" />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item label="Logotip">
-                                <Upload {...uploadProps}>
-                                    <Button icon={<UploadOutlined />} loading={uploading}>
-                                        Logotipni Yuklash (ixtiyoriy)
-                                    </Button>
-                                </Upload>
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item label="Boshlanish Vaqti" name={['work_schedule', 'start_time']} rules={FORM_RULES.work_schedule_start_time}>
-                                <TimePicker format="HH:mm" style={{ width: '100%' }} placeholder="Vaqtni tanlang" />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item label="Tugash Vaqti" name={['work_schedule', 'end_time']} rules={FORM_RULES.work_schedule_end_time}>
-                                <TimePicker format="HH:mm" style={{ width: '100%' }} placeholder="Vaqtni tanlang" />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24}>
-                            <Form.Item label="Ish Kunlari" name={['work_schedule', 'work_days']}>
-                                <Space wrap>
-                                    {WORK_DAYS.map((day) => (
-                                        <Button
-                                            key={day.value}
-                                            type={selectedDays.includes(day.value) ? 'primary' : 'default'}
-                                            onClick={() => handleDayToggle(day.value)}
-                                        >
-                                            {day.label}
-                                        </Button>
-                                    ))}
-                                </Space>
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item label="Tushlik Boshlanishi" name={['work_schedule', 'lunch_break', 'start_time']} rules={FORM_RULES.lunch_break_start_time}>
-                                <TimePicker format="HH:mm" style={{ width: '100%' }} placeholder="Vaqtni tanlang" />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item label="Tushlik Tugashi" name={['work_schedule', 'lunch_break', 'end_time']} rules={FORM_RULES.lunch_break_end_time}>
-                                <TimePicker format="HH:mm" style={{ width: '100%' }} placeholder="Vaqtni tanlang" />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24}>
-                            <Form.Item name={['work_schedule', 'lunch_break', 'enabled']} valuePropName="checked">
-                                <Checkbox>Tushlik Vaqti Yoqilgan</Checkbox>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Form.Item>
-                        <Space>
-                            <Button type="primary" htmlType="submit" icon={<PlusCircleOutlined />} loading={isCreating || isUpdating || uploading}>
-                                {clinicToEdit ? 'Yangilash' : 'Yaratish'}
-                            </Button>
-                            {clinicToEdit && <Button onClick={handleCancel}>Bekor Qilish</Button>}
-                        </Space>
-                    </Form.Item>
-                </Form>
-            </Card>
+                {activeTab === 'register' && (
+                    <div className="zavod-registr-panel">
+                        <form onSubmit={handleSubmit} className="zavod-forma-konteyner">
+                            <div className="zavod-forma-grid">
+                                {/* Basic Information */}
+                                <div className="zavod-karta-blok">
+                                    <div className="zavod-karta-sarlavha">
+                                        <Settings className="zavod-karta-ikonka" />
+                                        <h3>Asosiy Ma'lumotlar</h3>
+                                    </div>
+                                    <div className="zavod-input-grid">
+                                        <div className="zavod-input-guruh">
+                                            <label className="zavod-yorliq">Zavod Nomi</label>
+                                            <input
+                                                type="text"
+                                                className="zavod-input-maydoni"
+                                                value={formData.factoryName}
+                                                onChange={(e) => handleInputChange(e, 'factoryName')}
+                                                placeholder="Zavod nomini kiriting"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="zavod-input-guruh">
+                                            <label className="zavod-yorliq">Joylashuv</label>
+                                            <input
+                                                type="text"
+                                                className="zavod-input-maydoni"
+                                                value={formData.location}
+                                                onChange={(e) => handleInputChange(e, 'location')}
+                                                placeholder="Zavod joylashuvini kiriting"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="zavod-input-guruh">
+                                            <label className="zavod-yorliq">Ishlab Chiqarish Quvvati</label>
+                                            <input
+                                                type="text"
+                                                className="zavod-input-maydoni"
+                                                value={formData.capacity}
+                                                onChange={(e) => handleInputChange(e, 'capacity')}
+                                                placeholder="Kunlik quvvat (tonna/kun)"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
 
-            <Card style={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
-                {isLoading ? (
-                    <Spin tip="Klinikalar yuklanmoqda..." />
-                ) : error ? (
-                    <div>Klinikalarni yuklashda xatolik: {error?.data?.message || error.message}</div>
-                ) : (
-                    <Table pagination={false} size="small" bordered columns={columns} dataSource={tableData} rowKey="_id" className="clinic-table" />
+                                {/* Working Hours and Contact */}
+                                <div className="zavod-karta-container">
+                                    <div className="zavod-karta-blok">
+                                        <div className="zavod-karta-sarlavha">
+                                            <Clock className="zavod-karta-ikonka" />
+                                            <h3>Ish Vaqtlari</h3>
+                                        </div>
+                                        <div className="zavod-vaqt-grid">
+                                            <div className="zavod-input-guruh">
+                                                <label className="zavod-yorliq">Boshlanish Vaqti</label>
+                                                <input
+                                                    type="time"
+                                                    className="zavod-vaqt-input"
+                                                    value={formData.workingHours.startTime}
+                                                    onChange={(e) => handleInputChange(e, 'workingHours.startTime')}
+                                                    required
+                                                />
+                                            </div>
+                                            <span className="zavod-vaqt-ajratgich">-</span>
+                                            <div className="zavod-input-guruh">
+                                                <label className="zavod-yorliq">Tugash Vaqti</label>
+                                                <input
+                                                    type="time"
+                                                    className="zavod-vaqt-input"
+                                                    value={formData.workingHours.endTime}
+                                                    onChange={(e) => handleInputChange(e, 'workingHours.endTime')}
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="zavod-karta-blok">
+                                        <div className="zavod-karta-sarlavha">
+                                            <Phone className="zavod-karta-ikonka" />
+                                            <h3>Aloqa uchun</h3>
+                                        </div>
+                                        <div className="zavod-input-grid">
+                                            <div className="zavod-input-guruh">
+                                                <label className="zavod-yorliq">Tel</label>
+                                                <input
+                                                    type="tel"
+                                                    className="zavod-input-maydoni"
+                                                    value={formData.phone}
+                                                    onChange={(e) => handleInputChange(e, 'phone')}
+                                                    placeholder="+998901234567"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Energy Prices */}
+                                <div className="zavod-karta-blok">
+                                    <div className="zavod-karta-sarlavha">
+                                        <Zap className="zavod-karta-ikonka" />
+                                        <h3>Energiya Narxlari</h3>
+                                    </div>
+                                    <div className="zavod-input-grid">
+                                        <div className="zavod-input-guruh">
+                                            <label className="zavod-yorliq">Elektr Energiya (1 kVt/soat)</label>
+                                            <div className="zavod-narx-input">
+                                                <input
+                                                    type="number"
+                                                    className="zavod-input-maydoni"
+                                                    value={formData.electricityPrice}
+                                                    onChange={(e) => handleInputChange(e, 'electricityPrice')}
+                                                    placeholder="0"
+                                                    required
+                                                    min="0"
+                                                />
+                                                <span className="zavod-valyuta-belgi">so'm</span>
+                                            </div>
+                                        </div>
+                                        <div className="zavod-input-guruh">
+                                            <label className="zavod-yorliq">
+                                                <Flame className="zavod-inline-ikonka" />
+                                                Metan Gaz (1 m³)
+                                            </label>
+                                            <div className="zavod-narx-input">
+                                                <input
+                                                    type="number"
+                                                    className="zavod-input-maydoni"
+                                                    value={formData.methaneGasPrice}
+                                                    onChange={(e) => handleInputChange(e, 'methaneGasPrice')}
+                                                    placeholder="0"
+                                                    required
+                                                    min="0"
+                                                />
+                                                <span className="zavod-valyuta-belgi">so'm</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Products and Profit */}
+                                <div className="zavod-karta-blok">
+                                    <div className="zavod-karta-sarlavha">
+                                        <Package className="zavod-karta-ikonka" />
+                                        <h3>Mahsulotlar va Foyda</h3>
+                                    </div>
+                                    <div className="zavod-mahsulot-grid">
+                                        <div className="zavod-mahsulot-guruh">
+                                            <h4 className="zavod-mahsulot-nomi">Bitum-5 Marka</h4>
+                                            <div className="zavod-input-grid">
+                                                <div className="zavod-input-guruh">
+                                                    <label className="zavod-yorliq">Tan Narxi</label>
+                                                    <div className="zavod-narx-input">
+                                                        <input
+                                                            type="number"
+                                                            className="zavod-input-maydoni"
+                                                            value={formData.bitumenMarkFive.costPrice}
+                                                            onChange={(e) => handleInputChange(e, 'bitumenMarkFive.costPrice')}
+                                                            placeholder="0"
+                                                            required
+                                                            min="0"
+                                                        />
+                                                        <span className="zavod-valyuta-belgi">so'm</span>
+                                                    </div>
+                                                </div>
+                                                <div className="zavod-input-guruh">
+                                                    <label className="zavod-yorliq">Foyda Foizi</label>
+                                                    <div className="zavod-narx-input">
+                                                        <input
+                                                            type="number"
+                                                            className="zavod-input-maydoni"
+                                                            value={formData.bitumenMarkFive.profitMargin}
+                                                            onChange={(e) => handleInputChange(e, 'bitumenMarkFive.profitMargin')}
+                                                            placeholder="0"
+                                                            required
+                                                            min="0"
+                                                            max="100"
+                                                        />
+                                                        <span className="zavod-valyuta-belgi">%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="zavod-mahsulot-guruh">
+                                            <h4 className="zavod-mahsulot-nomi">Ruberoid Qora Qog'oz</h4>
+                                            <div className="zavod-input-grid">
+                                                <div className="zavod-input-guruh">
+                                                    <label className="zavod-yorliq">Tan Narxi</label>
+                                                    <div className="zavod-narx-input">
+                                                        <input
+                                                            type="number"
+                                                            className="zavod-input-maydoni"
+                                                            value={formData.ruberoidBlackPaper.costPrice}
+                                                            onChange={(e) => handleInputChange(e, 'ruberoidBlackPaper.costPrice')}
+                                                            placeholder="0"
+                                                            required
+                                                            min="0"
+                                                        />
+                                                        <span className="zavod-valyuta-belgi">so'm</span>
+                                                    </div>
+                                                </div>
+                                                <div className="zavod-input-guruh">
+                                                    <label className="zavod-yorliq">Foyda Foizi</label>
+                                                    <div className="zavod-narx-input">
+                                                        <input
+                                                            type="number"
+                                                            className="zavod-input-maydoni"
+                                                            value={formData.ruberoidBlackPaper.profitMargin}
+                                                            onChange={(e) => handleInputChange(e, 'ruberoidBlackPaper.profitMargin')}
+                                                            placeholder="0"
+                                                            required
+                                                            min="0"
+                                                            max="100"
+                                                        />
+                                                        <span className="zavod-valyuta-belgi">%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Additional Information */}
+                                <div className="zavod-karta-blok zavod-toliq-kenglik">
+                                    <div className="zavod-karta-sarlavha">
+                                        <Coins className="zavod-karta-ikonka" />
+                                        <h3>Qo'shimcha Ma'lumotlar</h3>
+                                    </div>
+                                    <textarea
+                                        className="zavod-textarea-maydoni"
+                                        value={formData.otherInfo}
+                                        onChange={(e) => handleInputChange(e, 'otherInfo')}
+                                        placeholder="Zavod haqida qo'shimcha ma'lumotlar..."
+                                        rows="4"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Save Button */}
+                            <div className="zavod-tugma-konteyner">
+                                <button
+                                    type="submit"
+                                    className="zavod-saqlash-tugma"
+                                    disabled={isCreating || isUpdating}
+                                >
+                                    <Save className="zavod-tugma-ikonka" />
+                                    {editingId ? 'Yangilash' : 'Saqlash'}
+                                </button>
+                                {editingId && (
+                                    <button
+                                        type="button"
+                                        className="zavod-bekor-tugma"
+                                        onClick={resetForm}
+                                    >
+                                        Bekor Qilish
+                                    </button>
+                                )}
+                            </div>
+                        </form>
+                    </div>
                 )}
-            </Card>
-        </div>
+
+                {activeTab === 'list' && (
+                    <div className="zavod-royxat-panel">
+                        <div className="zavod-royxat-sarlavha">
+                            <h3>Saqlangan Konfiguratsiyalar</h3>
+                            <span className="zavod-royxat-soni">{factories?.innerData?.length} ta konfiguratsiya</span>
+                        </div>
+
+                        {isLoading ? (
+                            <p>Yuklanmoqda...</p>
+                        ) : factories?.innerData?.length === 0 ? (
+                            <div className="zavod-bosh-holat">
+                                <Factory className="zavod-bosh-ikonka" />
+                                <p>Hali hech qanday konfiguratsiya yo'q</p>
+                            </div>
+                        ) : (
+                            <div className="zavod-jadval-konteyner">
+                                <table className="zavod-jadval">
+                                    <thead>
+                                        <tr>
+                                            <th>Zavod Nomi</th>
+                                            <th>Joylashuv</th>
+                                            <th>Quvvat</th>
+                                            <th>Ish Vaqti</th>
+                                            <th>Tel</th>
+                                            <th>Elektr Narxi</th>
+                                            <th>Gaz Narxi</th>
+                                            <th>Bitum Foyda</th>
+                                            <th>Ruberoid Foyda</th>
+                                            <th>Amallar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {factories?.innerData?.map((config) => (
+                                            <tr key={config._id}>
+                                                <td>
+                                                    <span className="zavod-nomi-ustun">
+                                                        <Factory className="zavod-jadval-ikonka" />
+                                                        {config.factoryName}
+                                                    </span>
+                                                </td>
+                                                <td>{config.location}</td>
+                                                <td>{config.capacity}</td>
+                                                <td>{`${config.workingHours.startTime} - ${config.workingHours.endTime}`}</td>
+                                                <td>{config.phone || '-'}</td>
+                                                <td >
+                                                    <span className="zavod-nomi-ustun">
+                                                        <Zap className="zavod-jadval-ikonka" />
+                                                        {config.electricityPrice} so'm
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span className="zavod-nomi-ustun">
+                                                        <Flame className="zavod-jadval-ikonka" />
+                                                        {config.methaneGasPrice} so'm
+                                                    </span>
+                                                </td>
+
+                                                <td>{config.bitumenMarkFive.profitMargin}%    </td>
+                                                <td>{config.ruberoidBlackPaper.profitMargin}% </td>
+                                                <td>
+                                                    <span className="zavod-nomi-ustun">
+                                                        <button
+                                                            className="zavod-tahrir-tugma"
+                                                            onClick={() => handleEdit(config)}
+                                                            title="Tahrirlash"
+                                                            disabled={isDeleting}
+                                                        >
+                                                            <Edit3 className="zavod-amal-ikonka" />
+                                                        </button>
+                                                        <button
+                                                            className="zavod-ochir-tugma"
+                                                            onClick={() => handleDelete(config._id)}
+                                                            title="O'chirish"
+                                                            disabled={isDeleting}
+                                                        >
+                                                            <Trash2 className="zavod-amal-ikonka" />
+                                                        </button>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </>
     );
 };
 
-export default ClinicManagement;
+export default FactoryConfigPanel;

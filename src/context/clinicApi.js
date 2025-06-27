@@ -1,40 +1,58 @@
 import { api } from "./api";
 
-export const clinicApi = api.injectEndpoints({
+export const factoryApi = api.injectEndpoints({
     endpoints: (builder) => ({
-        getClinics: builder.query({
-            query: () => '/clinic/info',
-            providesTags: ['Clinics'],
-        }),
-        createClinic: builder.mutation({
-            query: (clinicData) => ({
-                url: '/clinic/create',
+        // Create a new factory configuration
+        createFactory: builder.mutation({
+            query: (factoryData) => ({
+                url: '/factory',
                 method: 'POST',
-                body: clinicData,
+                body: factoryData,
             }),
-            invalidatesTags: ['Clinics'],
+            invalidatesTags: ['Factory'],
         }),
-        updateClinic: builder.mutation({
-            query: ({ id, ...clinicData }) => ({
-                url: `/clinic/update/${id}`,
+
+        // Get all factory configurations
+        getFactories: builder.query({
+            query: () => '/factory',
+            providesTags: ['Factory'],
+        }),
+
+        // Get single factory configuration by ID
+        getFactoryById: builder.query({
+            query: (id) => `/factory/${id}`,
+            providesTags: (result, error, id) => [{ type: 'Factory', id }],
+        }),
+
+        // Update factory configuration
+        updateFactory: builder.mutation({
+            query: ({ id, ...factoryData }) => ({
+                url: `/factory/${id}`,
                 method: 'PUT',
-                body: clinicData,
+                body: factoryData,
             }),
-            invalidatesTags: ['Clinics'],
+            invalidatesTags: (result, error, { id }) => [
+                { type: 'Factory', id },
+                'Factory',
+            ],
         }),
-        deleteClinic: builder.mutation({
+
+        // Delete factory configuration
+        deleteFactory: builder.mutation({
             query: (id) => ({
-                url: `/clinic/delete/${id}`, // Assuming a delete endpoint exists
+                url: `/factory/${id}`,
                 method: 'DELETE',
             }),
-            invalidatesTags: ['Clinics'],
+            invalidatesTags: ['Factory'],
         }),
     }),
 });
 
+// Export hooks for usage in components
 export const {
-    useGetClinicsQuery,
-    useCreateClinicMutation,
-    useUpdateClinicMutation,
-    useDeleteClinicMutation,
-} = clinicApi;
+    useCreateFactoryMutation,
+    useGetFactoriesQuery,
+    useGetFactoryByIdQuery,
+    useUpdateFactoryMutation,
+    useDeleteFactoryMutation,
+} = factoryApi;

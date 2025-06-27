@@ -1,7 +1,12 @@
 .product_norma {
+  padding: 10px;
+}
+
+.product_norma {
   svg {
     font-size: 19px;
   }
+
   .norma_actions {
     display: flex;
     align-items: center;
