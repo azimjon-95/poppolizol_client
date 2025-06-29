@@ -32,6 +32,17 @@ export const ProductionSystemApi = api.injectEndpoints({
             transformResponse: (response) => response.innerData, // Extract innerData from response
             invalidatesTags: ["FinishedProducts", "ProductionHistory"], // Invalidate related caches
         }),
+
+        //router.post("/production/bn5"
+        createBn5Production: builder.mutation({
+            query: (data) => ({
+                url: "/production/bn5",
+                method: "POST",
+                body: data,
+            }),
+            transformResponse: (response) => response.innerData, // Extract innerData from response
+            invalidatesTags: ["FinishedProducts", "ProductionHistory"], // Invalidate related caches
+        }),
     }),
 });
 
@@ -40,4 +51,5 @@ export const {
     useGetFinishedProductsQuery,
     useGetProductionHistoryQuery,
     useStartProductionProcessMutation,
+    useCreateBn5ProductionMutation
 } = ProductionSystemApi;

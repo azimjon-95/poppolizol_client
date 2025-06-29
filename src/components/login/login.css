@@ -15,6 +15,13 @@
     --bpf-transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
+.Toastify__toast {
+    font-family: 'YourFont', sans-serif;
+    background-color: #1a202c;
+    color: #fff;
+    border-radius: 8px;
+}
+
 /* Main Container Styles */
 .bpf-authentication-wrapper {
     min-height: 100vh;

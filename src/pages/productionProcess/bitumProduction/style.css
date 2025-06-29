@@ -102,6 +102,28 @@
     color: #333;
 }
 
+.bitum-input {
+    width: 100%;
+    display: flex;
+    align-items: end;
+    gap: 5px;
+}
+
+.bitum-input>button {
+    padding: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    height: 108px;
+    font-weight: bold;
+}
+
+.bitum-input>button:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
 .bitum-input-grid {
     display: flex;
     flex-wrap: wrap;
@@ -116,10 +138,12 @@
     min-width: 0;
     /* Prevent overflow */
 }
+
 .price-info {
     font-size: 0.8em;
     color: #666;
 }
+
 .bitum-input-flex {
     width: 100%;
     display: flex;
@@ -151,6 +175,7 @@
 
 .bitum-action-button {
     width: 100%;
+    min-width: 130px;
     padding: 12px;
     color: white;
     border: none;
@@ -159,9 +184,17 @@
     font-weight: bold;
     cursor: pointer;
     display: flex;
+    text-wrap: nowrap;
     align-items: center;
     justify-content: center;
     gap: 10px;
+}
+
+.bitum-input-groupBox {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .bitum-bn3-action {
@@ -360,4 +393,36 @@
 .bitum-packaging-details p {
     margin: 5px 0;
     color: #333;
+}
+
+
+
+
+/*=========================================*/
+
+
+.bitum-packaging-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.bitum-packaging-buttons button {
+    padding: 8px 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.bitum-packaging-buttons button.active {
+    background-color: #059669;
+    color: white;
+    border-color: #059669;
+}
+
+.bitum-select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
 }

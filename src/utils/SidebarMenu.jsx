@@ -3,6 +3,7 @@ import { FaWarehouse, FaUsers, FaMoneyBillWave } from "react-icons/fa";
 import { BiCategoryAlt } from "react-icons/bi";
 import { GiFactory } from "react-icons/gi";
 import { IoSettingsOutline } from "react-icons/io5";
+import { FaTruckMoving } from "react-icons/fa";
 
 export const menuItems = {
   director: [
@@ -42,7 +43,7 @@ export const menuItems = {
       label: "Sozlamalar",
     },
     {
-      icon: <IoSettingsOutline size={20} />,
+      icon: <FaTruckMoving size={20} />,
       path: "/sales",
       label: "Sotuv bo'limi",
     },
