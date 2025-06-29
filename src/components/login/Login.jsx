@@ -1,12 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { message } from "antd";
 import { setCredentials } from "../../context/actions/authSlice";
 import { useNavigate } from "react-router-dom";
-import Loading from './Loading'
+import Loading from "./Loading";
 import axios from "../../api";
-import { Eye, EyeOff, Factory, Shield, User, Lock, ArrowRight } from 'lucide-react';
-import './login.css';
+import {
+  Eye,
+  EyeOff,
+  Factory,
+  Shield,
+  User,
+  Lock,
+  ArrowRight,
+} from "lucide-react";
+import "./login.css";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,12 +24,15 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { isAuthenticated, role } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({
-    username: localStorage.getItem('rememberedUsername') || '',
-    password: localStorage.getItem('rememberedPassword') || ''
+    username: localStorage.getItem("rememberedUsername") || "",
+    password: localStorage.getItem("rememberedPassword") || "",
   });
 
   useEffect(() => {
-    if (localStorage.getItem('rememberedUsername') && localStorage.getItem('rememberedPassword')) {
+    if (
+      localStorage.getItem("rememberedUsername") &&
+      localStorage.getItem("rememberedPassword")
+    ) {
       setRememberMe(true);
     }
   }, []);
@@ -29,15 +40,15 @@ const Login = () => {
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handleRememberMeChange = (e) => {
     setRememberMe(e.target.checked);
     if (!e.target.checked) {
-      localStorage.removeItem('rememberedUsername');
-      localStorage.removeItem('rememberedPassword');
+      localStorage.removeItem("rememberedUsername");
+      localStorage.removeItem("rememberedPassword");
     }
   };
 
@@ -46,12 +57,9 @@ const Login = () => {
     if (isAuthenticated && role) {
       const getDefaultRoute = (userRole) => {
         const roleRoutes = {
-          'admin': '/admin',
-          'director': '/director',
-          'doctor': '/doctor',
-          'nurse': '/nurse'
+          manager: "/manager",
         };
-        return roleRoutes[userRole] || '/dashboard';
+        return roleRoutes[userRole] || "/director";
       };
 
       navigate(getDefaultRoute(role), { replace: true });
@@ -59,7 +67,7 @@ const Login = () => {
   }, [isAuthenticated, role, navigate]);
 
   const clearForm = () => {
-    setFormData({ username: '', password: '' });
+    setFormData({ username: "", password: "" });
     setShowPassword(false);
   };
 
@@ -76,13 +84,15 @@ const Login = () => {
     try {
       const res = await axios.post("/admin/login", {
         login: formData.username.trim(),
-        password: formData.password.trim()
+        password: formData.password.trim(),
       });
 
       const { message: successMessage, innerData } = res.data;
 
       // Store doctor name for backward compatibility
-      const doctorName = `${innerData?.admin.firstName || ''} ${innerData?.admin.lastName || ''}`.trim();
+      const doctorName = `${innerData?.employee?.firstName || ""} ${
+        innerData?.employee?.lastName || ""
+      }`.trim();
       localStorage.setItem("doctor", doctorName);
 
       // Save credentials to localStorage if "Remember Me" is checked
@@ -92,11 +102,13 @@ const Login = () => {
       }
 
       // Dispatch credentials to Redux store
-      dispatch(setCredentials({
-        adminFullname: doctorName,
-        role: innerData?.admin.role,
-        token: innerData?.token
-      }));
+      dispatch(
+        setCredentials({
+          adminFullname: doctorName,
+          role: innerData?.employee?.role,
+          token: innerData?.token,
+        })
+      );
 
       message.success(successMessage || "Muvaffaqiyatli tizimga kirdingiz!");
 
@@ -104,11 +116,11 @@ const Login = () => {
       clearForm();
 
       // Navigate to appropriate route based on role
-      const defaultRoute = getDefaultRoute(innerData?.admin.role);
-      navigate(defaultRoute, { replace: true });
-
+      // const defaultRoute = getDefaultRoute(innerData?.employee?.role);
+      // navigate(defaultRoute, { replace: true });
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Tizimga kirishda xatolik yuz berdi!";
+      const errorMessage =
+        error.response?.data?.message || "Tizimga kirishda xatolik yuz berdi!";
       message.error(errorMessage);
       console.error("Login error:", error);
     } finally {
@@ -117,7 +129,7 @@ const Login = () => {
   };
 
   if (loading) {
-    return <Loading />
+    return <Loading />;
   }
 
   return (
@@ -146,9 +158,7 @@ const Login = () => {
           <div className="bpf-corporate-logo-container">
             <Factory className="w-10 h-10 text-white" />
           </div>
-          <h1 className="bpf-company-title-primary">
-            POP POLIZOL
-          </h1>
+          <h1 className="bpf-company-title-primary">POP POLIZOL</h1>
           <p className="bpf-system-description-subtitle">
             CRM Boshqaruv Tizimi
           </p>
@@ -189,7 +199,7 @@ const Login = () => {
                   <Lock className="w-5 h-5" />
                 </div>
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
                   value={formData.password}
@@ -203,7 +213,11 @@ const Login = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="bpf-password-visibility-toggle-button"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
