@@ -7,8 +7,8 @@ import Norma from "../pages/productNorma/ProductNormaMain";
 import ProductionSystem from "../pages/productionProcess/ProductionSystem";
 import FactoryConfigPanel from "../pages/admin/setting/Setting";
 import ExpenseTracker from "../pages/reseption/expense/ExpenseManager";
-import SalaryManagement from "../pages/reseption/salary/SalaryManagement"
-import FactorySalesSystem from "../pages/reseption/salesDepartment/SalesDepartment"
+import SalaryManagement from "../pages/reseption/salary/SalaryManagement";
+import FactorySalesSystem from "../pages/reseption/salesDepartment/SalesDepartment";
 
 export const routes = [
   {
@@ -26,50 +26,49 @@ export const routes = [
   {
     path: "/expense",
     element: <ExpenseManager />,
-    role: ["reception", "director"],
+    role: ["director"],
     private: true,
   },
   {
     path: "/warehouse",
     element: <Materials />,
-    role: ["reception", "director"],
+    role: ["director"],
     private: true,
   },
   {
     path: "/norma",
     element: <Norma />,
-    role: ["reception", "director"],
+    role: ["director"],
     private: true,
   },
   {
     path: "/production",
     element: <ProductionSystem />,
-    role: ["reception", "director"],
+    role: ["director"],
     private: true,
   },
   {
     path: "/setting",
     element: <FactoryConfigPanel />,
-    role: ["reception", "director"],
+    role: ["director"],
     private: true,
   },
   {
     path: "/expense",
     element: <ExpenseTracker />,
-    role: ["reception", "director"],
+    role: ["director"],
     private: true,
   },
   {
     path: "/salary",
     element: <SalaryManagement />,
-    role: ["reception", "director"],
+    role: ["director"],
     private: true,
   },
   {
     path: "/sales",
     element: <FactorySalesSystem />,
-    role: ["reception", "director"],
+    role: ["director"],
     private: true,
   },
-
 ];

@@ -40,8 +40,7 @@ function App() {
   const getDefaultRoute = (userRole) => {
     const roleRoutes = {
       director: "/director",
-      doctor: "/doctor",
-      reception: "/reception",
+      manager: "/manager",
     };
     return roleRoutes[userRole] || "/dashboard";
   };
