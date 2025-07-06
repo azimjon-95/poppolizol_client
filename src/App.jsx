@@ -67,9 +67,11 @@ function App() {
         )}
 
         <Routes>
+          {/* Routes wrapped in Layout */}
           <Route element={<Layout />}>
-            {routes.map(
-              ({ path, element, private: isPrivate, role: requiredRole }) => (
+            {routes
+              .filter((route) => route.path !== "/feedback") // Exclude feedback route
+              .map(({ path, element, private: isPrivate, role: requiredRole }) => (
                 <Route
                   key={path}
                   path={path}
@@ -81,9 +83,16 @@ function App() {
                     )
                   }
                 />
-              )
-            )}
+              ))}
           </Route>
+
+          {/* Feedback route without Layout */}
+          <Route
+            path="/feedback"
+            element={
+              routes.find((route) => route.path === "/feedback").element
+            }
+          />
 
           {/* Redirect login attempts to user's default route */}
           <Route
@@ -107,11 +116,17 @@ function App() {
     );
   }
 
-  // If not authenticated, show login page only
+  // If not authenticated, show login page or feedback page
   return (
     <div className="app">
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route
+          path="/feedback"
+          element={
+            routes.find((route) => route.path === "/feedback").element
+          }
+        />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </div>

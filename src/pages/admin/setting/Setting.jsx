@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Factory, Clock, Zap, Flame, Coins, Package, Settings, Save, List, Plus, Trash2, Edit3, Phone } from 'lucide-react';
+import { Factory, Clock, Zap, Flame, Coins, Package, Settings, Save, List, Plus, Trash2, Edit3, Phone, Percent, MessageSquare } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './style.css';
@@ -14,10 +14,12 @@ const initialFormData = {
     factoryName: '',
     location: '',
     capacity: '',
-    workingHours: { startTime: '', endTime: '' },
     phone: '',
+    workingHours: { startTime: '', endTime: '' },
     electricityPrice: '',
     methaneGasPrice: '',
+    telegramApiUrl: { botToken: '', chatId: '' },
+    nds: '',
     bitumenMarkFive: { costPrice: '', profitMargin: '' },
     ruberoidBlackPaper: { costPrice: '', profitMargin: '' },
     otherInfo: '',
@@ -58,6 +60,7 @@ const FactoryConfigPanel = () => {
                 ...formData,
                 electricityPrice: Number(formData.electricityPrice),
                 methaneGasPrice: Number(formData.methaneGasPrice),
+                nds: Number(formData.nds),
                 bitumenMarkFive: {
                     costPrice: Number(formData.bitumenMarkFive.costPrice),
                     profitMargin: Number(formData.bitumenMarkFive.profitMargin),
@@ -91,6 +94,7 @@ const FactoryConfigPanel = () => {
             ...config,
             electricityPrice: String(config.electricityPrice),
             methaneGasPrice: String(config.methaneGasPrice),
+            nds: String(config.nds),
             bitumenMarkFive: {
                 costPrice: String(config.bitumenMarkFive.costPrice),
                 profitMargin: String(config.bitumenMarkFive.profitMargin),
@@ -105,7 +109,6 @@ const FactoryConfigPanel = () => {
     };
 
     const handleDelete = (id) => {
-        // Create a custom toast with confirm/cancel buttons
         const toastId = toast(
             <div>
                 <p>Haqiqatan ham o'chirmoqchimisiz?</p>
@@ -156,7 +159,6 @@ const FactoryConfigPanel = () => {
         );
     };
 
-    // Show error toast if fetching factories fails
     if (error) {
         toast.error(`Ma'lumotlarni yuklashda xato: ${error.message || 'Server xatosi'}`, {
             toastId: 'fetch-error',
@@ -282,17 +284,18 @@ const FactoryConfigPanel = () => {
                                                     value={formData.phone}
                                                     onChange={(e) => handleInputChange(e, 'phone')}
                                                     placeholder="+998901234567"
+                                                    required
                                                 />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Energy Prices */}
+                                {/* Energy and Tax Prices */}
                                 <div className="zavod-karta-blok">
                                     <div className="zavod-karta-sarlavha">
                                         <Zap className="zavod-karta-ikonka" />
-                                        <h3>Energiya Narxlari</h3>
+                                        <h3>Energiya va Soliq Narxlari</h3>
                                     </div>
                                     <div className="zavod-input-grid">
                                         <div className="zavod-input-guruh">
@@ -327,6 +330,57 @@ const FactoryConfigPanel = () => {
                                                 />
                                                 <span className="zavod-valyuta-belgi">so'm</span>
                                             </div>
+                                        </div>
+                                        <div className="zavod-input-guruh">
+                                            <label className="zavod-yorliq">
+                                                <Percent className="zavod-inline-ikonka" />
+                                                NDS Foizi
+                                            </label>
+                                            <div className="zavod-narx-input">
+                                                <input
+                                                    type="number"
+                                                    className="zavod-input-maydoni"
+                                                    value={formData.nds}
+                                                    onChange={(e) => handleInputChange(e, 'nds')}
+                                                    placeholder="0"
+                                                    required
+                                                    min="0"
+                                                    max="100"
+                                                />
+                                                <span className="zavod-valyuta-belgi">%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Telegram Integration */}
+                                <div className="zavod-karta-blok">
+                                    <div className="zavod-karta-sarlavha">
+                                        <MessageSquare className="zavod-karta-ikonka" />
+                                        <h3>Telegram Integratsiyasi</h3>
+                                    </div>
+                                    <div className="zavod-input-grid">
+                                        <div className="zavod-input-guruh">
+                                            <label className="zavod-yorliq">Bot Token</label>
+                                            <input
+                                                type="text"
+                                                className="zavod-input-maydoni"
+                                                value={formData.telegramApiUrl?.botToken}
+                                                onChange={(e) => handleInputChange(e, 'telegramApiUrl.botToken')}
+                                                placeholder="Bot tokenini kiriting"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="zavod-input-guruh">
+                                            <label className="zavod-yorliq">Chat ID</label>
+                                            <input
+                                                type="text"
+                                                className="zavod-input-maydoni"
+                                                value={formData.telegramApiUrl?.chatId}
+                                                onChange={(e) => handleInputChange(e, 'telegramApiUrl.chatId')}
+                                                placeholder="Chat ID ni kiriting"
+                                                required
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -479,6 +533,8 @@ const FactoryConfigPanel = () => {
                                             <th>Tel</th>
                                             <th>Elektr Narxi</th>
                                             <th>Gaz Narxi</th>
+                                            <th>NDS</th>
+                                            <th>Telegram Bot</th>
                                             <th>Bitum Foyda</th>
                                             <th>Ruberoid Foyda</th>
                                             <th>Amallar</th>
@@ -497,7 +553,7 @@ const FactoryConfigPanel = () => {
                                                 <td>{config.capacity}</td>
                                                 <td>{`${config.workingHours.startTime} - ${config.workingHours.endTime}`}</td>
                                                 <td>{config.phone || '-'}</td>
-                                                <td >
+                                                <td>
                                                     <span className="zavod-nomi-ustun">
                                                         <Zap className="zavod-jadval-ikonka" />
                                                         {config.electricityPrice} so'm
@@ -509,9 +565,20 @@ const FactoryConfigPanel = () => {
                                                         {config.methaneGasPrice} so'm
                                                     </span>
                                                 </td>
-
-                                                <td>{config.bitumenMarkFive.profitMargin}%    </td>
-                                                <td>{config.ruberoidBlackPaper.profitMargin}% </td>
+                                                <td>
+                                                    <span className="zavod-nomi-ustun">
+                                                        <Percent className="zavod-jadval-ikonka" />
+                                                        {config.nds}%
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span className="zavod-nomi-ustun">
+                                                        <MessageSquare className="zavod-jadval-ikonka" />
+                                                        {config.telegramApiUrl?.chatId}
+                                                    </span>
+                                                </td>
+                                                <td>{config.bitumenMarkFive.profitMargin}%</td>
+                                                <td>{config.ruberoidBlackPaper.profitMargin}%</td>
                                                 <td>
                                                     <span className="zavod-nomi-ustun">
                                                         <button

@@ -9,6 +9,7 @@ import FactoryConfigPanel from "../pages/admin/setting/Setting";
 import ExpenseTracker from "../pages/reseption/expense/ExpenseManager";
 import SalaryManagement from "../pages/reseption/salary/SalaryManagement";
 import FactorySalesSystem from "../pages/reseption/salesDepartment/SalesDepartment";
+import QRFeedbackPage from '../pages/reseption/salesDepartment/QRFeedbackPage';
 
 export const routes = [
   {
@@ -70,5 +71,11 @@ export const routes = [
     element: <FactorySalesSystem />,
     role: ["director"],
     private: true,
+  },
+  {
+    path: "/feedback",
+    element: <QRFeedbackPage />,
+    role: [""],
+    private: false,
   },
 ];

@@ -451,6 +451,9 @@ const WarehouseManagement = () => {
                   <Option value="BN-3">BN-3</Option>
                   <Option value="BN-5">BN-5</Option>
                   <Option value="Mel">Mel</Option>
+                  <Option value="ip">Ip</Option>
+                  <Option value="kraf">Kraf qog'oz</Option>
+                  <Option value="qop">Qop</Option>
                   <Option value="Others">Boshqalar</Option>
                 </Select>
               </Form.Item>
@@ -660,6 +663,9 @@ const WarehouseManagement = () => {
                     <Option value="BN-3">BN-3</Option>
                     <Option value="BN-5">BN-5</Option>
                     <Option value="Mel">Mel</Option>
+                    <Option value="ip">Ip</Option>
+                    <Option value="kraf">Kraf qog'oz</Option>
+                    <Option value="qop">Qop</Option>
                     <Option value="Others">Boshqalar</Option>
                   </Select>
                 </Col>

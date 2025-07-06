@@ -43,6 +43,26 @@ export const ProductionSystemApi = api.injectEndpoints({
             transformResponse: (response) => response.innerData, // Extract innerData from response
             invalidatesTags: ["FinishedProducts", "ProductionHistory"], // Invalidate related caches
         }),
+
+        //router.post("/production/salesBN5",
+        productionForSalesBN5: builder.mutation({
+            query: (data) => ({
+                url: "/production/salesBN5",
+                method: "POST",
+                body: data,
+            }),
+            transformResponse: (response) => response.innerData, // Extract innerData from response
+            invalidatesTags: ["FinishedProducts", "ProductionHistory"], // Invalidate related caches
+        }),
+
+        // router.get("/production/inventory",
+        getInventory: builder.query({
+            query: () => ({
+                url: "/inventory",
+                method: "GET",
+            }),
+            providesTags: ["Inventory"], // For cache invalidation
+        }),
     }),
 });
 
@@ -51,5 +71,7 @@ export const {
     useGetFinishedProductsQuery,
     useGetProductionHistoryQuery,
     useStartProductionProcessMutation,
-    useCreateBn5ProductionMutation
+    useCreateBn5ProductionMutation,
+    useGetInventoryQuery,
+    useProductionForSalesBN5Mutation
 } = ProductionSystemApi;

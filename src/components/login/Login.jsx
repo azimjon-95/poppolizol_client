@@ -90,10 +90,10 @@ const Login = () => {
       const { message: successMessage, innerData } = res.data;
 
       // Store doctor name for backward compatibility
-      const doctorName = `${innerData?.employee?.firstName || ""} ${
-        innerData?.employee?.lastName || ""
-      }`.trim();
+      const doctorName = `${innerData?.employee?.firstName || ""} ${innerData?.employee?.lastName || ""
+        }`.trim();
       localStorage.setItem("doctor", doctorName);
+      localStorage.setItem("workerId", innerData?.employee?._id);
 
       // Save credentials to localStorage if "Remember Me" is checked
       if (rememberMe) {

@@ -16,6 +16,14 @@ function AddProductNorma() {
     useCreateNormaMutation();
 
   const onFinish = async (values) => {
+    const cost = {
+      productionCost: 25300,     // bitta mahsulot uchun umumiy ishlab chiqarish narxi
+      gasPerUnit: 90,            // bitta mahsulot uchun gaz sarfi
+      electricityPerUnit: 100,   // bitta mahsulot uchun elektr sarfi
+    };
+
+    values.cost = cost;
+
     try {
       const res = await createProductNorma(values).unwrap();
       toast.success(res.message);
