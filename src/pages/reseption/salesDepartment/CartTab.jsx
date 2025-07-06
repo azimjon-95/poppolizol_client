@@ -4,7 +4,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { ShoppingCart, Minus, Plus, FileText, Factory } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 import { useGetFactoriesQuery } from '../../../context/clinicApi';
-import { use } from '../../../context/cartSaleApi';
+// import { use } from '../../../context/cartSaleApi'; 4454
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './style.css';
