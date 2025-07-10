@@ -9,7 +9,9 @@ import FactoryConfigPanel from "../pages/admin/setting/Setting";
 import ExpenseTracker from "../pages/reseption/expense/ExpenseManager";
 import SalaryManagement from "../pages/reseption/salary/SalaryManagement";
 import FactorySalesSystem from "../pages/reseption/salesDepartment/SalesDepartment";
-import QRFeedbackPage from '../pages/reseption/salesDepartment/QRFeedbackPage';
+import QRFeedbackPage from "../pages/reseption/salesDepartment/QRFeedbackPage";
+import Atendance from "../pages/attendance/Atendance";
+import Salary from "../pages/salary/Salary";
 
 export const routes = [
   {
@@ -60,12 +62,12 @@ export const routes = [
     role: ["director"],
     private: true,
   },
-  {
-    path: "/salary",
-    element: <SalaryManagement />,
-    role: ["director"],
-    private: true,
-  },
+  // {
+  //   path: "/salary",
+  //   element: <SalaryManagement />,
+  //   role: ["director"],
+  //   private: true,
+  // },
   {
     path: "/sales",
     element: <FactorySalesSystem />,
@@ -77,5 +79,17 @@ export const routes = [
     element: <QRFeedbackPage />,
     role: [""],
     private: false,
+  },
+  {
+    path: "/attendance",
+    element: <Atendance />,
+    role: ["director"],
+    private: true,
+  },
+  {
+    path: "/Salary",
+    element: <Salary />,
+    role: ["director"],
+    private: true,
   },
 ];

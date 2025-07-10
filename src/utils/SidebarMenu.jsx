@@ -4,6 +4,7 @@ import { BiCategoryAlt } from "react-icons/bi";
 import { GiFactory } from "react-icons/gi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaTruckMoving } from "react-icons/fa";
+import { CalendarOutlined } from "@ant-design/icons";
 
 export const menuItems = {
   director: [
@@ -46,6 +47,16 @@ export const menuItems = {
       icon: <FaTruckMoving size={20} />,
       path: "/sales",
       label: "Sotuv bo'limi",
+    },
+    {
+      icon: <CalendarOutlined size={20} />,
+      path: "/attendance",
+      label: "Davomat",
+    },
+    {
+      icon: <CalendarOutlined size={20} />,
+      path: "/salary",
+      label: "Maoshlar",
     },
   ],
 };
