@@ -2,16 +2,39 @@ import { api } from "./api";
 
 export const attendanceApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    getDailyReport: builder.query({
-      query: (date) => `/daily-report?date=${date}`,
-      transformResponse: (response) => response.data,
+    // ✅ Hodimning davomat tarixini olish (query params bilan)
+    getEmployeeHistory: builder.query({
+      query: ({ employeeId, startDate, endDate }) => {
+        let url = `/attendance?employeeId=${employeeId}`;
+        if (startDate && endDate) {
+          url += `&startDate=${startDate}&endDate=${endDate}`;
+        }
+        return url;
+      },
+      transformResponse: (response) => response.innerData,
     }),
 
-    // get('/employee-history/:employee_id',
-    getEmployeeHistory: builder.query({
-      query: (employeeId) => `/employee-history/${employeeId}`,
-      transformResponse: (response) => response.data,
+    // ✅ Barcha hodimlarning davomatlari (ikki sana oralig‘ida)
+    getAllAttendance: builder.query({
+      query: ({ startDate, endDate }) =>
+        `/attendance/all?startDate=${startDate}&endDate=${endDate}`,
+      transformResponse: (response) => response.innerData,
+    }),
+
+    // ✅ Davomat yaratish yoki yangilash
+    markAttendance: builder.mutation({
+      query: (data) => ({
+        url: "/attendance",
+        method: "POST",
+        body: data,
+      }),
+      transformResponse: (response) => response.innerData,
     }),
   }),
 });
-export const { useGetDailyReportQuery, getEmployeeHistory } = attendanceApi;
+
+export const {
+  useGetEmployeeHistoryQuery,
+  useGetAllAttendanceQuery,
+  useMarkAttendanceMutation,
+} = attendanceApi;

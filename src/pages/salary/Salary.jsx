@@ -1,0 +1,99 @@
+import React from "react";
+import { Card } from "antd";
+import { useGetAllSalaryQuery } from "../../context/salaryApi";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
+import "./Salary.css";
+
+function Salary() {
+  const { data } = useGetAllSalaryQuery();
+
+  // UTC kunlar
+  const today = dayjs().utc();
+  const startOfMonth = today.startOf("month");
+  const totalDays = startOfMonth.daysInMonth();
+  const daysOfMonth = Array.from({ length: totalDays }, (_, i) =>
+    startOfMonth.add(i, "day").format("YYYY-MM-DD")
+  );
+
+  // Mapping
+  const productionMap = {};
+  const employeeMap = {};
+
+  data?.forEach((record) => {
+    const dateKey = dayjs(record.date).utc().format("YYYY-MM-DD");
+
+    if (!productionMap[dateKey]) {
+      productionMap[dateKey] = { produced: 0, loaded: 0 };
+    }
+    productionMap[dateKey].produced += record.producedCount;
+    productionMap[dateKey].loaded += record.loadedCount;
+
+    record.workers.forEach((worker) => {
+      const fio = `${worker.employee.lastName} ${worker.employee.firstName}`;
+      const position = worker?.employee?.position || "N/A";
+
+      if (!employeeMap[fio]) {
+        employeeMap[fio] = { position, days: {} };
+      }
+      employeeMap[fio].position = position; // har ehtimolga
+      employeeMap[fio].days[dateKey] =
+        (employeeMap[fio].days[dateKey] || 0) + worker.amount;
+    });
+  });
+
+  return (
+    <Card className="salary-card" title="Ish haqi vedomosti">
+      <table border={1}>
+        <thead>
+          <tr>
+            <th rowSpan={3}>№</th>
+            <th rowSpan={3}>Ism Familiya</th>
+            {/* <th rowSpan={3}>Lavozim</th> */}
+            <th>Ishlab chiqarish</th>
+            {daysOfMonth.map((day) => (
+              <th key={`prod-${day}`}>{productionMap[day]?.produced || ""}</th>
+            ))}
+            <th rowSpan={3}>Jami hisoblandi</th>
+          </tr>
+          <tr>
+            <th>Sotuv</th>
+            {daysOfMonth.map((day) => (
+              <th key={`load-${day}`}>{productionMap[day]?.loaded || ""}</th>
+            ))}
+          </tr>
+          <tr>
+            <th>Sana</th>
+            {daysOfMonth.map((day) => (
+              <th key={`date-${day}`}>{day.slice(-2)}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(employeeMap).map(([fio, empObj], idx) => {
+            const total = daysOfMonth.reduce(
+              (sum, day) => sum + (empObj.days[day] || 0),
+              0
+            );
+            return (
+              <tr key={fio}>
+                <td>{idx + 1}</td>
+                <td>{fio}</td>
+                <td>{empObj.position}</td>
+                {daysOfMonth.map((day) => (
+                  <td key={`amount-${fio}-${day}`}>
+                    {empObj.days[day] ? empObj.days[day].toLocaleString() : ""}
+                  </td>
+                ))}
+                <td>{total ? total.toLocaleString() : ""}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </Card>
+  );
+}
+
+export default Salary;
