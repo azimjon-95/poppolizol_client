@@ -10,7 +10,7 @@ export const cartSaleApi = api.injectEndpoints({
                 method: 'POST',
                 body: saleData,
             }),
-            invalidatesTags: ['Sale'],
+            invalidatesTags: ['Sale', 'CustomerSales'],
         }),
 
         // Get a sale by ID
@@ -21,12 +21,15 @@ export const cartSaleApi = api.injectEndpoints({
 
         // Update a sale
         updateCartSale: builder.mutation({
-            query: ({ id, ...saleData }) => ({
+            query: ({ id, body }) => ({
                 url: `/sales/${id}`,
                 method: 'PUT',
-                body: saleData,
+                body,
             }),
-            invalidatesTags: (result, error, { id }) => [{ type: 'Sale', id }],
+            invalidatesTags: (result, error, { id }) => [
+                { type: 'Sale', id },
+                'CustomerSales',
+            ],
         }),
 
         // Delete a sale
@@ -35,26 +38,64 @@ export const cartSaleApi = api.injectEndpoints({
                 url: `/sales/${id}`,
                 method: 'DELETE',
             }),
-            invalidatesTags: ['Sale'],
-        }),
-
-        // Mark a sale as delivered
-        markAsDelivered: builder.mutation({
-            query: (id) => ({
-                url: `/sales/${id}/delivered`,
-                method: 'PATCH',
-            }),
-            invalidatesTags: (result, error, id) => [{ type: 'Sale', id }],
+            invalidatesTags: ['Sale', 'CustomerSales'],
         }),
 
         // Process debt payment
         payDebt: builder.mutation({
-            query: ({ id, ...paymentData }) => ({
+            query: ({ id, body }) => ({
                 url: `/sales/${id}/pay-debt`,
                 method: 'POST',
-                body: paymentData,
+                body,
             }),
-            invalidatesTags: (result, error, { id }) => [{ type: 'Sale', id }],
+            invalidatesTags: ['Sale', 'CustomerSales'],
+        }),
+
+        // Get filtered sales (by month for all customers)
+        getFilteredSales: builder.query({
+            query: (selectedMonth) => ({
+                url: '/filtered',
+                params: { month: selectedMonth },
+            }),
+            providesTags: ['Sale'],
+        }),
+
+        // Process product returns
+        returnProducts: builder.mutation({
+            query: ({ id, body }) => ({
+                url: `/sales/${id}/return`,
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: ['Sale', 'CustomerSales'],
+        }),
+
+        // Get sales filtered by customer, status, and optional month
+        getCustomerSales: builder.query({
+            query: ({ customerId, status, month }) => ({
+                url: '/sales/customer',
+                params: { customerId, status, month },
+            }),
+            providesTags: ['CustomerSales'],
+        }),
+
+        // Get completed sales for a specific customer
+        getCustomerCompletedSales: builder.query({
+            query: (customerId) => `/sales/customer/${customerId}/completed`,
+            providesTags: ['CustomerSales'],
+        }),
+
+        // Get active (unpaid/partially paid) sales for a specific customer
+        getCustomerActiveSales: builder.query({
+            query: (customerId) => `/sales/customer/${customerId}/active`,
+            providesTags: ['CustomerSales'],
+        }),
+
+
+        //'/sales/customerall
+        getCustomerAll: builder.query({
+            query: () => '/sales/customerall',
+            providesTags: ['CustomerSales'],
         }),
     }),
 });
@@ -65,6 +106,11 @@ export const {
     useGetSaleCartByIdQuery,
     useUpdateCartSaleMutation,
     useDeleteCartSaleMutation,
-    useMarkAsDeliveredMutation,
     usePayDebtMutation,
+    useGetFilteredSalesQuery,
+    useReturnProductsMutation,
+    useGetCustomerSalesQuery,
+    useGetCustomerCompletedSalesQuery,
+    useGetCustomerActiveSalesQuery,
+    useGetCustomerAllQuery
 } = cartSaleApi;

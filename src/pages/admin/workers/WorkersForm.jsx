@@ -72,6 +72,31 @@ const EmployeeModal = ({
         }
     }, [editingEmployee]);
 
+    // Telefon raqamni ko‘rsatishda formatlash: +998 90 123 45 67
+    const formatPhoneInput = (value) => {
+        let cleaned = value.replace(/\D/g, '').slice(0, 12); // Faqat raqamlar
+        if (cleaned.startsWith('998')) cleaned = cleaned.slice(3);
+        const parts = cleaned.match(/(\d{2})(\d{3})(\d{2})(\d{2})/);
+        return parts ? `+998 ${parts[1]} ${parts[2]} ${parts[3]} ${parts[4]}` : `+998 ${cleaned}`;
+    };
+
+    // Serverga yuborish uchun faqat raqam ko‘rinishida tozalash
+    const cleanPhoneNumber = (formatted) => {
+        return `+998${formatted.replace(/\D/g, '').slice(-9)}`;
+    };
+
+    // Telefon formatni tekshirish
+    const isValidPhone = (value) => /^\+998 \d{2} \d{3} \d{2} \d{2}$/.test(value);
+
+    // Pasport seriyani formatlash (katta harf + raqam)
+    const formatPassportSeries = (value) => {
+        return value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 9);
+    };
+
+    // Pasport seriya validatsiyasi: 2ta harf + 7ta raqam
+    const isValidPassportSeries = (value) => /^[A-Z]{2}[0-9]{7}$/.test(value);
+
+
     const handleInputChange = (field, value) => {
         setNewEmployee((prev) => ({ ...prev, [field]: value }));
     };
@@ -89,12 +114,29 @@ const EmployeeModal = ({
             return;
         }
 
+        if (!isValidPassportSeries(newEmployee.passportSeries)) {
+            toast.error("Pasport seriyasi noto‘g‘ri! Masalan: AB1234567");
+            return;
+        }
+
+        if (!isValidPhone(newEmployee.phone)) {
+            toast.error("Telefon raqam noto‘g‘ri! Masalan: +998 90 123 45 67");
+            return;
+        }
+
+        const cleanedEmployee = {
+            ...newEmployee,
+            passportSeries: newEmployee.passportSeries.toUpperCase(),
+            phone: cleanPhoneNumber(newEmployee.phone),
+        };
+
         if (editingEmployee) {
-            handleUpdateEmployee(newEmployee);
+            handleUpdateEmployee(cleanedEmployee);
         } else {
-            handleAddEmployee(newEmployee);
+            handleAddEmployee(cleanedEmployee);
         }
     };
+
 
     const handleClose = () => {
         setShowAddModal(false);
@@ -228,9 +270,9 @@ const EmployeeModal = ({
                                         <input
                                             type="text"
                                             value={newEmployee.passportSeries}
-                                            onChange={(e) => handleInputChange('passportSeries', e.target.value)}
+                                            onChange={(e) => handleInputChange('passportSeries', formatPassportSeries(e.target.value))}
                                             className="form-input-field"
-                                            placeholder="AA1234567"
+                                            placeholder="HA1234567"
                                         />
                                     </div>
                                 </div>
@@ -249,10 +291,10 @@ const EmployeeModal = ({
                                         </label>
                                         <input
                                             type="text"
-                                            value={newEmployee.phone}
-                                            onChange={(e) => handleInputChange('phone', e.target.value)}
+                                            value={formatPhoneInput(newEmployee.phone)}
+                                            onChange={(e) => handleInputChange('phone', formatPhoneInput(e.target.value))}
                                             className="form-input-field"
-                                            placeholder="+998901234567"
+                                            placeholder="+998 90 123 45 67"
                                         />
                                     </div>
                                     <div className="input-field-group">
@@ -403,3 +445,4 @@ const EmployeeModal = ({
 };
 
 export default EmployeeModal;
+

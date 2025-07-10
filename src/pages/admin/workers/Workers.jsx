@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, UserPlus, Filter, Edit, Trash2, Building, Shield, Clock, Key, Phone, MapPin, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useSelector } from 'react-redux';
+import { PhoneNumberFormat } from '../../../hook/NumberFormat';
 import './style.css';
 import EmployeeModal from './WorkersForm';
 import { useGetWorkersQuery, useAddWorkerMutation, useUpdateWorkerMutation, useDeleteWorkerMutation } from '../../../context/workersApi';
@@ -30,6 +31,7 @@ const RuberoidFactoryHR = () => {
         xavfsizlik: "Qo'riqlash xizmati",
         tozalash: "Tozalash xizmati",
         oshxona: "Ovqatlanish",
+        Sotuvchi: "Sotuvchi",
     };
 
     const paymentTypes = {
@@ -44,6 +46,7 @@ const RuberoidFactoryHR = () => {
         specialist: "Mutaxassis",
         warehouse: "Omborchi",
         accountant: "Buxgalter",
+        saler: "Sotuvchi",
     };
 
     useEffect(() => {
@@ -246,14 +249,6 @@ const RuberoidFactoryHR = () => {
         return <div className="ruberoid-factory-hr-container">Yuklanmoqda...</div>;
     }
 
-    // if (isError) {
-    //     return (
-    //         <div className="ruberoid-factory-hr-container">
-    //             Xatolik: {error?.data?.message || error.message}
-    //         </div>
-    //     );
-    // }
-
     return (
         <div className="ruberoid-factory-hr-container">
             <div className="hr-dashboard-header">
@@ -341,17 +336,17 @@ const RuberoidFactoryHR = () => {
                                         </span>
                                     </td>
                                     <td>{departments[employee.department]}</td>
-                                    <td>{employee.position}</td>
+                                    <td>{employee.position === "Required" ? "-" : employee.position}</td>
                                     <td>
                                         <span className="experience-badge">
                                             <Clock className="experience-icon" />
-                                            {employee.experience}
+                                            {employee.experience || 0}
                                         </span>
                                     </td>
                                     <td className="passport-series-cell">{employee.passportSeries}</td>
                                     <td className="phone-cell">
                                         <Phone className="phone-icon" />
-                                        {employee.phone}
+                                        {PhoneNumberFormat(employee.phone)}
                                     </td>
                                     <td className="address-cell">
                                         <MapPin className="address-icon" />

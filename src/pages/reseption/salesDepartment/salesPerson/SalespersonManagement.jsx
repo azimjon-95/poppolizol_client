@@ -1,480 +1,456 @@
 import React, { useState, useEffect } from 'react';
-import { User, TrendingUp, TrendingDown, AlertCircle, Check, Calendar, Phone, MapPin, Users, Activity, Filter, RefreshCw, Eye, X, Package, ShoppingCart } from 'lucide-react';
-// import './style.css';
+import { User, TrendingUp, TrendingDown, AlertCircle, Check, Calendar, Phone, MapPin, Users, Activity, Filter, RefreshCw, Eye, X, Plus, Edit, Trash2, Target } from 'lucide-react';
+import {
+    useGetSalesEmployeesQuery,
+    useGetAllPlansQuery,
+    useCreatePlanMutation,
+    useUpdatePlanMutation,
+    useDeletePlanMutation,
+} from '../../../../context/planSalesApi';
+import { PhoneNumberFormat } from '../../../../hook/NumberFormat';
+import './style.css';
 
-// Reusable PerformanceCell component
-const PerformanceCell = ({ actual, plan, unit = '', performanceClass, percentage }) => (
-    <td className="spdb-data-cell">
-        <div className="spdb-performance-cell">
-            <div className="spdb-performance-numbers">
-                <span className="spdb-actual-value">
-                    {unit === 'M' ? (actual / 1000000).toFixed(1) + unit : actual.toLocaleString()}
-                </span>
-                <span className="spdb-plan-value">
-                    / {unit === 'M' ? (plan / 1000000).toFixed(1) + unit : plan.toLocaleString() + (unit === 'kg' ? ' kg' : '')}
-                </span>
+// Optimized PerformanceCell component
+const PerformanceCell = React.memo(({ actual, plan, unit = '', className = '' }) => {
+    const percentage = plan > 0 ? Math.round((actual / plan) * 100) : 0;
+    const performanceClass = getPerformanceClass(percentage);
+
+    const formatNumber = (num) => {
+        if (unit === 'M') return `${(num / 1000000).toFixed(1)}M`;
+        if (unit === 'K') return `${(num / 1000).toFixed(1)}K`;
+        return num.toLocaleString();
+    };
+
+    return (
+        <td className={`sdash-data-cell ${className}`}>
+            <div className="sdash-performance-wrapper">
+                <div className="sdash-performance-numbers">
+                    <span className="sdash-actual-amount">{formatNumber(actual)}</span>
+                    <span className="sdash-target-amount"> / {formatNumber(plan)}</span>
+                </div>
+                <div className={`sdash-performance-bar ${performanceClass}`}>
+                    <div className="sdash-progress-fill" style={{ width: `${Math.min(percentage, 100)}%` }} />
+                </div>
+                <div className={`sdash-percentage-text ${performanceClass}`}>{percentage}%</div>
             </div>
-            <div className={`spdb-performance-bar ${performanceClass}`}>
-                <div
-                    className="spdb-progress-fill"
-                    style={{ width: `${Math.min(percentage, 100)}%` }}
-                ></div>
-            </div>
-            <div className="spdb-percentage-label">{percentage}%</div>
-        </div>
-    </td>
-);
+        </td>
+    );
+});
+
+// Performance class helper function
+const getPerformanceClass = (percentage) => {
+    if (percentage >= 100) return 'sdash-performance-excellent';
+    if (percentage >= 80) return 'sdash-performance-good';
+    if (percentage >= 60) return 'sdash-performance-average';
+    return 'sdash-performance-poor';
+};
 
 const SalespersonDashboard = () => {
-    const [salespeople, setSalespeople] = useState([]);
-    const [loading, setLoading] = useState(false);
     const [filterStatus, setFilterStatus] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
-    const [showActivityModal, setShowActivityModal] = useState(false);
-    const [selectedActivities, setSelectedActivities] = useState([]);
-    const [showSaleDetailModal, setShowSaleDetailModal] = useState(false);
-    const [selectedSaleDetail, setSelectedSaleDetail] = useState(null);
+    const [selectedMonth, setSelectedMonth] = useState(() => {
+        const date = new Date();
+        return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}`;
+    });
+    const [showPlanModal, setShowPlanModal] = useState(false);
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
+    const [editingPlan, setEditingPlan] = useState(null);
+    const [planForm, setPlanForm] = useState({
+        employeeId: '',
+        targetAmount: '',
+        month: selectedMonth,
+    });
+    const [formError, setFormError] = useState('');
 
+    // API hooks
+    const { data: salesEmployees = [], isLoading: employeesLoading, error: employeesError } = useGetSalesEmployeesQuery();
+    const { data: allPlans = [], isLoading: plansLoading, error: plansError, refetch: refetchPlans } = useGetAllPlansQuery();
+    const [createPlan] = useCreatePlanMutation();
+    const [updatePlan] = useUpdatePlanMutation();
+    const [deletePlan] = useDeletePlanMutation();
 
-    // Serverdan ma'lumot olish simulyatsiyasi
-    useEffect(() => {
-        const fetchSalespeopleData = async () => {
-            setLoading(true);
-            try {
-                const mockApiData = {
-                    salespeople: [
-                        {
-                            id: 1,
-                            name: "Azimjon Mamutaliyev",
-                            phone: "+998901234567",
-                            email: "azimjon@company.com",
-                            region: "Toshkent shahri",
-                            status: "active",
-                            joinDate: "2024-01-15",
-                            monthlyPlan: {
-                                totalAmount: 10000000
-                            },
-                            currentMonthSales: {
-                                totalAmount: 8500000,
-                                salesCount: 2,
-                                clientsCount: 8
-                            },
-                            previousMonthSales: {
-                                totalAmount: 9500000
-                            },
-                            recentActivity: [
-                                {
-                                    id: 1,
-                                    date: "2024-12-15",
-                                    client: "Alfa Group",
-                                    amount: 250000,
-                                    status: "completed",
-                                    products: [
-                                        { name: "Ko'mir qog'ozi", quantity: 50, unit: "dona", price: 3000 },
-                                        { name: "Betum", quantity: 25, unit: "kg", price: 4000 }
-                                    ]
-                                },
-                                {
-                                    id: 2,
-                                    date: "2024-12-14",
-                                    client: "Beta LLC",
-                                    amount: 180000,
-                                    status: "pending",
-                                    products: [
-                                        { name: "Ko'mir qog'ozi", quantity: 30, unit: "dona", price: 3000 },
-                                        { name: "Betum", quantity: 22.5, unit: "kg", price: 4000 }
-                                    ]
-                                },
-                                {
-                                    id: 3,
-                                    date: "2024-12-13",
-                                    client: "Gamma Co",
-                                    amount: 320000,
-                                    status: "completed",
-                                    products: [
-                                        { name: "Ko'mir qog'ozi", quantity: 80, unit: "dona", price: 3000 },
-                                        { name: "Betum", quantity: 40, unit: "kg", price: 4000 }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            id: 2,
-                            name: "Dilshod Rahimov",
-                            phone: "+998901234568",
-                            email: "dilshod@company.com",
-                            region: "Samarqand viloyati",
-                            status: "active",
-                            joinDate: "2024-02-20",
-                            monthlyPlan: {
-                                totalAmount: 8000000
-                            },
-                            currentMonthSales: {
-                                totalAmount: 9200000,
-                                salesCount: 15,
-                                clientsCount: 11
-                            },
-                            previousMonthSales: {
-                                totalAmount: 7800000
-                            },
-                            recentActivity: [
-                                {
-                                    id: 4,
-                                    date: "2024-12-15",
-                                    client: "Delta Industries",
-                                    amount: 400000,
-                                    status: "completed",
-                                    products: [
-                                        { name: "Ko'mir qog'ozi", quantity: 100, unit: "dona", price: 3000 },
-                                        { name: "Betum", quantity: 25, unit: "kg", price: 4000 }
-                                    ]
-                                },
-                                {
-                                    id: 5,
-                                    date: "2024-12-14",
-                                    client: "Epsilon Corp",
-                                    amount: 150000,
-                                    status: "completed",
-                                    products: [
-                                        { name: "Ko'mir qog'ozi", quantity: 35, unit: "dona", price: 3000 },
-                                        { name: "Betum", quantity: 15, unit: "kg", price: 4000 }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            id: 3,
-                            name: "Malika Yusupova",
-                            phone: "+998901234569",
-                            email: "malika@company.com",
-                            region: "Andijon viloyati",
-                            status: "inactive",
-                            joinDate: "2024-03-10",
-                            monthlyPlan: {
-                                totalAmount: 12000000
-                            },
-                            currentMonthSales: {
-                                totalAmount: 4800000,
-                                salesCount: 6,
-                                clientsCount: 4
-                            },
-                            previousMonthSales: {
-                                totalAmount: 11500000
-                            },
-                            recentActivity: [
-                                {
-                                    id: 6,
-                                    date: "2024-12-10",
-                                    client: "Zeta LLC",
-                                    amount: 120000,
-                                    status: "pending",
-                                    products: [
-                                        { name: "Ko'mir qog'ozi", quantity: 25, unit: "dona", price: 3000 },
-                                        { name: "Betum", quantity: 11.25, unit: "kg", price: 4000 }
-                                    ]
-                                },
-                                {
-                                    id: 7,
-                                    date: "2024-12-08",
-                                    client: "Eta Group",
-                                    amount: 200000,
-                                    status: "completed",
-                                    products: [
-                                        { name: "Ko'mir qog'ozi", quantity: 45, unit: "dona", price: 3000 },
-                                        { name: "Betum", quantity: 20, unit: "kg", price: 4000 }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            id: 4,
-                            name: "Bobur Karimov",
-                            phone: "+998901234570",
-                            email: "bobur@company.com",
-                            region: "Farg'ona viloyati",
-                            status: "active",
-                            joinDate: "2024-04-05",
-                            monthlyPlan: {
-                                totalAmount: 9000000
-                            },
-                            currentMonthSales: {
-                                totalAmount: 10800000,
-                                salesCount: 18,
-                                clientsCount: 13
-                            },
-                            previousMonthSales: {
-                                totalAmount: 8700000
-                            },
-                            recentActivity: [
-                                {
-                                    id: 8,
-                                    date: "2024-12-15",
-                                    client: "Theta Systems",
-                                    amount: 380000,
-                                    status: "completed",
-                                    products: [
-                                        { name: "Ko'mir qog'ozi", quantity: 95, unit: "dona", price: 3000 },
-                                        { name: "Betum", quantity: 22.5, unit: "kg", price: 4000 }
-                                    ]
-                                },
-                                {
-                                    id: 9,
-                                    date: "2024-12-14",
-                                    client: "Iota Partners",
-                                    amount: 290000,
-                                    status: "completed",
-                                    products: [
-                                        { name: "Ko'mir qog'ozi", quantity: 70, unit: "dona", price: 3000 },
-                                        { name: "Betum", quantity: 20, unit: "kg", price: 4000 }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                };
+    // Generate month options for the last 12 months and next 3 months
+    const generateMonthOptions = () => {
+        const months = [];
+        const currentDate = new Date();
 
-                setSalespeople(mockApiData.salespeople);
-                setLoading(false);
+        for (let i = 11; i >= 0; i--) {
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+            const monthStr = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}`;
+            months.push({
+                value: monthStr,
+                label: date.toLocaleDateString('uz-UZ', { year: 'numeric', month: 'long' }),
+            });
+        }
 
-            } catch (error) {
-                console.error("Ma'lumot olishda xatolik:", error);
-                setLoading(false);
-            }
-        };
+        for (let i = 1; i <= 3; i++) {
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth() + i, 1);
+            const monthStr = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}`;
+            months.push({
+                value: monthStr,
+                label: date.toLocaleDateString('uz-UZ', { year: 'numeric', month: 'long' }),
+            });
+        }
 
-        fetchSalespeopleData();
-    }, []);
+        return months;
+    };
 
-    // Filtrlash funksiyasi
-    const filteredSalespeople = salespeople.filter((salesperson) => {
-        const matchesStatus = filterStatus === 'all' || salesperson.status === filterStatus;
+    // Combine employee and plan data
+    const combineEmployeeData = () => {
+        if (!salesEmployees || !allPlans) return [];
+
+        return salesEmployees?.innerData?.map((employee) => {
+            const employeePlans = allPlans?.innerData?.filter((plan) => {
+                const employeeId = plan.employeeId?._id || plan.employeeId;
+                return employeeId === employee._id;
+            });
+
+            const currentPlan = employeePlans?.find((plan) => plan.month === selectedMonth);
+            const previousMonthPlan = employeePlans?.find((plan) => {
+                const prevMonth = getPreviousMonth(selectedMonth);
+                return plan.month === prevMonth;
+            });
+
+            return {
+                ...employee,
+                currentPlan: currentPlan || null,
+                previousPlan: previousMonthPlan || null,
+                allPlans: employeePlans,
+            };
+        });
+    };
+
+    // Get previous month string
+    const getPreviousMonth = (monthStr) => {
+        const [year, month] = monthStr.split('.');
+        const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+        date.setMonth(date.getMonth() - 1);
+        return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}`;
+    };
+
+    // Filter employees
+    const filteredEmployees = combineEmployeeData()?.filter((employee) => {
         const matchesSearch =
-            salesperson.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            salesperson.region.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesStatus && matchesSearch;
+            employee.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            employee.lastName.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesStatus =
+            filterStatus === 'all' ||
+            (filterStatus === 'active' && employee.currentPlan) ||
+            (filterStatus === 'inactive' && !employee.currentPlan);
+
+        return matchesSearch && matchesStatus;
     });
 
-    // Foiz hisoblaish
-    const calculatePercentage = (actual, plan) => {
-        return plan > 0 ? ((actual / plan) * 100).toFixed(1) : 0;
-    };
+    // Handle plan creation
+    const handleCreatePlan = async (e) => {
+        e.preventDefault();
+        if (!planForm.employeeId || !planForm.targetAmount || isNaN(planForm.targetAmount) || planForm.targetAmount <= 0) {
+            setFormError('Iltimos, barcha maydonlarni to\'g\'ri to\'ldiring');
+            return;
+        }
 
-    // Trend hisoblaish
-    const calculateTrend = (current, previous) => {
-        if (previous === 0) return 0;
-        return (((current - previous) / previous) * 100).toFixed(1);
-    };
-
-    // Holat belgisi
-    const getStatusBadge = (status) => {
-        switch (status) {
-            case 'active':
-                return (
-                    <span className="spdb-status-badge spdb-status-active">
-                        <Activity className="spdb-icon-xs" /> Faol
-                    </span>
-                );
-            case 'inactive':
-                return (
-                    <span className="spdb-status-badge spdb-status-inactive">
-                        <AlertCircle className="spdb-icon-xs" /> Nofaol
-                    </span>
-                );
-            default:
-                return <span className="spdb-status-badge spdb-status-unknown">Noma'lum</span>;
+        try {
+            await createPlan({
+                ...planForm,
+                targetAmount: parseFloat(planForm.targetAmount),
+            }).unwrap();
+            setShowPlanModal(false);
+            setPlanForm({ employeeId: '', targetAmount: '', month: selectedMonth });
+            setFormError('');
+            refetchPlans();
+        } catch (error) {
+            console.error('Plan yaratishda xatolik:', error);
+            setFormError('Plan yaratishda xatolik yuz berdi');
         }
     };
 
-    // Performance rang
-    const getPerformanceClass = (percentage) => {
-        if (percentage >= 100) return 'spdb-performance-excellent';
-        if (percentage >= 80) return 'spdb-performance-good';
-        if (percentage >= 60) return 'spdb-performance-average';
-        return 'spdb-performance-poor';
-    };
+    // Handle plan update
+    const handleUpdatePlan = async (e) => {
+        e.preventDefault();
+        if (!planForm.employeeId || !planForm.targetAmount || isNaN(planForm.targetAmount) || planForm.targetAmount <= 0) {
+            setFormError('Iltimos, barcha maydonlarni to\'g\'ri to\'ldiring');
+            return;
+        }
 
-    // Trend rang
-    const getTrendClass = (trend) => {
-        if (trend > 0) return 'spdb-trend-positive';
-        if (trend < 0) return 'spdb-trend-negative';
-        return 'spdb-trend-neutral';
-    };
-
-    // Activity modal ochish
-    const openActivityModal = (activities) => {
-        setSelectedActivities(activities);
-        setShowActivityModal(true);
-    };
-
-    // Sale detail modal ochish
-    const openSaleDetailModal = (activity) => {
-        setSelectedSaleDetail(activity);
-        setShowSaleDetailModal(true);
-    };
-
-    // Modal yopish
-    const closeModals = () => {
-        setShowActivityModal(false);
-        setShowSaleDetailModal(false);
-        setSelectedActivities([]);
-        setSelectedSaleDetail(null);
-    };
-
-    // Sotuv holati
-    const getSaleStatusBadge = (status) => {
-        switch (status) {
-            case 'completed':
-                return (
-                    <span className="sale-status-completed">
-                        <Check className="spdb-icon-xs" /> Tugallangan
-                    </span>
-                );
-            case 'pending':
-                return (
-                    <span className="sale-status-pending">
-                        <AlertCircle className="spdb-icon-xs" /> Kutilmoqda
-                    </span>
-                );
-            default:
-                return <span className="sale-status-unknown">Noma'lum</span>;
+        try {
+            await updatePlan({
+                id: editingPlan._id,
+                ...planForm,
+                targetAmount: parseFloat(planForm.targetAmount),
+            }).unwrap();
+            setShowPlanModal(false);
+            setEditingPlan(null);
+            setPlanForm({ employeeId: '', targetAmount: '', month: selectedMonth });
+            setFormError('');
+            refetchPlans();
+        } catch (error) {
+            console.error('Plan yangilashda xatolik:', error);
+            setFormError('Plan yangilashda xatolik yuz berdi');
         }
     };
 
-    if (loading) {
+    // Handle plan deletion
+    const handleDeletePlan = async (planId) => {
+        if (window.confirm('Planni o\'chirishni tasdiqlaysizmi?')) {
+            try {
+                await deletePlan(planId).unwrap();
+                refetchPlans();
+            } catch (error) {
+                console.error('Plan o\'chirishda xatolik:', error);
+                setFormError('Plan o\'chirishda xatolik yuz berdi');
+            }
+        }
+    };
+
+    // Open plan modal for editing
+    const openEditPlanModal = (plan) => {
+        setEditingPlan(plan);
+        setPlanForm({
+            employeeId: plan.employeeId?._id || plan.employeeId,
+            targetAmount: plan.targetAmount.toString(),
+            month: plan.month,
+        });
+        setShowPlanModal(true);
+    };
+
+    // Open plan modal for creating
+    const openCreatePlanModal = (employeeId = '') => {
+        setEditingPlan(null);
+        setPlanForm({
+            employeeId,
+            targetAmount: '',
+            month: selectedMonth,
+        });
+        setShowPlanModal(true);
+    };
+
+    // Calculate performance metrics
+    const calculatePerformance = (current, previous) => {
+        if (!current) return { percentage: 0, trend: 0 };
+
+        const percentage = current.targetAmount > 0 ? Math.round((current.achievedAmount / current.targetAmount) * 100) : 0;
+        const trend = previous && previous.achievedAmount > 0 ? Math.round(((current.achievedAmount - previous.achievedAmount) / previous.achievedAmount) * 100) : 0;
+
+        return { percentage, trend };
+    };
+
+    // Status badge component
+    const StatusBadge = ({ hasCurrentPlan }) => (
+        <span className={`sdash-status-indicator ${hasCurrentPlan ? 'sdash-status-active' : 'sdash-status-inactive'}`}>
+            {hasCurrentPlan ? (
+                <>
+                    <Activity className="sdash-icon-xs" /> Faol
+                </>
+            ) : (
+                <>
+                    <AlertCircle className="sdash-icon_xs" /> Plan yo'q
+                </>
+            )}
+        </span>
+    );
+
+    // Trend component
+    const TrendIndicator = ({ trend }) => {
+        const getTrendClass = (trend) => {
+            if (trend > 0) return 'sdash-trend-positive';
+            if (trend < 0) return 'sdash-trend-negative';
+            return 'sdash-trend-neutral';
+        };
+
         return (
-            <div className="spdb-loading-container">
-                <RefreshCw className="spdb-loading-icon" />
+            <div className={`sdash-trend-wrapper ${getTrendClass(trend)}`}>
+                {trend > 0 ? (
+                    <TrendingUp className="sdash-trend-icon" />
+                ) : trend < 0 ? (
+                    <TrendingDown className="sdash-trend-icon" />
+                ) : (
+                    <div className="sdash-trend-neutral-icon" />
+                )}
+                <span className="sdash-trend-value">{Math.abs(trend)}%</span>
+            </div>
+        );
+    };
+
+    if (employeesLoading || plansLoading) {
+        return (
+            <div className="sdash-loading-wrapper">
+                <RefreshCw className="sdash-loading-icon animate-spin" />
                 <p>Ma'lumotlar yuklanmoqda...</p>
             </div>
         );
     }
 
+    if (employeesError || plansError) {
+        return (
+            <div className="sdash-error-wrapper">
+                <AlertCircle className="sdash-error-icon" />
+                <p>Ma'lumotlarni yuklashda xatolik yuz berdi</p>
+                <button onClick={() => window.location.reload()} className="sdash-retry-button">
+                    Qayta urinish
+                </button>
+            </div>
+        );
+    }
+    const formatNumber = (value) => {
+        if (!value) return '';
+        return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    };
+
+    const parseNumber = (value) => {
+        return value.replace(/\./g, '');
+    };
+
+    console.log(filteredEmployees);
     return (
-        <div className="spdb-dashboard-container">
+        <div className="sdash-main-container">
             {/* Header */}
-            <div className="spdb-dashboard-header">
-                <div className="">
-                    <h1 class sewing="spdb-dashboard-title">
-                        <Users className="spdb-icon-lg" />
-                        Sotuvchilar Boshqaruv Paneli
-                    </h1>
-                    <div className="spdb-filter-group">
-                        <Filter className="spdb-filter-icon" />
-                        <select
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                            className="spdb-filter-select"
-                        >
-                            <option value="all">Barcha holatlar</option>
-                            <option value="active">Faol</option>
-                            <option value="inactive">Nofaol</option>
-                        </select>
-                    </div>
-                </div>
-                <div className="spdb-dashboard-stats">
-                    <div className="spdb-stat-card">
-                        <div className="spdb-stat-value">{salespeople.length}</div>
-                        <div className="spdb-stat-label">Jami sotuvchilar</div>
-                    </div>
-                    <div className="spdb-stat-card">
-                        <div className="spdb-stat-value">{salespeople.filter((s) => s.status === 'active').length}</div>
-                        <div className="spdb-stat-label">Faol sotuvchilar</div>
-                    </div>
-                    <div className="spdb-stat-card">
-                        <div className="spdb-stat-value">
-                            {salespeople
-                                .reduce((sum, s) => sum + s.currentMonthSales.totalAmount, 0)
-                                .toLocaleString()}
+            <div className="sdash-header-section">
+                <div className="sdash-header-content">
+                    <div className="sdash-header-left">
+                        <h1 className="sdash-main-title">
+                            <Users className="sdash-icon-lg" />
+                            Sotuvchilar Boshqaruv Paneli
+                        </h1>
+                        <div className="sdash-filter-controls">
+                            <Filter className="sdash-filter-icon" />
+                            <select
+                                value={filterStatus}
+                                onChange={(e) => setFilterStatus(e.target.value)}
+                                className="sdash-filter-dropdown"
+                                aria-label="Holatni tanlash"
+                            >
+                                <option value="all">Barcha holatlar</option>
+                                <option value="active">Faol planlar</option>
+                                <option value="inactive">Plan yo'q</option>
+                            </select>
+                            <select
+                                value={selectedMonth}
+                                onChange={(e) => setSelectedMonth(e.target.value)}
+                                className="sdash-filter-dropdown"
+                                aria-label="Oyni tanlash"
+                            >
+                                {generateMonthOptions().map((month) => (
+                                    <option key={month.value} value={month.value}>
+                                        {month.label}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
-                        <div className="spdb-stat-label">Jami sotuv (so'm)</div>
+                    </div>
+                    <div className="sdash-statistics-grid">
+                        <div className="sdash-stat-card">
+                            <div className="sdash-stat-number">{filteredEmployees.filter((emp) => emp.currentPlan).length}</div>
+                            <div className="sdash-stat-text">Faol planlar</div>
+                        </div>
+                        <div className="sdash-stat-card">
+                            <div className="sdash-stat-number">{allPlans?.innerData?.filter((plan) => plan.month === selectedMonth).length}</div>
+                            <div className="sdash-stat-text">Joriy oy planlari</div>
+                        </div>
+                        <div className="sdash-stat-card">
+                            <div className="sdash-stat-number">
+                                {allPlans?.innerData?.filter((plan) => plan.month === selectedMonth)
+                                    .reduce((sum, plan) => sum + (plan.achievedAmount || 0), 0)
+                                    .toLocaleString()}
+                            </div>
+                            <div className="sdash-stat-text">Jami bajarilgan (so'm)</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Main Table */}
-            <div className="spdb-table-container">
-                <table className="spdb-main-table">
-                    <thead className="spdb-table-header">
+            <div className="sdash-table-wrapper">
+                <table className="sdash-data-table">
+                    <thead className="sdash-table-head">
                         <tr>
-                            <th className="spdb-header-cell">Sotuvchi</th>
-                            <th className="spdb-header-cell">Holat</th>
-                            <th className="spdb-header-cell">Plan</th>
-                            <th className="spdb-header-cell">Trend</th>
-                            <th className="spdb-header-cell">Mijozlar</th>
-                            <th className="spdb-header-cell">So'nggi faollik</th>
+                            <th className="sdash-header-cell">Sotuvchi</th>
+                            <th className="sdash-header-cell">Holat</th>
+                            <th className="sdash-header-cell">Plan bajarish</th>
+                            <th className="sdash-header-cell">Trend</th>
+                            <th className="sdash-header-cell">Amallar</th>
                         </tr>
                     </thead>
-                    <tbody className="spdb-table-body">
-                        {filteredSalespeople.map((salesperson) => {
-                            const amountPercentage = calculatePercentage(
-                                salesperson.currentMonthSales.totalAmount,
-                                salesperson.monthlyPlan.totalAmount
-                            );
-                            const trend = calculateTrend(
-                                salesperson.currentMonthSales.totalAmount,
-                                salesperson.previousMonthSales.totalAmount
-                            );
+                    <tbody className="sdash-table-body">
+                        {filteredEmployees?.map((employee) => {
+                            const { percentage, trend } = calculatePerformance(employee.currentPlan, employee.previousPlan);
 
                             return (
-                                <tr key={salesperson.id} className="spdb-table-row">
-                                    <td className="spdb-data-cell">
-                                        <div className="spdb-salesperson-info">
-                                            <div className="spdb-salesperson-avatar">
-                                                <User className="spdb-avatar-icon" />
+                                <tr key={employee._id} className="sdash-data-row">
+                                    <td className="sdash-data-cell">
+                                        <div className="sdash-employee-wrapper">
+                                            <div className="sdash-employee-avatar">
+                                                <User className="sdash-avatar-icon" />
                                             </div>
-                                            <div className="spdb-salesperson-details">
-                                                <div className="spdb-salesperson-name">{salesperson.name}</div>
-                                                <div className="spdb-salesperson-meta">
-                                                    <Phone className="spdb-icon-xs" />
-                                                    {salesperson.phone}
+                                            <div className="sdash-employee-info">
+                                                <div className="sdash-employee-name">
+                                                    {employee.firstName} {employee.lastName}
                                                 </div>
-                                                <div className="spdb-salesperson-meta">
-                                                    <MapPin className="spdb-icon-xs" />
-                                                    {salesperson.region}
+                                                <div className="sdash-employee-contact">
+                                                    <Phone className="sdash-icon-xs" />
+                                                    {PhoneNumberFormat(employee.phone) || 'N/A'}
+                                                </div>
+                                                <div className="sdash-employee-contact">
+                                                    <MapPin className="sdash-icon-xs" />
+                                                    {employee.position || 'N/A'}
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="spdb-data-cell">{getStatusBadge(salesperson.status)}</td>
-
+                                    <td className="sdash-data-cell">
+                                        <StatusBadge hasCurrentPlan={!!employee.currentPlan} />
+                                    </td>
                                     <PerformanceCell
-                                        actual={salesperson.currentMonthSales.totalAmount}
-                                        plan={salesperson.monthlyPlan.totalAmount}
+                                        actual={employee.currentPlan?.achievedAmount || 0}
+                                        plan={employee.currentPlan?.targetAmount || 0}
                                         unit="M"
-                                        performanceClass={getPerformanceClass(amountPercentage)}
-                                        percentage={amountPercentage}
                                     />
-                                    <td className="spdb-data-cell">
-                                        <div className={`spdb-trend-indicator ${getTrendClass(trend)}`}>
-                                            {trend > 0 ? (
-                                                <TrendingUp className="spdb-trend-icon" />
-                                            ) : trend < 0 ? (
-                                                <TrendingDown className="spdb-trend-icon" />
+                                    <td className="sdash-data-cell">
+                                        <TrendIndicator trend={trend} />
+                                    </td>
+                                    <td className="sdash-data-cell">
+                                        <div className="sdash-action-group">
+                                            {employee.currentPlan ? (
+                                                <>
+                                                    <button
+                                                        onClick={() => openEditPlanModal(employee.currentPlan)}
+                                                        className="sdash-action-btn sdash-edit-btn"
+                                                        title="Planni tahrirlash"
+                                                        aria-label="Planni tahrirlash"
+                                                    >
+                                                        <Edit className="sdash-icon-xs" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeletePlan(employee.currentPlan._id)}
+                                                        className="sdash-action-btn sdash-delete-btn"
+                                                        title="Planni o'chirish"
+                                                        aria-label="Planni o'chirish"
+                                                    >
+                                                        <Trash2 className="sdash-icon-xs" />
+                                                    </button>
+                                                </>
                                             ) : (
-                                                <div className="spdb-trend-neutral-icon"></div>
+                                                <button
+                                                    onClick={() => openCreatePlanModal(employee._id)}
+                                                    className="sdash-action-btn sdash-create-btn"
+                                                    title="Plan qo'shish"
+                                                    aria-label="Plan qo'shish"
+                                                >
+                                                    <Plus className="sdash-icon-xs" />
+                                                </button>
                                             )}
-                                            <span className="spdb-trend-value">{Math.abs(trend)}%</span>
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedEmployee(employee);
+                                                    setShowPlanModal(false);
+                                                }}
+                                                className="sdash-action-btn sdash-view-btn"
+                                                title="Faoliyatni ko'rish"
+                                                aria-label="Faoliyatni ko'rish"
+                                            >
+                                                <Eye className="sdash-icon-xs" />
+                                            </button>
                                         </div>
-                                    </td>
-                                    <td className="spdb-data-cell">
-                                        <div className="spdb-clients-info">
-                                            <div className="spdb-clients-count">
-                                                <Users className="spdb-icon-sm" />
-                                                {salesperson.currentMonthSales.clientsCount}
-                                            </div>
-                                            <div className="spdb-sales-count">
-                                                {salesperson.currentMonthSales.salesCount} sotuv
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="spdb-data-cell">
-                                        <button
-                                            className="spdb-view-all-btn"
-                                            onClick={() => openActivityModal(salesperson.recentActivity)}
-                                        >
-                                            <Eye className="spdb-icon-xs" />
-                                            Barchasini ko'rish
-                                        </button>
                                     </td>
                                 </tr>
                             );
@@ -483,119 +459,159 @@ const SalespersonDashboard = () => {
                 </table>
             </div>
 
-            {/* Activity Modal */}
-            {showActivityModal && (
-                <div className="modal-overlay" onClick={closeModals}>
+            {/* Plan Modal */}
+            {showPlanModal && (
+                <div className="modal-overlay" onClick={() => setShowPlanModal(false)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3 className="modal-title">
-                                <Activity className="spdb-icon-md" />
-                                So'nggi faollik
+                                <Target className="sdash-icon-md" />
+                                {editingPlan ? 'Planni tahrirlash' : 'Yangi plan qo\'shish'}
                             </h3>
-                            <button className="modal-close-btn" onClick={closeModals}>
-                                <X className="spdb-icon-sm" />
+                            <button
+                                className="modal-close-btn"
+                                onClick={() => setShowPlanModal(false)}
+                                aria-label="Modalni yopish"
+                            >
+                                <X className="sdash-icon-sm" />
                             </button>
                         </div>
                         <div className="modal-body">
-                            <div className="activity-list">
-                                {selectedActivities.map((activity, index) => (
-                                    <div key={index} className="activity-card">
-                                        <div className="activity-card-header">
-                                            <div className="activity-date-status">
-                                                <div className="activity-date-full">
-                                                    <Calendar className="spdb-icon-sm" />
-                                                    {activity.date}
-                                                </div>
-                                                {getSaleStatusBadge(activity.status)}
-                                            </div>
-                                            <button
-                                                className="activity-detail-btn"
-                                                onClick={() => openSaleDetailModal(activity)}
-                                            >
-                                                <ShoppingCart className="spdb-icon-xs" />
-                                                Mahsulotlar
-                                            </button>
-                                        </div>
-                                        <div className="activity-card-body">
-                                            <div className="activity-client">
-                                                <strong>Mijoz:</strong> {activity.client}
-                                            </div>
-                                            <div className="activity-amount">
-                                                <strong>Summa:</strong> {activity.amount.toLocaleString()} so'm
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                            <form onSubmit={editingPlan ? handleUpdatePlan : handleCreatePlan}>
+                                <div className="form-group">
+                                    <label className="form-label">Sotuvchi:</label>
+                                    <select
+                                        value={planForm.employeeId}
+                                        onChange={(e) => setPlanForm({ ...planForm, employeeId: e.target.value })}
+                                        className="form-select"
+                                        disabled={editingPlan}
+                                        aria-label="Sotuvchini tanlash"
+                                    >
+                                        <option value="">Sotuvchini tanlang</option>
+                                        {salesEmployees?.innerData?.map((employee) => (
+                                            <option key={employee._id} value={employee._id}>
+                                                {employee.firstName} {employee.lastName}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Oy:</label>
+                                    <select
+                                        value={planForm.month}
+                                        onChange={(e) => setPlanForm({ ...planForm, month: e.target.value })}
+                                        className="form-select"
+                                        aria-label="Oyni tanlash"
+                                    >
+                                        {generateMonthOptions().map((month) => (
+                                            <option key={month.value} value={month.value}>
+                                                {month.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <input
+                                    type="text"
+                                    value={formatNumber(planForm.targetAmount)}
+                                    onChange={(e) => {
+                                        const rawValue = parseNumber(e.target.value);
+                                        if (!isNaN(rawValue)) {
+                                            setPlanForm({ ...planForm, targetAmount: rawValue });
+                                        }
+                                    }}
+                                    className="form-input"
+                                    placeholder="Summani kiriting"
+                                    inputMode="numeric"
+                                    aria-label="Maqsad summasi"
+                                />
+
+                                {formError && <p className="form-error">{formError}</p>}
+                                <div className="form-actions">
+                                    <button type="submit" className="sdash-primary-button">
+                                        {editingPlan ? 'Yangilash' : 'Saqlash'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="sdash-secondary-btn"
+                                        onClick={() => setShowPlanModal(false)}
+                                        aria-label="Bekor qilish"
+                                    >
+                                        Bekor qilish
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Sale Detail Modal */}
-            {showSaleDetailModal && selectedSaleDetail && (
-                <div className="modal-overlay" onClick={closeModals}>
-                    <div className="modal-content sale-detail-modal" onClick={(e) => e.stopPropagation()}>
+            {/* Activity Modal */}
+            {selectedEmployee && (
+                <div className="modal-overlay" onClick={() => setSelectedEmployee(null)}>
+                    <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3 className="modal-title">
-                                <Package className="spdb-icon-md" />
-                                Sotuv tafsilotlari
+                                <Activity className="sdash-icon-md" />
+                                {selectedEmployee.firstName} {selectedEmployee.lastName} - Faoliyat tarixi
                             </h3>
-                            <button className="modal-close-btn" onClick={closeModals}>
-                                <X className="spdb-icon-sm" />
+                            <button
+                                className="modal-close-btn"
+                                onClick={() => setSelectedEmployee(null)}
+                                aria-label="Modalni yopish"
+                            >
+                                <X className="sdash-icon-sm" />
                             </button>
                         </div>
                         <div className="modal-body">
-                            <div className="sale-info-section">
-                                <div className="sale-info-header">
-                                    <div className="sale-basic-info">
-                                        <div className="sale-info-item">
-                                            <strong>Mijoz:</strong> {selectedSaleDetail.client}
-                                        </div>
-                                        <div className="sale-info-item">
-                                            <strong>Sana:</strong> {selectedSaleDetail.date}
-                                        </div>
-                                        <div className="sale-info-item">
-                                            <strong>Holat:</strong> {getSaleStatusBadge(selectedSaleDetail.status)}
-                                        </div>
+                            <div className="activity-summary">
+                                <div className="summary-cards">
+                                    <div className="summary-card">
+                                        <div className="summary-value">{selectedEmployee.allPlans?.length || 0}</div>
+                                        <div className="summary-label">Jami planlar</div>
                                     </div>
-                                    <div className="sale-total-amount">
-                                        <div className="total-label">Jami summa:</div>
-                                        <div className="total-value">{selectedSaleDetail.amount.toLocaleString()} so'm</div>
+                                    <div className="summary-card">
+                                        <div className="summary-value">{selectedEmployee.currentPlan?.achievedAmount?.toLocaleString() || 0}</div>
+                                        <div className="summary-label">Joriy oy bajarilgan</div>
+                                    </div>
+                                    <div className="summary-card">
+                                        <div className="summary-value">
+                                            {selectedEmployee.currentPlan
+                                                ? Math.round((selectedEmployee.currentPlan.achievedAmount / selectedEmployee.currentPlan.targetAmount) * 100)
+                                                : 0}
+                                            %
+                                        </div>
+                                        <div className="summary-label">Bajarish foizi</div>
                                     </div>
                                 </div>
                             </div>
-
-                            <div className="products-section">
-                                <h4 className="products-title">
-                                    <Package className="spdb-icon-sm" />
-                                    Sotilgan mahsulotlar
-                                </h4>
-                                <div className="products-table">
-                                    <div className="products-table-header">
-                                        <div className="product-col-name">Mahsulot nomi</div>
-                                        <div className="product-col-qty">Miqdor</div>
-                                        <div className="product-col-price">Narx</div>
-                                        <div className="product-col-total">Jami</div>
-                                    </div>
-                                    <div className="products-table-body">
-                                        {selectedSaleDetail.products.map((product, index) => (
-                                            <div key={index} className="product-row">
-                                                <div className="product-col-name">
-                                                    <div className="product-name">{product.name}</div>
-                                                </div>
-                                                <div className="product-col-qty">
-                                                    {product.quantity} {product.unit}
-                                                </div>
-                                                <div className="product-col-price">
-                                                    {product.price.toLocaleString()} so'm
-                                                </div>
-                                                <div className="product-col-total">
-                                                    {(product.quantity * product.price).toLocaleString()} so'm
+                            <div className="plans-history">
+                                <h4>Planlar tarixi:</h4>
+                                <div className="plans-list">
+                                    {selectedEmployee.allPlans?.map((plan) => (
+                                        <div key={plan._id} className="plan-card">
+                                            <div className="plan-header">
+                                                <div className="plan-month">{plan.month}</div>
+                                                <div className={`plan-status ${plan.achievedAmount >= plan.targetAmount ? 'completed' : 'pending'}`}>
+                                                    {plan.achievedAmount >= plan.targetAmount ? 'Bajarilgan' : 'Jarayonda'}
                                                 </div>
                                             </div>
-                                        ))}
-                                    </div>
+                                            <div className="plan-details">
+                                                <div className="plan-amounts">
+                                                    <span>Plan: {plan.targetAmount.toLocaleString()} so'm</span>
+                                                    <span>Bajarilgan: {plan.achievedAmount.toLocaleString()} so'm</span>
+                                                </div>
+                                                <div className="plan-progress">
+                                                    <div className="progress-bar">
+                                                        <div
+                                                            className="progress-fill"
+                                                            style={{ width: `${Math.min((plan.achievedAmount / plan.targetAmount) * 100, 100)}%` }}
+                                                        />
+                                                    </div>
+                                                    <span className="progress-text">{Math.round((plan.achievedAmount / plan.targetAmount) * 100)}%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
@@ -607,225 +623,3 @@ const SalespersonDashboard = () => {
 };
 
 export default SalespersonDashboard;
-
-
-
-
-
-
-// Mock API data - serverdan kelishi kerak
-// const mockApiData = {
-//     salespeople: [
-//         {
-//             id: 1,
-//             name: "Azimjon Mamutaliyev",
-//             phone: "+998901234567",
-//             email: "azimjon@company.com",
-//             region: "Toshkent shahri",
-//             status: "active",
-//             joinDate: "2024-01-15",
-//             monthlyPlan: {
-//                 coalPaper: 1000,
-//                 betum: 5000,
-//                 totalAmount: 10000000
-//             },
-//             currentMonthSales: {
-//                 coalPaper: 850,
-//                 betum: 4200,
-//                 totalAmount: 8500000,
-//                 salesCount: 2,
-//                 clientsCount: 8
-//             },
-//             previousMonthSales: {
-//                 coalPaper: 950,
-//                 betum: 4800,
-//                 totalAmount: 9500000
-//             },
-//             recentActivity: [
-//                 {
-//                     id: 1,
-//                     date: "2024-12-15",
-//                     client: "Alfa Group",
-//                     amount: 250000,
-//                     status: "completed",
-//                     products: [
-//                         { name: "Ko'mir qog'ozi", quantity: 50, unit: "dona", price: 3000 },
-//                         { name: "Betum", quantity: 25, unit: "kg", price: 4000 }
-//                     ]
-//                 },
-//                 {
-//                     id: 2,
-//                     date: "2024-12-14",
-//                     client: "Beta LLC",
-//                     amount: 180000,
-//                     status: "pending",
-//                     products: [
-//                         { name: "Ko'mir qog'ozi", quantity: 30, unit: "dona", price: 3000 },
-//                         { name: "Betum", quantity: 22.5, unit: "kg", price: 4000 }
-//                     ]
-//                 },
-//                 {
-//                     id: 3,
-//                     date: "2024-12-13",
-//                     client: "Gamma Co",
-//                     amount: 320000,
-//                     status: "completed",
-//                     products: [
-//                         { name: "Ko'mir qog'ozi", quantity: 80, unit: "dona", price: 3000 },
-//                         { name: "Betum", quantity: 40, unit: "kg", price: 4000 }
-//                     ]
-//                 }
-//             ]
-//         },
-//         {
-//             id: 2,
-//             name: "Dilshod Rahimov",
-//             phone: "+998901234568",
-//             email: "dilshod@company.com",
-//             region: "Samarqand viloyati",
-//             status: "active",
-//             joinDate: "2024-02-20",
-//             monthlyPlan: {
-//                 coalPaper: 800,
-//                 betum: 4000,
-//                 totalAmount: 8000000
-//             },
-//             currentMonthSales: {
-//                 coalPaper: 920,
-//                 betum: 4600,
-//                 totalAmount: 9200000,
-//                 salesCount: 15,
-//                 clientsCount: 11
-//             },
-//             previousMonthSales: {
-//                 coalPaper: 780,
-//                 betum: 3900,
-//                 totalAmount: 7800000
-//             },
-//             recentActivity: [
-//                 {
-//                     id: 4,
-//                     date: "2024-12-15",
-//                     client: "Delta Industries",
-//                     amount: 400000,
-//                     status: "completed",
-//                     products: [
-//                         { name: "Ko'mir qog'ozi", quantity: 100, unit: "dona", price: 3000 },
-//                         { name: "Betum", quantity: 25, unit: "kg", price: 4000 }
-//                     ]
-//                 },
-//                 {
-//                     id: 5,
-//                     date: "2024-12-14",
-//                     client: "Epsilon Corp",
-//                     amount: 150000,
-//                     status: "completed",
-//                     products: [
-//                         { name: "Ko'mir qog'ozi", quantity: 35, unit: "dona", price: 3000 },
-//                         { name: "Betum", quantity: 15, unit: "kg", price: 4000 }
-//                     ]
-//                 }
-//             ]
-//         },
-//         {
-//             id: 3,
-//             name: "Malika Yusupova",
-//             phone: "+998901234569",
-//             email: "malika@company.com",
-//             region: "Andijon viloyati",
-//             status: "inactive",
-//             joinDate: "2024-03-10",
-//             monthlyPlan: {
-//                 coalPaper: 1200,
-//                 betum: 6000,
-//                 totalAmount: 12000000
-//             },
-//             currentMonthSales: {
-//                 coalPaper: 480,
-//                 betum: 2400,
-//                 totalAmount: 4800000,
-//                 salesCount: 6,
-//                 clientsCount: 4
-//             },
-//             previousMonthSales: {
-//                 coalPaper: 1150,
-//                 betum: 5750,
-//                 totalAmount: 11500000
-//             },
-//             recentActivity: [
-//                 {
-//                     id: 6,
-//                     date: "2024-12-10",
-//                     client: "Zeta LLC",
-//                     amount: 120000,
-//                     status: "pending",
-//                     products: [
-//                         { name: "Ko'mir qog'ozi", quantity: 25, unit: "dona", price: 3000 },
-//                         { name: "Betum", quantity: 11.25, unit: "kg", price: 4000 }
-//                     ]
-//                 },
-//                 {
-//                     id: 7,
-//                     date: "2024-12-08",
-//                     client: "Eta Group",
-//                     amount: 200000,
-//                     status: "completed",
-//                     products: [
-//                         { name: "Ko'mir qog'ozi", quantity: 45, unit: "dona", price: 3000 },
-//                         { name: "Betum", quantity: 20, unit: "kg", price: 4000 }
-//                     ]
-//                 }
-//             ]
-//         },
-//         {
-//             id: 4,
-//             name: "Bobur Karimov",
-//             phone: "+998901234570",
-//             email: "bobur@company.com",
-//             region: "Farg'ona viloyati",
-//             status: "active",
-//             joinDate: "2024-04-05",
-//             monthlyPlan: {
-//                 coalPaper: 900,
-//                 betum: 4500,
-//                 totalAmount: 9000000
-//             },
-//             currentMonthSales: {
-//                 coalPaper: 1080,
-//                 betum: 5400,
-//                 totalAmount: 10800000,
-//                 salesCount: 18,
-//                 clientsCount: 13
-//             },
-//             previousMonthSales: {
-//                 coalPaper: 870,
-//                 betum: 4350,
-//                 totalAmount: 8700000
-//             },
-//             recentActivity: [
-//                 {
-//                     id: 8,
-//                     date: "2024-12-15",
-//                     client: "Theta Systems",
-//                     amount: 380000,
-//                     status: "completed",
-//                     products: [
-//                         { name: "Ko'mir qog'ozi", quantity: 95, unit: "dona", price: 3000 },
-//                         { name: "Betum", quantity: 22.5, unit: "kg", price: 4000 }
-//                     ]
-//                 },
-//                 {
-//                     id: 9,
-//                     date: "2024-12-14",
-//                     client: "Iota Partners",
-//                     amount: 290000,
-//                     status: "completed",
-//                     products: [
-//                         { name: "Ko'mir qog'ozi", quantity: 70, unit: "dona", price: 3000 },
-//                         { name: "Betum", quantity: 20, unit: "kg", price: 4000 }
-//                     ]
-//                 }
-//             ]
-//         }
-//     ]
-// };

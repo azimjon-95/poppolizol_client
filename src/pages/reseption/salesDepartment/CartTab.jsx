@@ -1,13 +1,32 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeCanvas } from 'qrcode.react';
 import { ShoppingCart, Minus, Plus, FileText, Factory } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
+import { Select } from 'antd';
+import {
+    useCreateCartSaleMutation,
+    useGetCustomerAllQuery,
+} from '../../../context/cartSaleApi';
+import { useGetSalesEmployeesQuery } from '../../../context/planSalesApi';
 import { useGetFactoriesQuery } from '../../../context/clinicApi';
-// import { use } from '../../../context/cartSaleApi'; 4454
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './style.css';
+
+const { Option } = Select;
+
+// Utility function to format numbers with commas (e.g., 1,000,000)
+const formatNumber = (num) => {
+    if (!num && num !== 0) return '';
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
+// Utility function to format phone numbers (e.g., 90 123 45 67)
+const formatPhone = (raw) => {
+    const cleaned = raw.replace(/\D/g, '').slice(0, 9);
+    return cleaned.replace(/(\d{2})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4');
+};
 
 const getWidthByLength = (length) => {
     if (length <= 4) return 50;
@@ -18,23 +37,110 @@ const getWidthByLength = (length) => {
 const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromCart, onCompleteSale }) => {
     const contentRef = useRef();
     const navigate = useNavigate();
-    const { data: factories = [] } = useGetFactoriesQuery();
+    const { data: salesEmployees = { innerData: [] } } = useGetSalesEmployeesQuery();
+    const { data: factories = { innerData: [] } } = useGetFactoriesQuery();
+    const { data: customers = { innerData: [] } } = useGetCustomerAllQuery();
+    console.log(customers);
+    const [createCartSale, { isLoading: isCreatingCartSale }] = useCreateCartSaleMutation();
     const initialNdsRate = factories?.innerData?.[0]?.nds || 12;
     const [ndsRate, setNdsRate] = useState(initialNdsRate);
     const [discountReason, setDiscountReason] = useState(
         "Mijoz talabiga ko‘ra, uni yo‘qotmaslik uchun chegirma berildi"
     );
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
+    const [isEmployeeValid, setIsEmployeeValid] = useState(false);
+    const [selectedCustomer, setSelectedCustomer] = useState(null);
+    const [isNewCustomer, setIsNewCustomer] = useState(false);
+    const [rawPhone, setRawPhone] = useState('');
+    const [rawPaidAmount, setRawPaidAmount] = useState(0);
+
+    // Customer information state
+    const [customerInfo, setCustomerInfo] = useState({
+        name: '',
+        type: 'individual',
+        companyAddress: '',
+    });
+
+    // Memoized formatted values
+    const formattedPhone = useMemo(() => formatPhone(rawPhone), [rawPhone]);
+    const formattedAmount = useMemo(() => formatNumber(rawPaidAmount), [rawPaidAmount]);
+
+    // Check if workerId matches any sales employee
+    useEffect(() => {
+        const workerId = localStorage.getItem("workerId");
+        if (salesEmployees?.innerData && workerId) {
+            const matchedEmployee = salesEmployees.innerData.find(
+                (employee) => employee._id === workerId
+            );
+            if (matchedEmployee) {
+                setIsEmployeeValid(true);
+                setSelectedEmployee(matchedEmployee);
+            } else {
+                setIsEmployeeValid(false);
+                setSelectedEmployee(null);
+            }
+        } else {
+            setIsEmployeeValid(false);
+            setSelectedEmployee(null);
+        }
+    }, [salesEmployees]);
+
+    // Handle employee selection
+    const handleEmployeeSelect = useCallback((value) => {
+        const selected = salesEmployees.innerData.find(
+            (employee) => employee._id === value
+        );
+        if (selected) {
+            setSelectedEmployee(selected);
+            setIsEmployeeValid(true);
+        }
+    }, [salesEmployees]);
+
+    // Handle customer selection
+    const handleCustomerSelect = useCallback((value) => {
+        if (value === 'new') {
+            setIsNewCustomer(true);
+            setSelectedCustomer(null);
+            setCustomerInfo({
+                name: '',
+                type: 'individual',
+                companyAddress: '',
+            });
+            setRawPhone('');
+        } else {
+            const selected = customers.innerData.find(
+                (customer) => customer._id === value
+            );
+            if (selected) {
+                setIsNewCustomer(false);
+                setSelectedCustomer(selected);
+                setCustomerInfo({
+                    name: selected.name,
+                    type: selected.type,
+                    phone: selected.phone || '',
+                    companyName: selected.companyName || '',
+                    companyAddress: selected.companyAddress || '',
+                });
+                setRawPhone(selected.phone?.replace(/\D/g, '') || '');
+            }
+        }
+    }, [customers]);
+
+    // Handle customer info change
+    const handleCustomerInfoChange = useCallback((key, value) => {
+        setCustomerInfo((prev) => ({ ...prev, [key]: value }));
+    }, []);
 
     const reactToPrintFn = useReactToPrint({
         contentRef,
         pageStyle: `
             @page {
-              size: 80mm auto;
-              margin: 0;
+                size: 80mm auto;
+                margin: 0;
             }
             @media print {
-              body { margin: 0; }
-              * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
+                body { margin: 0; }
+                * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
             }`,
         onPrintError: () => {
             toast.error('Chop etishda xatolik yuz berdi. Iltimos, qayta urining.', {
@@ -49,15 +155,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         paidAmount: 0,
         discount: 0,
         paymentStatus: 'partial',
-    });
-
-    const [customerInfo, setCustomerInfo] = useState({
-        name: '',
-        type: 'individual',
-        phone: '',
-        companyName: '',
-        companyAddress: '',
-        taxId: '',
+        paymentType: 'naqt',
     });
 
     const [isContractModalOpen, setIsContractModalOpen] = useState(false);
@@ -65,27 +163,23 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         customerType: 'individual',
         customerName: '',
         customerPhone: '',
-        customerCompanyName: '',
-        customerCompanyAddress: '',
-        customerTaxId: '',
-        customerCompany: '',
         transport: '',
         paymentAmount: 0,
         paymentDescription: '',
         discounts: {},
+        paymentType: 'naqt',
     });
 
-    // Manage customer and transport inputs as a list
     const [formInputs, setFormInputs] = useState([
-        { key: 'customerCompany', value: '', label: 'Xaridor', placeholder: 'yozing...', ariaLabel: 'Buyer name' },
         { key: 'transport', value: '', label: 'Avtotransport', placeholder: 'yozing...', ariaLabel: 'Transport details' },
     ]);
 
-    // Check if all required inputs are filled
-    const isFormValid = useMemo(() =>
-        formInputs.every(input => input.value.trim() !== ''),
-        [formInputs]
-    );
+    const isFormValid = useMemo(() => {
+        if (isNewCustomer) {
+            return customerInfo.name.trim() !== '' && formInputs.every(input => input.value.trim() !== '');
+        }
+        return selectedCustomer && formInputs.every(input => input.value.trim() !== '');
+    }, [customerInfo, formInputs, selectedCustomer, isNewCustomer]);
 
     const handleNdsChange = useCallback((e) => {
         const value = e.target.value.replace(/[^0-9]/g, '');
@@ -134,7 +228,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         setDiscountReason(e.target.value);
     }, []);
 
-    // Handle input changes for customerCompany and transport
     const handleInputChange = useCallback((key, value) => {
         setFormInputs(prev =>
             prev.map(input =>
@@ -175,7 +268,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         const itemDiscountAmount = originalTotal - subtotal;
         const percentageDiscountAmount = (subtotal * (paymentInfo.discount || 0)) / 100;
         const total = subtotal + totalNdsAmount - percentageDiscountAmount;
-        const debt = total - (paymentInfo.paidAmount || 0);
+        const debt = total - (rawPaidAmount || 0);
         const totalDona = cart.reduce((sum, item) => (item.size === 'dona' ? sum + item.quantity : sum), 0);
         const totalKg = cart.reduce((sum, item) => (item.size === 'kg' ? sum + item.quantity : sum), 0);
 
@@ -189,7 +282,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
             totalDona,
             totalKg,
         };
-    }, [cart, paymentInfo, contractInfo.discounts, ndsRate, calculateItemNds]);
+    }, [cart, paymentInfo, contractInfo.discounts, ndsRate, calculateItemNds, rawPaidAmount]);
 
     const getProductIcon = useCallback(
         (category) =>
@@ -205,14 +298,12 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         setContractInfo({
             customerType: customerInfo.type,
             customerName: customerInfo.name,
-            customerPhone: customerInfo.phone,
+            customerPhone: formattedPhone,
             customerCompanyName: customerInfo.companyName,
             customerCompanyAddress: customerInfo.companyAddress,
-            customerTaxId: customerInfo.taxId,
-            customerCompany: formInputs.find(input => input.key === 'customerCompany').value,
             transport: formInputs.find(input => input.key === 'transport').value,
-            paymentAmount: 0,
-            paymentDescription: '',
+            paymentAmount: rawPaidAmount,
+            paymentDescription: paymentInfo.paymentDescription || '',
             discounts: cart.reduce(
                 (acc, item) => ({
                     ...acc,
@@ -220,15 +311,38 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                 }),
                 {}
             ),
+            paymentType: paymentInfo.paymentType,
         });
         setIsContractModalOpen(true);
-    }, [customerInfo, cart, contractInfo.discounts, formInputs]);
-
-    const formatNumber = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }, [customerInfo, cart, contractInfo.discounts, formInputs, rawPaidAmount, paymentInfo]);
 
     const completeContract = useCallback(async () => {
+        if (!isEmployeeValid || !selectedEmployee) {
+            toast.error("Iltimos, sotuvchi tanlang!", {
+                position: 'top-right',
+                autoClose: 3000,
+            });
+            return;
+        }
+
+        if (!isNewCustomer && !selectedCustomer) {
+            toast.error("Iltimos, mijoz tanlang yoki yangi mijoz ma'lumotlarini kiriting!", {
+                position: 'top-right',
+                autoClose: 3000,
+            });
+            return;
+        }
+
+        if (isNewCustomer && !customerInfo.name.trim()) {
+            toast.error("Mijoz ismi kiritilishi shart!", {
+                position: 'top-right',
+                autoClose: 3000,
+            });
+            return;
+        }
+
         const total = summaryData.total;
-        if (contractInfo.paymentAmount > total) {
+        if (rawPaidAmount > total) {
             toast.error("To'lov summasi yakuniy summadan oshib ketdi!", {
                 position: 'top-right',
                 autoClose: 3000,
@@ -241,21 +355,17 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
             discountedPrice: contractInfo.discounts[item._id] ?? item.sellingPrice,
             ndsRate,
             ndsAmount: calculateItemNds(item) / item.quantity,
+            productionDate: item.productionDate || new Date(),
         }));
 
-        const debt = total - (contractInfo.paymentAmount || 0);
+        const debt = total - (rawPaidAmount || 0);
         const newSale = {
-            id: Date.now(),
-            date: new Date().toLocaleDateString('uz-UZ'),
-            time: new Date().toLocaleTimeString('uz-UZ'),
             customer: {
-                name: contractInfo.customerName,
-                type: contractInfo.customerType,
-                phone: contractInfo.customerPhone,
-                companyName: contractInfo.customerCompanyName,
-                companyAddress: contractInfo.customerCompanyAddress,
-                taxId: contractInfo.customerTaxId,
-                company: contractInfo.customerCompany,
+                name: customerInfo.name,
+                type: customerInfo.type,
+                phone: formattedPhone,
+                companyName: customerInfo.companyName,
+                companyAddress: customerInfo.companyAddress,
             },
             transport: contractInfo.transport,
             items: updatedCart.map((item) => ({
@@ -266,19 +376,27 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
             })),
             payment: {
                 totalAmount: total,
-                paidAmount: contractInfo.paymentAmount || 0,
+                paidAmount: rawPaidAmount || 0,
                 debt,
                 status: debt <= 0 ? 'paid' : 'partial',
                 paymentDescription: contractInfo.paymentDescription,
                 discountReason: (summaryData.itemDiscountAmount > 0 || paymentInfo.discount > 0) ? discountReason : '',
+                paymentType: contractInfo.paymentType,
+                paymentHistory: rawPaidAmount > 0 ? [{
+                    amount: rawPaidAmount,
+                    date: new Date(),
+                    description: contractInfo.paymentDescription || 'Initial payment',
+                    paidBy: selectedEmployee ? `${selectedEmployee.firstName} ${selectedEmployee.lastName}` : '',
+                    paymentType: contractInfo.paymentType,
+                }] : [],
             },
-            salesperson: localStorage.getItem("admin_fullname"),
-            salerId: localStorage.getItem("workerId"),
+            salesperson: selectedEmployee ? `${selectedEmployee.firstName} ${selectedEmployee.lastName}` : '',
+            salerId: selectedEmployee?._id || '',
             isContract: true,
         };
 
         try {
-            console.log(newSale);
+            await createCartSale(newSale).unwrap();
             onCompleteSale?.(newSale);
             reactToPrintFn();
             toast.success('Shartnoma muvaffaqiyatli tuzildi va sotuv yakunlandi!', {
@@ -288,23 +406,29 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
             setCustomerInfo({
                 name: '',
                 type: 'individual',
-                phone: '',
-                companyName: '',
                 companyAddress: '',
-                taxId: '',
             });
             setPaymentInfo({
                 totalAmount: 0,
                 paidAmount: 0,
                 discount: 0,
                 paymentStatus: 'partial',
+                paymentType: 'naqt',
             });
             setDiscountReason("Mijoz talabiga ko‘ra, uni yo‘qotmaslik uchun chegirma berildi");
             setIsContractModalOpen(false);
             setCart([]);
             setActiveTab('sales');
+            setSelectedEmployee(null);
+            setIsEmployeeValid(false);
+            setSelectedCustomer(null);
+            setIsNewCustomer(false);
+            setRawPhone('');
+            setRawPaidAmount(0);
+            localStorage.removeItem("workerId");
+            localStorage.removeItem("admin_fullname");
         } catch (error) {
-            toast.error('Sotuvni saqlashda xatolik yuz berdi!', {
+            toast.error(error.data?.message || 'Sotuvni saqlashda xatolik yuz berdi!', {
                 position: 'top-right',
                 autoClose: 3000,
             });
@@ -320,12 +444,33 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         reactToPrintFn,
         setCart,
         setActiveTab,
-        discountReason
+        discountReason,
+        isEmployeeValid,
+        selectedEmployee,
+        customerInfo,
+        selectedCustomer,
+        isNewCustomer,
+        rawPaidAmount,
+        formattedPhone,
     ]);
+
+    const handlePhoneChange = useCallback((e) => {
+        const raw = e.target.value.replace(/\D/g, '').slice(0, 9);
+        setRawPhone(raw);
+        setCustomerInfo((prev) => ({ ...prev, phone: formatPhone(raw) }));
+    }, []);
+
+    const handleAmountChange = useCallback((e) => {
+        const raw = e.target.value.replace(/\D/g, '');
+        const numberValue = Number(raw) || 0;
+        setRawPaidAmount(numberValue);
+        setPaymentInfo((prev) => ({ ...prev, paidAmount: numberValue }));
+    }, []);
 
     return (
         <div className="sacod-sales-container">
             <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick draggable pauseOnHover />
+
             <div className="sacod-content-section">
                 {cart?.length === 0 ? (
                     <div className="sacod-empty-state">
@@ -340,8 +485,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                         <div className="sacod-cart-items">
                             {cart.map((item, index) => {
                                 const basePrice = contractInfo.discounts[item._id] ?? item.sellingPrice ?? 0;
-                                const ndsAmount = basePrice * (ndsRate / 100);
-                                const priceWithNds = basePrice + ndsAmount;
                                 const value = formatNumber(basePrice);
                                 const inputWidth = getWidthByLength(value.replace(/\D/g, '').length);
 
@@ -361,6 +504,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                                             width: `${inputWidth}px`,
                                                             textAlign: 'right',
                                                             transition: 'width 0.3s ease',
+                                                            border: '1px solid #d9d9d9',
                                                         }}
                                                         aria-label={`Price for ${item.productName}`}
                                                     />
@@ -383,7 +527,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                                         value={item.quantity}
                                                         onChange={(e) => handleQuantityInput(item._id, e.target.value)}
                                                         className="sacod-quantity-input"
-                                                        style={{ width: '60px' }}
+                                                        style={{ width: '60px', border: '1px solid #d9d9d9' }}
                                                         aria-label={`Quantity for ${item.productName}`}
                                                         placeholder="0"
                                                     />
@@ -414,14 +558,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                         <div className="sacod-cart-info">
                             <div className="sacod-order-summary">
                                 <div className="sacod-summary-row">
-                                    <span>Jami dona:</span>
-                                    <span>{formatNumber(summaryData.totalDona)} dona</span>
-                                </div>
-                                <div className="sacod-summary-row">
-                                    <span>Jami kg:</span>
-                                    <span>{formatNumber(summaryData.totalKg)} kg</span>
-                                </div>
-                                <div className="sacod-summary-row">
                                     <span>Jami summa (NDSsiz):</span>
                                     <span>{formatNumber(summaryData.subtotal)} so'm</span>
                                 </div>
@@ -448,7 +584,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                             value={discountReason}
                                             onChange={handleDiscountReasonChange}
                                             className="sacod-textarea"
-                                            style={{ width: '100%', minHeight: '60px', resize: 'vertical' }}
+                                            style={{ width: '100%', minHeight: '60px', resize: 'vertical', border: '1px solid #d9d9d9' }}
                                             aria-label="Discount reason"
                                             placeholder="Chegirma sababini kiriting..."
                                         />
@@ -460,7 +596,29 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                 </div>
                                 <div className="sacod-summary-row">
                                     <span>To'langan:</span>
-                                    <span>{formatNumber(paymentInfo.paidAmount)} so'm</span>
+                                    <span>
+                                        <input
+                                            type="text"
+                                            value={formattedAmount}
+                                            onChange={handleAmountChange}
+                                            className="sacod-price-input"
+                                            style={{ width: '170px', textAlign: 'right', border: '1px solid #d9d9d9' }}
+                                            aria-label="Paid amount"
+                                            placeholder="0"
+                                        />
+                                        so'm</span>
+                                </div>
+                                <div className="sacod-summary-row">
+                                    <span>To'lov turi:</span>
+                                    <Select
+                                        value={paymentInfo.paymentType}
+                                        onChange={(value) => setPaymentInfo((prev) => ({ ...prev, paymentType: value }))}
+                                        className="sacod-price-Select"
+                                        aria-label="Payment type"
+                                    >
+                                        <Option value="naqt">Naqt</Option>
+                                        <Option value="bank">Bank</Option>
+                                    </Select>
                                 </div>
                                 <div className={`sacod-summary-row ${summaryData.debt > 0 ? 'sacod-debt' : 'sacod-paid'}`}>
                                     <span>Qarz:</span>
@@ -473,11 +631,82 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                         value={ndsRate}
                                         onChange={handleNdsChange}
                                         className="sacod-price-input"
-                                        style={{ width: '100px', textAlign: 'right' }}
+                                        style={{ width: '200px', textAlign: 'right', border: '1px solid #d9d9d9' }}
                                         aria-label="NDS rate"
                                         placeholder="NDS foizini kiriting"
                                     />
                                 </div>
+                                <div className="sacod-summary-row">
+                                    <span>Mijoz tanlang:</span>
+                                    <Select
+                                        value={selectedCustomer?._id || (isNewCustomer ? 'new' : undefined)}
+                                        onChange={handleCustomerSelect}
+                                        className="sacod-price-Select"
+                                        style={{ width: '200px', margin: '10px 0' }}
+                                        placeholder="Tanlang..."
+                                        aria-label="Select customer"
+                                    >
+                                        {customers.innerData.map((customer) => (
+                                            <Option key={customer._id} value={customer._id}>
+                                                {customer.name}
+                                            </Option>
+                                        ))}
+                                        <Option value="new">Yangi mijoz</Option>
+                                    </Select>
+                                </div>
+                                {isNewCustomer && (
+                                    <>
+                                        <div className="sacod-summary-row">
+                                            <span>Mijoz turi:</span>
+                                            <Select
+                                                value={customerInfo.type}
+                                                onChange={(value) => handleCustomerInfoChange('type', value)}
+                                                className="sacod-price-Select"
+                                                style={{ width: '200px', marginLeft: '10px' }}
+                                                aria-label="Customer type"
+                                            >
+                                                <Option value="individual">Jismoniy shaxs</Option>
+                                                <Option value="company">Yuridik shaxs</Option>
+                                            </Select>
+                                        </div>
+                                        <div className="sacod-summary-row">
+                                            <span>{customerInfo.type === 'company' ? "Kompaniya nomi" : "Mijoz ismi"}:</span>
+                                            <input
+                                                type="text"
+                                                value={customerInfo.name}
+                                                onChange={(e) => handleCustomerInfoChange('name', e.target.value)}
+                                                className="sacod-price-input"
+                                                style={{ width: '200px', marginLeft: '10px', border: '1px solid #d9d9d9' }}
+                                                aria-label="Customer name"
+                                                placeholder={customerInfo.type === 'company' ? "Nomini kiriting.." : "Ismni kiriting..."}
+                                            />
+                                        </div>
+                                        <div className="sacod-summary-row">
+                                            <span>Telefon:</span>
+                                            <input
+                                                type="text"
+                                                value={formattedPhone}
+                                                onChange={handlePhoneChange}
+                                                className="sacod-price-input"
+                                                style={{ width: '200px', marginLeft: '10px', border: '1px solid #d9d9d9' }}
+                                                aria-label="Customer phone"
+                                                placeholder="90 123 45 67"
+                                            />
+                                        </div>
+                                        <div className="sacod-summary-row">
+                                            <span>{customerInfo.type === 'company' ? "Kompaniya manzili:" : "Mijoz manzili:"}</span>
+                                            <input
+                                                type="text"
+                                                value={customerInfo.companyAddress}
+                                                onChange={(e) => handleCustomerInfoChange('companyAddress', e.target.value)}
+                                                className="sacod-price-input"
+                                                style={{ width: '200px', marginLeft: '10px', border: '1px solid #d9d9d9' }}
+                                                aria-label="Company address"
+                                                placeholder="Manzilni kiriting..."
+                                            />
+                                        </div>
+                                    </>
+                                )}
                                 {formInputs.map(input => (
                                     <div key={input.key} className="sacod-summary-row">
                                         <span>{input.label}:</span>
@@ -486,21 +715,43 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                             value={input.value}
                                             onChange={(e) => handleInputChange(input.key, e.target.value)}
                                             className="sacod-price-input"
-                                            style={{ width: '200px', marginLeft: '10px' }}
+                                            style={{ width: '200px', marginLeft: '10px', border: '1px solid #d9d9d9' }}
                                             aria-label={input.ariaLabel}
                                             placeholder={input.placeholder}
                                         />
                                     </div>
                                 ))}
-                                <button
-                                    onClick={openContractModal}
-                                    className="sacod-complete-sale-btn"
-                                    disabled={!isFormValid || cart?.length === 0}
-                                    aria-label="Open contract modal"
-                                >
-                                    <FileText className="sacod-icon-sm" />
-                                    Shartnoma tuzish
-                                </button>
+                                {!isEmployeeValid && salesEmployees?.innerData?.length > 0 && (
+                                    <div className="sacod-summary-row">
+                                        <span>Sotuvchi tanlang:</span>
+                                        <Select
+                                            id="employeeSelect"
+                                            onChange={handleEmployeeSelect}
+                                            value={selectedEmployee?._id || undefined}
+                                            className="sacod-price-Select"
+                                            style={{ width: '200px', margin: '10px 0' }}
+                                            placeholder="Tanlang..."
+                                            aria-label="Select salesperson"
+                                        >
+                                            {salesEmployees.innerData.map((employee) => (
+                                                <Option key={employee._id} value={employee._id}>
+                                                    {employee.firstName} {employee.lastName}
+                                                </Option>
+                                            ))}
+                                        </Select>
+                                    </div>
+                                )}
+                                {isEmployeeValid && (
+                                    <button
+                                        onClick={openContractModal}
+                                        className="sacod-complete-sale-btn"
+                                        disabled={!isFormValid || cart?.length === 0}
+                                        aria-label="Open contract modal"
+                                    >
+                                        <FileText className="sacod-icon-sm" />
+                                        Shartnoma tuzish
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -520,11 +771,23 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                 <strong>Manzil:</strong> Namangan viloyati, Pop tumani, Gilkor MFY, Istiqbol
                             </p>
                             <p>
-                                <strong>Xaridor:</strong> {contractInfo.customerCompany}
+                                <strong>Mijoz:</strong> {contractInfo.customerName}
                             </p>
                             <p>
                                 <strong>Avtotransport:</strong> {contractInfo.transport}
                             </p>
+                            {contractInfo.customerPhone && (
+                                <p>
+                                    <strong>Telefon:</strong> {contractInfo.customerPhone}
+                                </p>
+                            )}
+                            {contractInfo.customerType === 'company' && (
+                                <>
+                                    <p>
+                                        <strong>Kompaniya manzili:</strong> {contractInfo.customerCompanyAddress}
+                                    </p>
+                                </>
+                            )}
                         </div>
                         <table className="doc-table">
                             <thead>
@@ -586,6 +849,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                             onClick={completeContract}
                             className="sacod-modal-btn sacod-modal-btn-confirm"
                             aria-label="Confirm contract"
+                            disabled={isCreatingCartSale}
                         >
                             Shartnomani tasdiqlash
                         </button>

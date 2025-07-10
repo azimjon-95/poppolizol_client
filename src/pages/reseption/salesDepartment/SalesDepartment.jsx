@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
-import { Package, FileText, User, ShoppingCart, Check, AlertCircle, Phone, Building, Calendar, Factory } from 'lucide-react';
+import { Package, FileText, User, ShoppingCart, Check, AlertCircle, Phone, Building, Calendar, Factory, Info } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SalespersonManagement from './salesPerson/SalespersonManagement';
 import CartTab from './CartTab';
-import { products } from './mock';
+import { useSelector } from 'react-redux';
 import { useGetFinishedProductsQuery } from '../../../context/productionApi';
+import {
+    useGetFilteredSalesQuery
+} from '../../../context/cartSaleApi';
 import './style.css';
+import SalesInvoiceDashboard from './SalesInvoiceDashboard';
 
 const SacodSalesModule = () => {
     const [cart, setCart] = useState([]);
     const [sales, setSales] = useState([]);
     const [activeTab, setActiveTab] = useState('products');
-    //useGetFinishedProductsQuery
     const { data: finishedProducts } = useGetFinishedProductsQuery();
-    console.log(finishedProducts);
+    const { data: filteredSales } = useGetFilteredSalesQuery();
+    const filteredSalesLength = useSelector((state) => state.length.filteredSalesLength);
 
     const [paymentInfo, setPaymentInfo] = useState({
         totalAmount: 0,
@@ -24,6 +28,8 @@ const SacodSalesModule = () => {
     });
     const [salesperson] = useState("Azimjon Mamutaliyev");
     const [isContractModalOpen, setIsContractModalOpen] = useState(false);
+    const [isReturnInfoModalOpen, setIsReturnInfoModalOpen] = useState(false);
+    const [selectedReturnInfo, setSelectedReturnInfo] = useState(null);
     const [contractInfo, setContractInfo] = useState({
         customerType: 'individual',
         customerName: '',
@@ -38,7 +44,6 @@ const SacodSalesModule = () => {
 
     // Cart Functions
     const addToCart = (product, quantity = 1) => {
-        // Ensure product and finishedProducts exist
         if (!product || !finishedProducts) {
             toast.error('Mahsulot topilmadi yoki ma\'lumotlar yuklanmadi!', {
                 position: 'top-right',
@@ -48,11 +53,9 @@ const SacodSalesModule = () => {
         }
 
         setCart((prevCart) => {
-            // Check if the product already exists in the cart
             const existingItemIndex = prevCart.findIndex((item) => item._id === product._id);
 
             if (existingItemIndex !== -1) {
-                // Update quantity of existing item
                 return prevCart.map((item, index) =>
                     index === existingItemIndex
                         ? { ...item, quantity: item.quantity + quantity }
@@ -60,7 +63,6 @@ const SacodSalesModule = () => {
                 );
             }
 
-            // Add new product to cart
             return [
                 ...prevCart,
                 {
@@ -79,9 +81,6 @@ const SacodSalesModule = () => {
             }
         );
     };
-
-
-
 
     const calculateItemTotal = (item) => {
         if (item.type === 'coal_paper') {
@@ -195,13 +194,10 @@ const SacodSalesModule = () => {
         return type === 'betum' ? <Factory className="sacod-icon-sm" /> : <FileText className="sacod-icon-sm" />;
     };
 
-    const getPaymentStatusBadge = (status, debt) => {
-        if (status === 'paid' || debt <= 0) {
-            return <span className="sacod-badge sacod-badge-success"><Check className="sacod-icon-xs" /> To'liq to'langan</span>;
-        }
-        return <span className="sacod-badge sacod-badge-warning"><AlertCircle className="sacod-icon-xs" /> Qarzli</span>;
+    const showReturnInfo = (returnInfo) => {
+        setSelectedReturnInfo(returnInfo);
+        setIsReturnInfoModalOpen(true);
     };
-
 
     return (
         <div className="sacod-sales-container">
@@ -238,7 +234,7 @@ const SacodSalesModule = () => {
                         onClick={() => setActiveTab('sales')}
                     >
                         <FileText className="sacod-icon-sm" />
-                        Shartnomalar<p style={{ fontSize: "17px" }}>({sales?.length})</p>
+                        Shartnomalar<p style={{ fontSize: "17px" }}>({filteredSalesLength})</p>
                     </button>
                     <button
                         className={`sacod-nav-btn ${activeTab === 'salespeople' ? 'sacod-nav-btn-active' : ''}`}
@@ -253,14 +249,21 @@ const SacodSalesModule = () => {
             {activeTab === 'products' && (
                 <div className="sacod-products-grid">
                     {finishedProducts?.map((product, inx) => (
-                        <div key={inx} className="sacod-product-card">
+                        <div
+                            key={inx}
+                            className={`sacod-product-card ${product.isReturned ? 'sacod-product-card-returned' : ''}`}
+                        >
+                            {product.isReturned && (
+                                <div className="sacod-returned-info">
+                                    <p>Mijozdan qaytgan mahsulot</p>
+                                </div>
+                            )}
                             <div className="sacod-product-header">
                                 <div className="sacod-product-icon">
                                     {getProductIcon(product.type)}
                                 </div>
                                 <div className="sacod-product-stock">
                                     <Package className="sacod-icon-xs" />
-
                                     {product.quantity.toLocaleString()} {product.size === 'dona' ? 'dona' : 'kg'}
                                 </div>
                             </div>
@@ -292,19 +295,28 @@ const SacodSalesModule = () => {
                                     Tannarxi: <br /> <strong>{product.productionCost.toLocaleString()} so'm</strong>
                                 </div>
                             </div>
-
-                            <button
-                                onClick={() => addToCart(product, product.type === 'coal_paper' ? 1 : 1)}
-                                className="sacod-add-to-cart-btn"
-                            >
-                                <ShoppingCart className="sacod-icon-xs" />
-                                Savatga qo'shish
-                            </button>
+                            <div className="sacod-return-details-btn_box">
+                                <button
+                                    onClick={() => addToCart(product, product.type === 'coal_paper' ? 1 : 1)}
+                                    className="sacod-add-to-cart-btn"
+                                >
+                                    <ShoppingCart className="sacod-icon-xs" />
+                                    Savatga qo'shish
+                                </button>
+                                {product.isReturned && (
+                                    <button
+                                        className="sacod-return-details-btn"
+                                        onClick={() => showReturnInfo(product.returnInfo)}
+                                    >
+                                        <Info className="sacod-icon-xs" />
+                                        Batafsil
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     ))}
                 </div>
             )}
-
 
             {activeTab === 'cart' && (
                 <CartTab
@@ -437,99 +449,45 @@ const SacodSalesModule = () => {
                 </div>
             )}
 
+            {isReturnInfoModalOpen && (
+                <div className="sacod-modal">
+                    <div className="sacod-modal-content">
+                        <h2 className="sacod-modal-title">
+                            <Info className="sacod-icon-sm" />
+                            Qaytarish Ma'lumotlari
+                        </h2>
+                        <div className="sacod-form-section">
+                            <div className="sacod-form-row">
+                                <label>Qaytarish Sanasi:</label>
+                                <p>{selectedReturnInfo?.returnDate ? new Date(selectedReturnInfo.returnDate).toLocaleDateString('uz-UZ') : 'N/A'}</p>
+                            </div>
+                            <div className="sacod-form-row">
+                                <label>Qaytarish Sababi:</label>
+                                <p>{selectedReturnInfo?.returnReason || 'N/A'}</p>
+                            </div>
+                        </div>
+
+                        <div className="sacod-modal-actions">
+                            <button
+                                onClick={() => setIsReturnInfoModalOpen(false)}
+                                className="sacod-modal-btn sacod-modal-btn-cancel"
+                            >
+                                Yopish
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {activeTab === 'sales' && (
-                <div className="sacod-content-section">
-                    {sales?.length === 0 ? (
+                <div className={activeTab === "sales" ? "" : ""}>
+                    {filteredSales?.innerData?.length === 0 ? (
                         <div className="sacod-empty-state">
                             <FileText className="sacod-empty-icon" />
                             <p>Hali hech qanday sotuv amalga oshirilmagan</p>
                         </div>
                     ) : (
-                        <div className="sacod-sales-list">
-                            {sales?.map(sale => (
-                                <div key={sale.id} className="sacod-sale-card">
-                                    <div className="sacod-sale-header">
-                                        <div className="sacod-sale-date">
-                                            <Calendar className="sacod-icon-sm" />
-                                            {sale.date} - {sale.time}
-                                        </div>
-                                        <div className="sacod-sale-status">
-                                            {getPaymentStatusBadge(sale.payment.status, sale.payment.debt)}
-                                            {sale.isContract && (
-                                                <span className="sacod-badge sacod-badge-info">Shartnoma</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="sacod-sale-customer">
-                                        <div className="sacod-customer-icon">
-                                            {sale.customer.type === 'company' ? <Building className="sacod-icon-sm" /> : <User className="sacod-icon-sm" />}
-                                        </div>
-                                        <div className="sacod-customer-details">
-                                            <h4>{sale.customer.name}</h4>
-                                            {sale.customer.phone && (
-                                                <p className="sacod-customer-phone">
-                                                    <Phone className="sacod-icon-xs" />
-                                                    {sale.customer.phone}
-                                                </p>
-                                            )}
-                                            {sale.customer.type === 'company' && sale.customer.companyAddress && (
-                                                <p className="sacod-customer-address">{sale.customer.companyAddress}</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="sacod-sale-items">
-                                        <h5>Sotilgan mahsulotlar:</h5>
-                                        {sale.items?.map((item, index) => (
-                                            <div key={index} className="sacod-sale-item">
-                                                <span>
-                                                    {item.name} × {item.quantity} {item.type === 'coal_paper' ? 'dona' : 'qop'}
-                                                    {item.type === 'coal_paper' && item.quantity >= 25 && (
-                                                        <span> ({calculatePoddonCount(item.quantity)} poddon)</span>
-                                                    )}
-                                                </span>
-                                                <span>{calculateItemTotal(item)?.toLocaleString()} so'm</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="sacod-sale-summary">
-                                        <div className="sacod-sale-info">
-                                            <div className="sacod-sale-stat">
-                                                <span>Jami og'irlik:</span>
-                                                <span>{sale.totalWeight} kg</span>
-                                            </div>
-                                            <div className="sacod-sale-stat">
-                                                <span>Jami poddonlar:</span>
-                                                <span>{sale.totalPoddons}</span>
-                                            </div>
-                                            <div className="sacod-sale-stat">
-                                                <span>Jami summa:</span>
-                                                <span>{sale.payment.totalAmount?.toLocaleString()} so'm</span>
-                                            </div>
-                                            <div className="sacod-sale-stat">
-                                                <span>To'langan:</span>
-                                                <span>{sale.payment.paidAmount?.toLocaleString()} so'm</span>
-                                            </div>
-                                            {sale.payment.debt > 0 && (
-                                                <div className="sacod-sale-stat sacod-debt-stat">
-                                                    <span>Qarz:</span>
-                                                    <span>{sale.payment.debt?.toLocaleString()} so'm</span>
-                                                </div>
-                                            )}
-                                            {sale.payment.paymentDescription && (
-                                                <div className="sacod-sale-stat">
-                                                    <span>To'lov tavsifi:</span>
-                                                    <span>{sale.payment.paymentDescription}</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="sacod-salesperson">
-                                            <User className="sacod-icon-xs" />
-                                            Sotuvchi: {sale.salesperson}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                        <SalesInvoiceDashboard />
                     )}
                 </div>
             )}
