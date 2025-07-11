@@ -16,6 +16,7 @@ const { TabPane } = Tabs;
 function Attendance() {
   const [attendanceData, setAttendanceData] = useState({});
   const [markedToday, setMarkedToday] = useState({});
+  const [filterUnit, setFilterUnit] = useState("all"); // ⭐️ filter state
   const [markAttendance, { isLoading }] = useMarkAttendanceMutation();
   const { data: workers, isLoading: isWorkersLoading } = useGetWorkersQuery();
 
@@ -73,6 +74,14 @@ function Attendance() {
   };
 
   if (isWorkersLoading) return <Spin />;
+
+  // Filtered workers:
+  const filteredWorkers =
+    filterUnit === "all"
+      ? workers?.innerData || []
+      : (workers?.innerData || []).filter(
+          (w) => (w.unit || "").toLowerCase() === filterUnit
+        );
 
   const columns = [
     {
@@ -141,12 +150,30 @@ function Attendance() {
   return (
     <Tabs defaultActiveKey="1">
       <TabPane tab="Davomat" key="1">
-        <Card title="Bugungi davomat">
+        <Card
+          title={
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <p>Bugungi davomat</p>
+              <Select
+                style={{ width: 150 }}
+                value={filterUnit}
+                onChange={setFilterUnit}
+              >
+                <Option value="all">Barchasi</Option>
+                <Option value="polizol">Polizol</Option>
+                <Option value="rubiroid">Rubiroid</Option>
+                <Option value="ochisleniya">Ochisleniya</Option>
+                <Option value="boshqa">Boshqa</Option>
+              </Select>
+            </div>
+          }
+        >
           <Table
             rowKey="_id"
-            dataSource={workers?.innerData || []}
+            dataSource={filteredWorkers}
             columns={columns}
             pagination={false}
+            scroll={{ y: 700 }}
           />
         </Card>
       </TabPane>
