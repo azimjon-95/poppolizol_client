@@ -20,12 +20,24 @@ function Layout() {
   const isDirectorPath = location.pathname === "/director" || "/expense";
   return (
     <div className="layout">
-      <div className="layout_left">
-        <Sidebar />
-      </div>
+      {
+        role === "saler_meneger" || role === "saler"
+          ?
+          <></>
+          :
+          <div className="layout_left">
+            <Sidebar />
+          </div>
+      }
 
       <div className="layout_right">
-        <Header />
+        {
+          role === "saler_meneger" || role === "saler"
+            ?
+            <></>
+            :
+            <Header />
+        }
         <main
           style={{
             background: ["director", "expense"].includes(isDirectorPath)

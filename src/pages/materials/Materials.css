@@ -434,6 +434,7 @@ h4:where(.css-dev-only-do-not-override-mc1tut).ant-typography {
   color: rgba(0, 0, 0, 0.85) !important;
   background: #fafafa !important;
   border-radius: 8px !important;
+  height: 38px;
 }
 
 .warehouse-add-material-btn:hover {

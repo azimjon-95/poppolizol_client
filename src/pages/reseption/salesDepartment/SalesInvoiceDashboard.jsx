@@ -9,7 +9,8 @@ import {
     usePayDebtMutation,
     useUpdateCartSaleMutation,
     useDeleteCartSaleMutation,
-    useReturnProductsMutation
+    useReturnProductsMutation,
+    useGetCompanysQuery
 } from '../../../context/cartSaleApi';
 import { setFilteredSalesLength } from '../../../context/actions/lengthSlice';
 import { useDispatch } from 'react-redux';
@@ -52,19 +53,22 @@ const SalesInvoiceDashboard = () => {
         isReturnModalOpen: false,
         isEditModalOpen: false,
         isDeleteModalOpen: false,
+        isCustomerModalOpen: false,
         activeSaleId: null,
+        activeCustomer: null,
     });
     const [returnProducts] = useReturnProductsMutation();
     const [returnItems, setReturnItems] = useState([]);
     const [refundAmount, setRefundAmount] = useState('');
     const [editSaleData, setEditSaleData] = useState({});
     const [selectedSalesperson, setSelectedSalesperson] = useState('all');
+    const [selectedCompany, setSelectedCompany] = useState('all');
     const [selectedMonth, setSelectedMonth] = useState(() => {
         const date = new Date();
         return `${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
     });
-
-    const { data: filteredSales, refetch, isLoading, isError } = useGetFilteredSalesQuery(selectedMonth, {
+    const { data: companys = { innerData: [] } } = useGetCompanysQuery();
+    const { data: filteredSales, refetch, isLoading } = useGetFilteredSalesQuery(selectedMonth, {
         skip: !selectedMonth,
     });
 
@@ -72,10 +76,7 @@ const SalesInvoiceDashboard = () => {
 
     useEffect(() => {
         if (filteredSales?.innerData) {
-            const timer = setTimeout(() => {
-                setSalesData(filteredSales.innerData);
-            }, 1000);
-            return () => clearTimeout(timer);
+            setSalesData(filteredSales.innerData);
         }
     }, [filteredSales]);
 
@@ -86,13 +87,29 @@ const SalesInvoiceDashboard = () => {
     }, [selectedMonth, refetch]);
 
     const salespeople = useMemo(() => {
-        const uniqueSalespeople = [...new Set(salesData?.map(sale => sale.salesperson))];
+        const uniqueSalespeople = [...new Set(salesData?.map(sale => sale.salesperson).filter(Boolean))];
         return ['all', ...uniqueSalespeople];
     }, [salesData]);
 
     const currentSale = useMemo(() => {
         return salesData.find(s => s._id === modalState.activeSaleId) || null;
     }, [salesData, modalState.activeSaleId]);
+
+    const role = localStorage.getItem("role");
+    const workerId = localStorage.getItem("workerId");
+
+    const filteredSalesData = useMemo(() => {
+        return salesData.filter(sale => {
+            const matchesSalesperson = role === "saler"
+                ? sale.salerId === workerId
+                : selectedSalesperson === 'all' || sale.salesperson === selectedSalesperson;
+
+            const matchesCompany = selectedCompany === 'all' || (sale.customerId?._id === selectedCompany);
+
+            return matchesSalesperson && matchesCompany;
+        });
+    }, [salesData, selectedSalesperson, selectedCompany, role, workerId]);
+
 
     const processPayment = useCallback(async (saleId) => {
         const amount = parseFloat(paymentAmount);
@@ -106,7 +123,7 @@ const SalesInvoiceDashboard = () => {
             toast.error("Sotuv topilmadi!");
             return;
         }
-        if (amount > sale.payment?.debt) {
+        if (amount > (sale.payment?.debt || 0)) {
             toast.error("To'lov miqdori qarzdan oshib ketdi!");
             return;
         }
@@ -121,8 +138,8 @@ const SalesInvoiceDashboard = () => {
             setSalesData(prev =>
                 prev.map(sale => {
                     if (sale._id === saleId) {
-                        const newPaidAmount = sale.payment.paidAmount + amount;
-                        const newDebt = sale.payment.totalAmount - newPaidAmount;
+                        const newPaidAmount = (sale.payment?.paidAmount || 0) + amount;
+                        const newDebt = (sale.payment?.totalAmount || 0) - newPaidAmount;
                         const newStatus = newDebt <= 0 ? 'paid' : 'partial';
                         return {
                             ...sale,
@@ -132,7 +149,7 @@ const SalesInvoiceDashboard = () => {
                                 debt: Math.max(0, newDebt),
                                 status: newStatus,
                                 paymentHistory: [
-                                    ...sale.payment.paymentHistory,
+                                    ...(sale.payment?.paymentHistory || []),
                                     {
                                         amount,
                                         date: new Date().toISOString(),
@@ -157,7 +174,6 @@ const SalesInvoiceDashboard = () => {
         setModalState(prev => ({ ...prev, isPaymentModalOpen: false, activeSaleId: null }));
     }, [paymentAmount, paymentDescription, paymentType, payDebt, salesData]);
 
-
     const processUpdateSale = async (saleId) => {
         try {
             await updateCartSale({ id: saleId, body: editSaleData }).unwrap();
@@ -169,7 +185,6 @@ const SalesInvoiceDashboard = () => {
             console.error(error);
         }
     };
-
 
     const processDeleteSale = useCallback((saleId) => {
         setModalState(prev => ({ ...prev, isDeleteModalOpen: true, activeSaleId: saleId }));
@@ -199,7 +214,7 @@ const SalesInvoiceDashboard = () => {
             return;
         }
         if (refund > totalRefund) {
-            toast.error("Qaytariladigan summa tan29langan mahsulotlar summasidan oshib ketdi!");
+            toast.error("Qaytariladigan summa tanlangan mahsulotlar summasidan oshib ketdi!");
             return;
         }
 
@@ -229,7 +244,7 @@ const SalesInvoiceDashboard = () => {
         } catch (error) {
             toast.error("Qaytarishda xatolik yuz berdi.");
         }
-    }, [refundAmount, returnReason, paymentType, returnItems, modalState.activeSaleId, payDebt]);
+    }, [refundAmount, returnReason, paymentType, returnItems, modalState.activeSaleId, returnProducts]);
 
     const openPaymentModal = useCallback((saleId) => {
         const sale = salesData.find(s => s._id === saleId);
@@ -275,6 +290,20 @@ const SalesInvoiceDashboard = () => {
         setModalState(prev => ({ ...prev, isReturnModalOpen: true, activeSaleId: saleId }));
     }, [salesData]);
 
+    const openCustomerModal = useCallback((saleId) => {
+        const sale = salesData.find(s => s._id === saleId);
+        if (!sale) {
+            toast.error("Sotuv topilmadi!");
+            return;
+        }
+        setModalState(prev => ({
+            ...prev,
+            isCustomerModalOpen: true,
+            activeSaleId: saleId,
+            activeCustomer: sale.customerId,
+        }));
+    }, [salesData]);
+
     const closeModal = useCallback(() => {
         setModalState({
             isPaymentModalOpen: false,
@@ -282,7 +311,9 @@ const SalesInvoiceDashboard = () => {
             isReturnModalOpen: false,
             isEditModalOpen: false,
             isDeleteModalOpen: false,
+            isCustomerModalOpen: false,
             activeSaleId: null,
+            activeCustomer: null,
         });
         setPaymentAmount('');
         setPaymentDescription('');
@@ -308,14 +339,14 @@ const SalesInvoiceDashboard = () => {
     const calculateTotalRefund = useCallback(() => {
         return returnItems.reduce((total, item) => {
             if (item.selected && item.returnQuantity > 0) {
-                return total + (item.returnQuantity * item.discountedPrice);
+                return total + (item.returnQuantity * (item.discountedPrice || 0));
             }
             return total;
         }, 0);
     }, [returnItems]);
 
-    const getTotalSales = useCallback(() => salesData.reduce((total, sale) => total + sale.payment?.totalAmount, 0), [salesData]);
-    const getTotalDebt = useCallback(() => salesData.reduce((total, sale) => total + sale.payment?.debt, 0), [salesData]);
+    const getTotalSales = useCallback(() => filteredSalesData.reduce((total, sale) => total + (sale.payment?.totalAmount || 0), 0), [filteredSalesData]);
+    const getTotalDebt = useCallback(() => filteredSalesData.reduce((total, sale) => total + (sale.payment?.debt || 0), 0), [filteredSalesData]);
 
     const handleInputChange = (e) => {
         const value = e.target.value;
@@ -331,13 +362,14 @@ const SalesInvoiceDashboard = () => {
     };
 
     const formatNumber = (value) => {
-        if (!value && value !== 0) return '';
+        if (value == null || isNaN(value)) return '0';
         return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     };
 
     const parseNumber = (value) => {
         if (!value) return 0;
-        return parseInt(value.replace(/\./g, ''), 10);
+        const parsed = parseFloat(value.replace(/\./g, ''));
+        return isNaN(parsed) ? 0 : parsed;
     };
 
     const renderPopoverContent = (saleId) => (
@@ -367,11 +399,13 @@ const SalesInvoiceDashboard = () => {
     );
 
     useEffect(() => {
-        if (salesData) {
-            dispatch(setFilteredSalesLength(salesData?.length));
+        if (filteredSalesData) {
+            dispatch(setFilteredSalesLength(filteredSalesData.length));
         }
-    }, [salesData]);
+    }, [filteredSalesData, dispatch]);
 
+    // Calculate total ndsTotal
+    const totalNds = filteredSalesData.reduce((sum, sale) => sum + (sale.payment.ndsTotal || 0), 0);
     return (
         <div className="invoice-dashboard">
             <ToastContainer
@@ -395,18 +429,36 @@ const SalesInvoiceDashboard = () => {
                     <div className="invoice-filters" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
                         <div className="invoice-filter-group">
                             <Select
-                                id="salesperson-filter"
+                                id="company-filter"
                                 style={{ width: 200 }}
-                                value={selectedSalesperson}
-                                onChange={setSelectedSalesperson}
+                                value={selectedCompany}
+                                onChange={setSelectedCompany}
                             >
-                                {salespeople.map((person, index) => (
-                                    <Option key={index} value={person}>
-                                        {person === 'all' ? 'Barchasi' : person}
+                                <Option value="all">Barcha buyurtmachilar</Option>
+                                {companys.innerData?.map((company) => (
+                                    <Option key={company._id} value={company._id}>
+                                        {company.name}
                                     </Option>
                                 ))}
                             </Select>
                         </div>
+                        {
+                            role !== "saler" &&
+                            <div className="invoice-filter-group">
+                                <Select
+                                    id="salesperson-filter"
+                                    style={{ width: 200 }}
+                                    value={selectedSalesperson}
+                                    onChange={setSelectedSalesperson}
+                                >
+                                    {salespeople.map((person, index) => (
+                                        <Option key={index} value={person}>
+                                            {person === 'all' ? 'Barcha sotuvchilar' : person}
+                                        </Option>
+                                    ))}
+                                </Select>
+                            </div>
+                        }
                         <div className="invoice-filter-group">
                             <Input
                                 id="month-filter"
@@ -422,7 +474,7 @@ const SalesInvoiceDashboard = () => {
                 </div>
                 <div className="invoice-stats-grid">
                     <div className="invoice-stat-card">
-                        <div className="invoice-stat-value">{salesData.length}</div>
+                        <div className="invoice-stat-value">{filteredSalesData.length}</div>
                         <div className="invoice-stat-label">Jami Savdolar</div>
                     </div>
                     <div className="invoice-stat-card">
@@ -434,148 +486,154 @@ const SalesInvoiceDashboard = () => {
                         <div className="invoice-stat-label">Jami Qarz</div>
                     </div>
                     <div className="invoice-stat-card">
-                        <div className="invoice-stat-value">{salesData.filter(s => s.payment?.status === 'paid').length}</div>
+                        <div className="invoice-stat-value">{filteredSalesData.filter(s => s.payment?.status === 'paid').length}</div>
                         <div className="invoice-stat-label">To'langan</div>
+                    </div>
+                    <div className="invoice-stat-card">
+                        <div className="invoice-stat-value">{NumberFormat(totalNds)}</div>
+                        <div className="invoice-stat-label">Jami QQS</div>
                     </div>
                 </div>
             </div>
 
             <div className="invoice-table-container">
-                {
-                    salesData.length === 0 ? (
-                        <div className="sdash-loading-wrapper">
-                            <RefreshCw className="sdash-loading-icon animate-spin" />
-                            <p>Ma'lumotlar yuklanmoqda...</p>
-                        </div>
-                    ) : (
-                        <>
-                            <table className="invoice-table">
-                                <thead>
-                                    <tr>
-                                        <th>Sana/Vaqt</th>
-                                        <th>Sotuvchi</th>
-                                        <th>Mijoz</th>
-                                        <th>Transport</th>
-                                        <th>Mahsulotlar</th>
-                                        <th>Jami Summa</th>
-                                        <th>To'lov</th>
-                                        <th>To'lov holat</th>
-                                        <th>Amallar</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {salesData.map((sale, inx) => (
-                                        <tr key={inx}>
-                                            <td>
-                                                <div className="invoice-card">
-                                                    <div className="invoice-card-header">
-                                                        <Calendar size={16} />
-                                                        {new Date(sale.date).toLocaleDateString('uz-UZ')}
+                {isLoading ? (
+                    <div className="sdash-loading-wrapper">
+                        <RefreshCw className="sdash-loading-icon animate-spin" />
+                        <p>Ma'lumotlar yuklanmoqda...</p>
+                    </div>
+                ) : filteredSalesData.length === 0 ? (
+                    <p>Hech qanday savdo topilmadi.</p>
+                ) : (
+                    <table className="invoice-table">
+                        <thead>
+                            <tr>
+                                <th>Sana/Vaqt</th>
+                                <th>Sotuvchi</th>
+                                <th>Mijoz</th>
+                                <th>Transport</th>
+                                <th>Mahsulotlar</th>
+                                <th>Jami Summa</th>
+                                <th>To'lov</th>
+                                <th>To'lov holat</th>
+                                <th>Amallar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredSalesData.map((sale, inx) => (
+                                <tr key={inx}>
+                                    <td>
+                                        <div className="invoice-card">
+                                            <div className="invoice-card-header">
+                                                <Calendar size={16} />
+                                                {sale.date ? new Date(sale.date).toLocaleDateString('uz-UZ', { timeZone: 'Asia/Tashkent' }) : 'Nomalum'}
+                                            </div>
+                                            <div className="invoice-card-content">
+                                                <Clock size={16} className="invoice-icon" />
+                                                {sale.time || 'Nomalum'}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className="invoice-card">
+                                            <div className="invoice-card-header">
+                                                <User size={16} />
+                                                {sale?.salesperson || 'Belgilanmagan'}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div
+                                            className="invoice-card"
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() => openCustomerModal(sale._id)}
+                                        >
+                                            <div className="invoice-card-header">
+                                                <User size={16} />
+                                                {sale?.customerId?.name || 'Mijoz belgilanmagan'}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className="invoice-card">
+                                            <div className="invoice-card-header">
+                                                <Truck size={16} />
+                                                {sale?.transport || 'Belgilanmagan'}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style={{ background: "dodgerblue", cursor: "pointer" }} className="invoice-card">
+                                            <div className="invoice-card-header invoice-items-preview" onClick={() => openItemsModal(sale._id)}>
+                                                <Package size={16} />
+                                                Mahsulotlar ({sale?.items?.length || 0})
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className="invoice-card">
+                                            <div className="invoice-card-header invoice-amount-display">
+                                                {NumberFormat(sale?.payment?.totalAmount || 0)} so'm
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className="invoice-card">
+                                            <div className="invoice-card-pay">
+                                                <div>
+                                                    <div className="invoice-card-content">
+                                                        <div className="invoice-amount-display">
+                                                            To'langan: {NumberFormat(sale?.payment?.paidAmount || 0)} so'm
+                                                        </div>
                                                     </div>
                                                     <div className="invoice-card-content">
-                                                        <Clock size={16} className="invoice-icon" />
-                                                        {sale.time}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div className="invoice-card">
-                                                    <div className="invoice-card-header">
-                                                        <User size={16} />
-                                                        {sale?.salesperson}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div className="invoice-card">
-                                                    <div className="invoice-card-header">
-                                                        <User size={16} />
-                                                        {sale?.customer?.name}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div className="invoice-card">
-                                                    <div className="invoice-card-header">
-                                                        <Truck size={16} />
-                                                        {sale?.transport || 'Belgilanmagan'}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div style={{ background: "dodgerblue", cursor: "pointer" }} className="invoice-card">
-                                                    <div className="invoice-card-header invoice-items-preview" onClick={() => openItemsModal(sale._id)}>
-                                                        <Package size={16} />
-                                                        Mahsulotlar ({sale?.items?.length})
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div className="invoice-card">
-                                                    <div className="invoice-card-header invoice-amount-display">
-                                                        {NumberFormat(sale?.payment?.totalAmount)} so'm
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div className="invoice-card">
-                                                    <div className="invoice-card-pay">
-                                                        <div className="">
-                                                            <div className="invoice-card-content">
-                                                                <div className="invoice-amount-display">
-                                                                    To'langan: {NumberFormat(sale?.payment?.paidAmount)} so'm
-                                                                </div>
-                                                            </div>
-                                                            <div className="invoice-card-content">
-                                                                <div className="invoice-debt-display">
-                                                                    Qarz: {NumberFormat(sale?.payment?.debt)} so'm
-                                                                </div>
-                                                            </div>
+                                                        <div className="invoice-debt-display">
+                                                            Qarz: {NumberFormat(sale?.payment?.debt || 0)} so'm
                                                         </div>
-                                                        {sale.payment?.debt > 0 && (
-                                                            <button
-                                                                className="invoice-btn invoice-btn-primary"
-                                                                onClick={() => openPaymentModal(sale._id)}
-                                                            >
-                                                                <Plus size={16} />
-                                                                To'lash
-                                                            </button>
-                                                        )}
                                                     </div>
                                                 </div>
-                                            </td>
-                                            <td>
-                                                <span className={`invoice-badge ${sale.payment?.status}`}>
-                                                    {sale.payment?.status === 'paid' ? (
-                                                        <>
-                                                            <CheckCircle2 size={16} />
-                                                            To'langan
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <XCircle size={16} />
-                                                            Qisman
-                                                        </>
-                                                    )}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <Popover
-                                                    content={renderPopoverContent(sale._id)}
-                                                    title="Amallar"
-                                                    trigger="click"
-                                                    placement="left"
-                                                >
-                                                    <Button className='Popoverinrowbtn' type="text" icon={<MoreHorizontal size={19} />} />
-                                                </Popover>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </>
-                    )
-                }
+                                                {(sale.payment?.debt || 0) > 0 && (
+                                                    <button
+                                                        className="invoice-btn invoice-btn-primary"
+                                                        onClick={() => openPaymentModal(sale._id)}
+                                                    >
+                                                        <Plus size={16} />
+                                                        To'lash
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span className={`invoice-badge ${sale.payment?.status || 'partial'}`}>
+                                            {sale.payment?.status === 'paid' ? (
+                                                <>
+                                                    <CheckCircle2 size={16} />
+                                                    To'langan
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <XCircle size={16} />
+                                                    Qisman
+                                                </>
+                                            )}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <Popover
+                                            content={renderPopoverContent(sale._id)}
+                                            title="Amallar"
+                                            trigger="click"
+                                            placement="left"
+                                        >
+                                            <Button className="Popoverinrowbtn" type="text" icon={<MoreHorizontal size={19} />} />
+                                        </Popover>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
             </div>
 
             <Modal
@@ -584,22 +642,35 @@ const SalesInvoiceDashboard = () => {
                 title="Mahsulotlar ro'yxati"
             >
                 <div className="invoice-items-grid">
-                    {currentSale?.items?.map((item, index) => (
-                        <div key={index} className="invoice-item-card">
-                            <div className="invoice-item-header">
-                                {item.productName} ({item.category})
-                            </div>
-                            <div className="invoice-item-details">
-                                <div>Miqdor: {item.quantity.toLocaleString()} {item.size || 'dona'}</div>
-                                <div>Narx: {NumberFormat(item.discountedPrice)}</div>
-                                <div>QQS: {item.ndsRate}%</div>
-                                <div>QQS summa: {NumberFormat(item.ndsAmount)}</div>
-                            </div>
-                            <div className="invoice-item-total">
-                                Jami: {NumberFormat(item?.quantity * item?.discountedPrice)}
-                            </div>
-                        </div>
-                    )) || <p>Mahsulotlar topilmadi</p>}
+                    {currentSale?.items?.length ? (
+                        currentSale.items.map((item, index) => {
+                            const quantity = item.quantity || 0;
+                            const price = item.discountedPrice || 0;
+                            const ndsRate = item.ndsRate || 0;
+
+                            const total = quantity * price;
+                            const ndsAmount = (total * ndsRate) / 100;
+                            const totalAmountNds = total + ndsAmount;
+                            return (
+                                <div key={index} className="invoice-item-card">
+                                    <div className="invoice-item-header">
+                                        {item.productName || 'Noma\'lum'} ({item.category || 'Noma\'lum'})
+                                    </div>
+                                    <div className="invoice-item-details">
+                                        <div>Miqdor: {(item.quantity || 0).toLocaleString()} {item.size || 'dona'}</div>
+                                        <div>Narx: {NumberFormat(item.discountedPrice || 0)}</div>
+                                        <div>QQS: {(item.ndsRate || 0)}%</div>
+                                        <div>QQS summa: {NumberFormat(item.ndsAmount || 0)} so'm</div>
+                                    </div>
+                                    <div className="invoice-item-total">
+                                        Jami: {NumberFormat(totalAmountNds)}
+                                    </div>
+                                </div>
+                            )
+                        })
+                    ) : (
+                        <p>Mahsulotlar topilmadi</p>
+                    )}
                 </div>
             </Modal>
 
@@ -612,13 +683,13 @@ const SalesInvoiceDashboard = () => {
                     <div className="invoice-payment-form">
                         <input
                             className="invoice-form-input"
-                            type="text"
+                            type="number"
                             placeholder="To'lov miqdor"
-                            value={formatNumber(paymentAmount)}
+                            value={paymentAmount}
                             onChange={(e) => {
-                                const rawValue = parseNumber(e.target.value);
-                                if (!isNaN(rawValue)) {
-                                    setPaymentAmount(rawValue);
+                                const value = e.target.value;
+                                if (value === '' || (parseFloat(value) >= 0 && !isNaN(value))) {
+                                    setPaymentAmount(value);
                                 }
                             }}
                             min="0"
@@ -666,25 +737,27 @@ const SalesInvoiceDashboard = () => {
                             <label>
                                 <input
                                     type="checkbox"
-                                    checked={item.selected}
+                                    checked={item.selected || false}
                                     onChange={(e) => handleReturnItemChange(index, 'selected', e.target.checked)}
                                 />
-                                {item.productName} ({item.category})
+                                {item.productName || 'Noma\'lum'} ({item.category || 'Noma\'lum'})
                             </label>
                             {item.selected && (
                                 <input
                                     type="number"
                                     min="1"
-                                    max={item.quantity}
+                                    max={item.quantity || 1}
                                     value={item.returnQuantity || ''}
-                                    placeholder={`Soni: ${item.quantity}`}
+                                    placeholder={`Soni: ${item.quantity || 0}`}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        handleReturnItemChange(index, 'returnQuantity', value === '' ? '' : Math.min(parseInt(value) || 1, item.quantity));
+                                        if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= (item.quantity || 1))) {
+                                            handleReturnItemChange(index, 'returnQuantity', value === '' ? '' : parseInt(value));
+                                        }
                                     }}
                                 />
                             )}
-                            <div>Jami: {NumberFormat((item.returnQuantity || 0) * item.discountedPrice)}</div>
+                            <div>Jami: {NumberFormat((item.returnQuantity || 0) * (item.discountedPrice || 0))}</div>
                         </div>
                     ))}
                     <input
@@ -709,7 +782,9 @@ const SalesInvoiceDashboard = () => {
                         value={refundAmount}
                         onChange={(e) => {
                             const value = e.target.value;
-                            setRefundAmount(value === '' ? '' : Math.max(parseFloat(value) || 0, 0));
+                            if (value === '' || (parseFloat(value) >= 0 && !isNaN(value))) {
+                                setRefundAmount(value);
+                            }
                         }}
                         min="0"
                         placeholder={`Qaytariladigan summa ${NumberFormat(refundAmount || calculateTotalRefund())}`}
@@ -718,12 +793,34 @@ const SalesInvoiceDashboard = () => {
                     <button
                         className="invoice-btn invoice-btn-success"
                         onClick={() => processReturn()}
-                        disabled={!refundAmount || parseFloat(refundAmount) <= 0 || !returnReason || (refundAmount === '' && calculateTotalRefund() === 0)}
+                        disabled={!refundAmount || parseFloat(refundAmount) <= 0 || !returnReason}
                     >
                         <RotateCcw size={16} />
                         Qaytarishni tasdiqlash
                     </button>
                 </div>
+            </Modal>
+
+            <Modal
+                isOpen={modalState.isCustomerModalOpen}
+                onClose={closeModal}
+                title="Mijoz ma'lumotlari"
+            >
+                {modalState.activeCustomer ? (
+                    <div className="invoice-customer-details">
+                        <div className="invoice-customer-detail">
+                            <strong>Ism:</strong> {modalState.activeCustomer.name || 'Noma\'lum'}
+                        </div>
+                        <div className="invoice-customer-detail">
+                            <strong>Telefon:</strong> {modalState.activeCustomer.phone || 'Noma\'lum'}
+                        </div>
+                        <div className="invoice-customer-detail">
+                            <strong>Turi:</strong> {modalState.activeCustomer.type === 'individual' ? 'Jismoniy shaxs' : 'Yuridik shaxs'}
+                        </div>
+                    </div>
+                ) : (
+                    <p>Mijoz ma'lumotlari topilmadi.</p>
+                )}
             </Modal>
 
             <CustomModal
@@ -768,5 +865,4 @@ const SalesInvoiceDashboard = () => {
 };
 
 export default SalesInvoiceDashboard;
-
 

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import {
-  Table, Button, Modal, Form, Input, Select, Radio, Popconfirm, Card, Row, Col, Space, Tag, Typography, Divider
+  Table, Button, Modal, Form, Input, Select, Popconfirm, Card, Row, Col, Space, Tag, Typography,
 } from "antd";
 import {
-  useGetAllMaterialsQuery, useDeleteMaterialMutation, useUpdateMaterialMutation, useCreateMaterialMutation,
-  useGetFirmsQuery, useCreateFirmMutation, useCreateIncomeMutation, useGetIncomesQuery
+  useGetAllMaterialsQuery, useDeleteMaterialMutation, useUpdateMaterialMutation,
+  useGetFirmsQuery, useCreateFirmMutation, useGetIncomesQuery
 } from "../../context/materialApi";
 import { numberFormat } from "../../utils/numberFormat";
 import { capitalizeFirstLetter } from "../../hook/CapitalizeFirstLitter";
@@ -15,6 +15,7 @@ import { toast } from "react-toastify";
 import FormattedInput from "../../components/FormattedInput";
 import IncomeListModal from "./IncomeListModal";
 import "./Materials.css";
+import EditMaterialModal from "./EditMaterialModal";
 
 const { Option } = Select;
 const { Title, Text } = Typography;
@@ -22,18 +23,15 @@ const { Title, Text } = Typography;
 const WarehouseManagement = () => {
   const [materialForm] = Form.useForm();
   const [firmForm] = Form.useForm();
-  const [incomeForm] = Form.useForm();
 
   // API Hooks
   const { data: materials, refetch, isLoading: materialsLoading } = useGetAllMaterialsQuery();
   const { data: firms, isLoading: firmsLoading } = useGetFirmsQuery();
   const { data: incomesData, isLoading: incomesIsLoading } = useGetIncomesQuery();
-  const [createMaterial, { isLoading: createMaterialLoading }] = useCreateMaterialMutation();
   const [updateMaterial, { isLoading: updateMaterialLoading }] = useUpdateMaterialMutation();
   const [deleteMaterial] = useDeleteMaterialMutation();
   const [createFirm, { isLoading: createFirmLoading }] = useCreateFirmMutation();
-  const [createIncome, { isLoading: createIncomeLoading }] = useCreateIncomeMutation();
-  console.log(materials);
+
   // Data
   const materialsData = materials?.innerData || [];
   const firmsData = firms?.innerData || [];
@@ -45,14 +43,16 @@ const WarehouseManagement = () => {
   const [isFirmModalOpen, setIsFirmModalOpen] = useState(false);
   const [isIncomeModalOpen, setIsIncomeModalOpen] = useState(false);
   const [isIncomeListModalOpen, setIsIncomeListModalOpen] = useState(false);
-  const [selectedMaterials, setSelectedMaterials] = useState([]);
-  const [editingMaterial, setEditingMaterial] = useState(null);
   const [incomeSearchText, setIncomeSearchText] = useState("");
+  const [editingMaterial, setEditingMaterial] = useState(null);
+
+
 
   // Handlers
   const handleDeleteMaterial = async (id) => {
     try {
       await deleteMaterial(id).unwrap();
+      refetch();
       toast.success("Material muvaffaqiyatli o'chirildi");
     } catch (error) {
       toast.error(error?.data?.message || "Materialni o'chirishda xatolik yuz berdi");
@@ -67,10 +67,12 @@ const WarehouseManagement = () => {
         price: Number(values.price),
         currency: "sum",
       };
+
       await updateMaterial({ id: editingMaterial._id, body: updatedValues }).unwrap();
       toast.success("Material muvaffaqiyatli tahrirlandi");
       setIsEditModalOpen(false);
       setEditingMaterial(null);
+      refetch();
       materialForm.resetFields();
     } catch (error) {
       toast.error(error?.data?.message || "Materialni tahrirlashda xatolik yuz berdi");
@@ -82,92 +84,13 @@ const WarehouseManagement = () => {
       await createFirm(values).unwrap();
       toast.success("Firma muvaffaqiyatli qo'shildi");
       firmForm.resetFields();
+      refetch();
       setIsFirmModalOpen(false);
     } catch (error) {
       toast.error(error?.data?.message || "Firma qo'shishda xatolik yuz berdi");
     }
   };
 
-  const handleAddMaterialToIncome = () => {
-    const newMaterial = {
-      id: Date.now(),
-      name: "",
-      quantity: 0,
-      price: 0,
-      currency: "sum",
-      category: "BN-3",
-      unit: "kilo",
-    };
-    setSelectedMaterials([...selectedMaterials, newMaterial]);
-  };
-
-  const handleRemoveMaterialFromIncome = (id) => {
-    setSelectedMaterials(selectedMaterials.filter((m) => m.id !== id));
-  };
-
-  const handleMaterialChange = (id, field, value) => {
-    setSelectedMaterials(
-      selectedMaterials.map((m) => (m.id === id ? { ...m, [field]: value } : m))
-    );
-  };
-  console.log(selectedMaterials);
-  const handleIncomeSubmit = async () => {
-    try {
-      const values = await incomeForm.validateFields();
-
-      if (selectedMaterials.length === 0) {
-        toast.error("Hech bo'lmaganda bitta material qo'shing");
-        return;
-      }
-
-      for (const material of selectedMaterials) {
-
-        if (
-          !material.name ||
-          !material.quantity ||
-          !material.price ||
-          !material.unit ||
-          !material.category
-        ) {
-          toast.error("Barcha materiallar to'liq to'ldirilishi kerak");
-          return;
-        }
-      }
-
-      const selectedFirm = firmsData.find((firm) => firm._id === values.firmId);
-      if (!selectedFirm) {
-        toast.error("Firma topilmadi");
-        return;
-      }
-
-      const incomeData = {
-        firm: {
-          name: selectedFirm.name,
-          phone: selectedFirm.phone,
-          address: selectedFirm.address,
-        },
-        materials: selectedMaterials.map((material) => ({
-          name: material.name,
-          quantity: Number(material.quantity),
-          price: Number(material.price),
-          currency: "sum",
-          unit: material.unit,
-          category: material.category,
-        })),
-        price: Number(values.paidAmount) || 0,
-      };
-      await createIncome(incomeData).unwrap();
-      toast.success("Kirim muvaffaqiyatli qo'shildi");
-      setIsIncomeModalOpen(false);
-      setSelectedMaterials([]);
-      refetch()
-      incomeForm.resetFields();
-    } catch (error) {
-      toast.error(error?.data?.message || "Kirim qo'shishda xatolik yuz berdi");
-    }
-  };
-
-  // Table columns
   const materialColumns = [
     {
       title: "Material",
@@ -444,7 +367,6 @@ const WarehouseManagement = () => {
                 label="Kategoriya"
                 name="category"
                 rules={[{ required: true, message: "Kategoriyani tanlash shart" }]}
-                // initialValue="BN-3"
                 className="warehouse-form-item"
               >
                 <Select placeholder="Kategoriyani tanlang" className="warehouse-select">
@@ -557,157 +479,7 @@ const WarehouseManagement = () => {
       </Modal>
 
       {/* Income Material Modal */}
-      <Modal
-        title={<span style={{ color: "#fff" }}>Yangi Material Keldi</span>}
-        open={isIncomeModalOpen}
-        onCancel={() => {
-          setIsIncomeModalOpen(false);
-          setSelectedMaterials([]);
-          incomeForm.resetFields();
-        }}
-        footer={null}
-        className="warehouse-modal"
-        width={800}
-      >
-        <Form
-          form={incomeForm}
-          layout="vertical"
-          onFinish={handleIncomeSubmit}
-          className="warehouse-add-form"
-        >
-          <Row gutter={[24, 16]}>
-            <Col xs={24} md={12}>
-              <Form.Item
-                label="Firmani tanlang"
-                name="firmId"
-                rules={[{ required: true, message: "Firmani tanlash shart" }]}
-                className="warehouse-form-item"
-              >
-                <Select
-                  placeholder="Firmani tanlang"
-                  className="warehouse-select"
-                  loading={firmsLoading}
-                >
-                  {firmsData?.map((firm) => (
-                    <Option key={firm._id} value={firm._id}>
-                      {firm.name} | {firm.phone}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item
-                label="To'langan summa"
-                name="paidAmount"
-                className="warehouse-form-item"
-              >
-                <FormattedInput
-                  placeholder="To'langan summani kiriting"
-                  className="warehouse-input"
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Divider className="warehouse-divider">Materiallar</Divider>
-
-          {selectedMaterials.map((material) => (
-            <div key={material.id} style={{ marginBottom: 16 }}>
-              <Row gutter={[16, 16]} style={{ marginBottom: 8 }}>
-                <Col xs={24} md={8}>
-                  <Input
-                    placeholder="Material nomini kiriting"
-                    value={material.name}
-                    onChange={(e) => handleMaterialChange(material.id, "name", e.target.value)}
-                    className="warehouse-input"
-                    prefix={<LuPackagePlus />}
-                  />
-                </Col>
-                <Col xs={24} md={8}>
-                  <FormattedInput
-                    placeholder="Miqdor"
-                    value={material.quantity}
-                    onChange={(value) => handleMaterialChange(material.id, "quantity", value)}
-                    className="warehouse-input"
-                  />
-                </Col>
-                <Col xs={24} md={8}>
-                  <FormattedInput
-                    placeholder="Narx"
-                    value={material.price}
-                    onChange={(value) => handleMaterialChange(material.id, "price", value)}
-                    className="warehouse-input"
-                  />
-                </Col>
-              </Row>
-              <Row gutter={[16, 16]}>
-
-                <Col xs={24} md={8}>
-                  <Select
-                    placeholder="Birlikni tanlang"
-                    onChange={(e) => handleMaterialChange(material.id, "unit", e.target.value)}
-                    className="warehouse-selectoption"
-                  >
-                    <Option value="kilo">Kilogram (kg)</Option>
-                    <Option value="dona">Dona</Option>
-                    <Option value="metr">Metr (m)</Option>
-                  </Select>
-                </Col>
-                <Col xs={24} md={8}>
-                  <Select
-                    placeholder="Kategoriyani tanlang"
-                    onChange={(e) => handleMaterialChange(material.id, "category", e.target.value)}
-                    className="warehouse-selectoption"
-                  >
-                    <Option value="BN-3">BN-3</Option>
-                    <Option value="BN-5">BN-5</Option>
-                    <Option value="Mel">Mel</Option>
-                    <Option value="ip">Ip</Option>
-                    <Option value="kraf">Kraf qog'oz</Option>
-                    <Option value="qop">Qop</Option>
-                    <Option value="Others">Boshqalar</Option>
-                  </Select>
-                </Col>
-                <Col xs={24} md={8}>
-                  <Button
-                    type="primary"
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={() => handleRemoveMaterialFromIncome(material.id)}
-                    className="warehouse-delete-btn"
-                    style={{ width: "100%", height: "38px" }}
-                  />
-                </Col>
-              </Row>
-            </div>
-          ))}
-
-          <Button
-            type="dashed"
-            onClick={handleAddMaterialToIncome}
-            block
-            icon={<PlusOutlined />}
-            className="warehouse-add-material-btn"
-            style={{ marginBottom: 24 }}
-          >
-            Material Qo'shish
-          </Button>
-
-          <Form.Item className="warehouse-form-submit">
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={createIncomeLoading}
-              icon={<PlusOutlined />}
-              size="large"
-              className="warehouse-submit-btn"
-            >
-              Saqlash
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
+      <EditMaterialModal setIsIncomeModalOpen={setIsIncomeModalOpen} firmsLoading={firmsLoading} isIncomeModalOpen={isIncomeModalOpen} />
 
       {/* Income List Modal */}
       <IncomeListModal
@@ -723,5 +495,3 @@ const WarehouseManagement = () => {
 };
 
 export default WarehouseManagement;
-
-

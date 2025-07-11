@@ -1,14 +1,12 @@
-
 // Header.js - Enhanced header component with better logout flow
 import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Modal, Button, message } from 'antd';
+import { Modal, Button, notification } from 'antd'; // Changed from message to notification
 import { Calendar } from 'lucide-react';
 import { RiLogoutCircleRLine, RiUser3Line, RiSearchLine, RiCloseLine } from 'react-icons/ri';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { logout } from '../../context/actions/authSlice';
 import { toggleSearchPanel, setSearchQuery, clearSearchQuery } from '../../context/actions/authSearch';
 import { setSelectedMonth } from '../../context/actions/monthSlice';
 import './Header.css';
@@ -17,7 +15,8 @@ function Header() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
-  const { adminFullname, role } = useSelector((state) => state.auth);
+  const adminFullname = localStorage.getItem("admin_fullname");
+  const role = localStorage.getItem("role");
   const { isSearchOpen, searchQuery } = useSelector((state) => state.search);
   const { selectedMonth } = useSelector((state) => state.month);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -50,25 +49,24 @@ function Header() {
     setIsLoggingOut(true);
 
     try {
-      // Clear search query
       dispatch(clearSearchQuery());
-
-      // Close profile panel
       setIsProfileOpen(false);
+      notification.success({
+        message: 'Muvaffaqiyatli tizimdan chiqdingiz!',
+        description: 'Siz tizimdan muvaffaqiyatli chiqdingiz.',
+        placement: 'topRight',
+      });
 
-      // Dispatch logout action
-      dispatch(logout());
-
-      // Show success message
-      message.success("Muvaffaqiyatli tizimdan chiqdingiz!");
-
-      // Small delay for better UX
       setTimeout(() => {
-        navigate('/login', { replace: true });
+        localStorage.clear();
+        navigate('/login');
       }, 500);
-
     } catch (error) {
-      message.error("Chiqishda xatolik yuz berdi!");
+      notification.error({
+        message: 'Chiqishda xatolik yuz berdi!',
+        description: 'Iltimos, qaytadan urinib ko‘ring.',
+        placement: 'topRight',
+      });
       console.error("Logout error:", error);
     } finally {
       setIsModalOpen(false);
@@ -226,5 +224,3 @@ function Header() {
 }
 
 export default Header;
-
-

@@ -1559,8 +1559,26 @@ textarea.sacod-form-input {
 /* Responsive Design */
 @media (max-width: 768px) {
     .sacod-navigation {
-        padding: 1rem;
-        flex-wrap: wrap;
+        position: fixed;
+        bottom: 0;
+        padding: 0.9em 1.7rem;
+        display: flex;
+        align-items: center;
+        z-index: 9999;
+        width: 100%;
+        justify-content: space-between;
+        background: rgba(46, 125, 50, 0.8);
+        backdrop-filter: blur(6px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .navsaler_bottom {
+        display: none;
+    }
+
+    .about-log {
+        margin-bottom: -8px;
+        margin-left: 25px;
     }
 
     .sacod-content-section {
@@ -1568,11 +1586,17 @@ textarea.sacod-form-input {
     }
 
     .sacod-filter-controls {
-        flex-direction: column;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
     }
 
     .sacod-products-grid {
         grid-template-columns: 1fr;
+        padding: 10px;
+
+        height: calc(100vh - 60px);
     }
 
     .sacod-form-row {
@@ -2333,7 +2357,6 @@ textarea.sacod-form-input {
 .sacod-order-summary {
     background: #f8fafc;
     padding: 20px;
-    padding-top: 10px;
     border-radius: 12px;
     border: 1px solid #e2e8f0;
 }
@@ -2586,8 +2609,11 @@ textarea.sacod-form-input {
 /* Responsive */
 @media (max-width: 768px) {
     .sacod-cart-content {
-        grid-template-columns: 1fr;
-        gap: 20px;
+        width: 100%;
+        display: flex;
+        gap: 30px;
+        flex-direction: column !important;
+        justify-content: space-between;
     }
 
     .sacod-cart-item {

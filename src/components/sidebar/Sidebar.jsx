@@ -6,7 +6,6 @@ import { menuItems } from "../../utils/SidebarMenu";
 
 function Sidebar() {
   const role = localStorage.getItem("role");
-  const location = useLocation();
 
   const getInitialOpenMenus = () => {
     try {

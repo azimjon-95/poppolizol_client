@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { message } from "antd";
-import { setCredentials } from "../../context/actions/authSlice";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import Loading from "./Loading";
 import axios from "../../api";
@@ -17,25 +16,24 @@ import {
 import "./login.css";
 
 const Login = () => {
+  // Initialize authMode from localStorage, default to true if not set
+  const [authMode, setAuthMode] = useState(() => {
+    const savedAuthMode = localStorage.getItem('authMode');
+    return savedAuthMode !== null ? JSON.parse(savedAuthMode) : true;
+  });
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
-  const { isAuthenticated, role } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({
-    username: localStorage.getItem("rememberedUsername") || "",
-    password: localStorage.getItem("rememberedPassword") || "",
+    username: '',
+    password: '',
+    pin: '',
   });
 
+  // Save authMode to localStorage whenever it changes
   useEffect(() => {
-    if (
-      localStorage.getItem("rememberedUsername") &&
-      localStorage.getItem("rememberedPassword")
-    ) {
-      setRememberMe(true);
-    }
-  }, []);
+    localStorage.setItem('authMode', JSON.stringify(authMode));
+  }, [authMode]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -44,85 +42,41 @@ const Login = () => {
     });
   };
 
-  const handleRememberMeChange = (e) => {
-    setRememberMe(e.target.checked);
-    if (!e.target.checked) {
-      localStorage.removeItem("rememberedUsername");
-      localStorage.removeItem("rememberedPassword");
-    }
-  };
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated && role) {
-      const getDefaultRoute = (userRole) => {
-        const roleRoutes = {
-          manager: "/manager",
-        };
-        return roleRoutes[userRole] || "/director";
-      };
-
-      navigate(getDefaultRoute(role), { replace: true });
-    }
-  }, [isAuthenticated, role, navigate]);
-
   const clearForm = () => {
-    setFormData({ username: "", password: "" });
+    setFormData({ username: '', password: '', pin: '' });
     setShowPassword(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const data = authMode === true
+      ? { login: formData.username.trim(), password: formData.password.trim() }
+      : { pin: formData.pin.trim() };
 
-    if (!formData.username.trim() || !formData.password.trim()) {
-      message.warning("Login va parolni kiriting!");
+    if (!data.login && !data.pin) {
+      toast.warn('Iltimos, login yoki PIN kodini kiriting!');
       return;
     }
 
     setLoading(true);
 
     try {
-      const res = await axios.post("/admin/login", {
-        login: formData.username.trim(),
-        password: formData.password.trim(),
-      });
-
+      const endpoint = authMode === true ? '/admin/login' : '/admin/pin';
+      const res = await axios.post(endpoint, data);
       const { message: successMessage, innerData } = res.data;
+      const doctorName = `${innerData?.employee?.firstName || ''} ${innerData?.employee?.lastName || ''}`.trim();
 
-      // Store doctor name for backward compatibility
-      const doctorName = `${innerData?.employee?.firstName || ""} ${innerData?.employee?.lastName || ""
-        }`.trim();
-      localStorage.setItem("doctor", doctorName);
-      localStorage.setItem("workerId", innerData?.employee?._id);
+      localStorage.setItem('workerId', innerData?.employee?._id);
+      localStorage.setItem('admin_fullname', doctorName);
+      localStorage.setItem('token', innerData?.token);
+      localStorage.setItem('role', innerData?.employee?.role);
 
-      // Save credentials to localStorage if "Remember Me" is checked
-      if (rememberMe) {
-        localStorage.setItem("rememberedUsername", formData.username.trim());
-        localStorage.setItem("rememberedPassword", formData.password.trim());
-      }
-
-      // Dispatch credentials to Redux store
-      dispatch(
-        setCredentials({
-          adminFullname: doctorName,
-          role: innerData?.employee?.role,
-          token: innerData?.token,
-        })
-      );
-
-      message.success(successMessage || "Muvaffaqiyatli tizimga kirdingiz!");
-
-      // Clear form
+      toast.success(successMessage || 'Muvaffaqiyatli tizimga kirdingiz!');
       clearForm();
-
-      // Navigate to appropriate route based on role
-      // const defaultRoute = getDefaultRoute(innerData?.employee?.role);
-      // navigate(defaultRoute, { replace: true });
+      navigate(`/${innerData?.employee?.role}`);
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Tizimga kirishda xatolik yuz berdi!";
-      message.error(errorMessage);
-      console.error("Login error:", error);
+      const errorMessage = error.response?.data?.message || 'Tizimga kirishda xatolik yuz berdi!';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -134,14 +88,13 @@ const Login = () => {
 
   return (
     <div className="bpf-authentication-wrapper">
-      {/* Animatsion fon elementlari */}
+      <ToastContainer />
       <div className="bpf-animated-background-overlay">
         <div className="bpf-floating-paper-roll-primary"></div>
         <div className="bpf-floating-paper-roll-secondary"></div>
         <div className="bpf-floating-paper-roll-tertiary"></div>
       </div>
 
-      {/* Zavod silueti foni */}
       <div className="bpf-industrial-silhouette-container">
         <div className="bpf-factory-architectural-layout">
           <div className="bpf-manufacturing-building-primary"></div>
@@ -151,9 +104,7 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Asosiy kirish konteyneri */}
       <div className="bpf-authentication-container-wrapper">
-        {/* Sarlavha */}
         <div className="bpf-brand-identity-section">
           <div className="bpf-corporate-logo-container">
             <Factory className="w-10 h-10 text-white" />
@@ -163,92 +114,107 @@ const Login = () => {
             CRM Boshqaruv Tizimi
           </p>
         </div>
-
-        {/* Kirish formasi */}
-        <div className="bpf-authentication-panel-container">
-          <div className="bpf-form-fields-container">
-            {/* Foydalanuvchi nomi maydoni */}
-            <div className="bpf-input-field-grouping-wrapper">
-              <label htmlFor="username" className="bpf-field-label-typography">
-                Foydalanuvchi nomi
-              </label>
-              <div className="bpf-interactive-input-container">
-                <div className="bpf-input-icon-positioning-wrapper">
-                  <User className="w-5 h-5" />
+        {authMode === true ? (
+          <div className="bpf-authentication-panel-container">
+            <div className="bpf-form-fields-container">
+              <div className="bpf-input-field-grouping-wrapper">
+                <label htmlFor="username" className="bpf-field-label-typography">
+                  Foydalanuvchi nomi
+                </label>
+                <div className="bpf-interactive-input-container">
+                  <div className="bpf-input-icon-positioning-wrapper">
+                    <User className="w-5 h-5" />
+                  </div>
+                  <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleInputChange}
+                    className="bpf-primary-text-input-field"
+                    placeholder="Foydalanuvchi nomingizni kiriting"
+                    required
+                  />
                 </div>
-                <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  className="bpf-primary-text-input-field"
-                  placeholder="Foydalanuvchi nomingizni kiriting"
-                  required
-                />
               </div>
-            </div>
 
-            {/* Parol maydoni */}
-            <div className="bpf-input-field-grouping-wrapper">
-              <label htmlFor="password" className="bpf-field-label-typography">
-                Parol
+              <div className="bpf-input-field-grouping-wrapper">
+                <label htmlFor="password" className="bpf-field-label-typography">
+                  Parol
+                </label>
+                <div className="bpf-interactive-input-container">
+                  <div className="bpf-input-icon-positioning-wrapper">
+                    <Lock className="w-5 h-5" />
+                  </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="bpf-password-input-field"
+                    placeholder="Parolingizni kiriting"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="bpf-password-visibility-toggle-button"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={handleSubmit}
+                className="bpf-primary-authentication-button"
+              >
+                <span>CRM tizimiga kirish</span>
+                <ArrowRight className="w-5 h-5 bpf-button-icon-animation-wrapper" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="bpf-authentication-panel-container">
+            <div className="bpf-form-fields-container">
+              <label htmlFor="pin" className="rgh-pin-label">
+                PIN Kod
               </label>
-              <div className="bpf-interactive-input-container">
-                <div className="bpf-input-icon-positioning-wrapper">
-                  <Lock className="w-5 h-5" />
+              <div className="rgh-pin-input-wrapper">
+                <div className="rgh-pin-input-icon">
+                  <Lock className="w-5 h-5 text-blue-300" />
                 </div>
                 <input
-                  type={showPassword ? "text" : "password"}
-                  id="password"
-                  name="password"
-                  value={formData.password}
+                  type={showPassword ? 'text' : 'password'}
+                  id="pin"
+                  name="pin"
+                  value={formData.pin}
                   onChange={handleInputChange}
-                  className="bpf-password-input-field"
-                  placeholder="Parolingizni kiriting"
+                  className="rgh-pin-input-field"
+                  placeholder="PIN kodingizni kiriting"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="bpf-password-visibility-toggle-button"
+                  className="rgh-pin-visibility-toggle"
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
+                  {showPassword ? <EyeOff className="w-5 h-5 text-blue-300" /> : <Eye className="w-5 h-5 text-blue-300" />}
                 </button>
               </div>
-            </div>
 
-            {/* Eslab qolish checkbox */}
-            <div className="bpf-remember-me-container">
-              <input
-                type="checkbox"
-                id="rememberMe"
-                checked={rememberMe}
-                onChange={handleRememberMeChange}
-                className="bpf-remember-me-checkbox"
-              />
-              <label htmlFor="rememberMe" className="bpf-remember-me-label">
-                Eslab qol
-              </label>
+              <button
+                onClick={handleSubmit}
+                className="bpf-primary-authentication-button"
+              >
+                <span>CRM tizimiga kirish</span>
+                <ArrowRight className="w-5 h-5 bpf-button-icon-animation-wrapper" />
+              </button>
             </div>
-
-            {/* Kirish tugmasi */}
-            <button
-              onClick={handleSubmit}
-              className="bpf-primary-authentication-button"
-            >
-              <span>CRM tizimiga kirish</span>
-              <ArrowRight className="w-5 h-5 bpf-button-icon-animation-wrapper" />
-            </button>
           </div>
-        </div>
-
-        {/* Xavfsizlik belgisi */}
-        <div className="bpf-security-certification-badge">
+        )}
+        <div onClick={() => setAuthMode(!authMode)} className="bpf-security-certification-badge">
           <Shield className="w-4 h-4" />
           <span className="bpf-security-badge-text">Xavfsiz ulanish</span>
         </div>

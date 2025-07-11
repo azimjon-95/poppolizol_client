@@ -6,10 +6,7 @@ import Materials from "../pages/materials/Materials";
 import Norma from "../pages/productNorma/ProductNormaMain";
 import ProductionSystem from "../pages/productionProcess/ProductionSystem";
 import FactoryConfigPanel from "../pages/admin/setting/Setting";
-import ExpenseTracker from "../pages/reseption/expense/ExpenseManager";
-import SalaryManagement from "../pages/reseption/salary/SalaryManagement";
 import FactorySalesSystem from "../pages/reseption/salesDepartment/SalesDepartment";
-import QRFeedbackPage from "../pages/reseption/salesDepartment/QRFeedbackPage";
 import Atendance from "../pages/attendance/Atendance";
 import Salary from "../pages/salary/Salary";
 
@@ -57,29 +54,24 @@ export const routes = [
     private: true,
   },
   {
-    path: "/expense",
-    element: <ExpenseTracker />,
-    role: ["director"],
-    private: true,
-  },
-  // {
-  //   path: "/salary",
-  //   element: <SalaryManagement />,
-  //   role: ["director"],
-  //   private: true,
-  // },
-  {
     path: "/sales",
     element: <FactorySalesSystem />,
     role: ["director"],
     private: true,
   },
   {
-    path: "/feedback",
-    element: <QRFeedbackPage />,
-    role: [""],
-    private: false,
+    path: "/saler_meneger",
+    element: <FactorySalesSystem />,
+    role: ["saler_meneger", "saler"],
+    private: true,
   },
+  {
+    path: "/saler",
+    element: <FactorySalesSystem />,
+    role: ["saler_meneger", "saler"],
+    private: true,
+  },
+
   {
     path: "/attendance",
     element: <Atendance />,

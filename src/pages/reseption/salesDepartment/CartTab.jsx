@@ -6,7 +6,7 @@ import { useReactToPrint } from 'react-to-print';
 import { Select } from 'antd';
 import {
     useCreateCartSaleMutation,
-    useGetCustomerAllQuery,
+    useGetCompanysQuery,
 } from '../../../context/cartSaleApi';
 import { useGetSalesEmployeesQuery } from '../../../context/planSalesApi';
 import { useGetFactoriesQuery } from '../../../context/clinicApi';
@@ -39,7 +39,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
     const navigate = useNavigate();
     const { data: salesEmployees = { innerData: [] } } = useGetSalesEmployeesQuery();
     const { data: factories = { innerData: [] } } = useGetFactoriesQuery();
-    const { data: customers = { innerData: [] } } = useGetCustomerAllQuery();
+    const { data: customers = { innerData: [] } } = useGetCompanysQuery();
     console.log(customers);
     const [createCartSale, { isLoading: isCreatingCartSale }] = useCreateCartSaleMutation();
     const initialNdsRate = factories?.innerData?.[0]?.nds || 12;
@@ -378,6 +378,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                 totalAmount: total,
                 paidAmount: rawPaidAmount || 0,
                 debt,
+                ndsTotal: summaryData.totalNdsAmount,
                 status: debt <= 0 ? 'paid' : 'partial',
                 paymentDescription: contractInfo.paymentDescription,
                 discountReason: (summaryData.itemDiscountAmount > 0 || paymentInfo.discount > 0) ? discountReason : '',

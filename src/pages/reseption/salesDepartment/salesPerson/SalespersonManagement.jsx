@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { User, TrendingUp, TrendingDown, AlertCircle, Check, Calendar, Phone, MapPin, Users, Activity, Filter, RefreshCw, Eye, X, Plus, Edit, Trash2, Target } from 'lucide-react';
 import {
     useGetSalesEmployeesQuery,
@@ -9,6 +11,11 @@ import {
 } from '../../../../context/planSalesApi';
 import { PhoneNumberFormat } from '../../../../hook/NumberFormat';
 import './style.css';
+
+// Notifikatsiya funksiyalari
+const notifySuccess = (message) => toast.success(message, { position: "top-right", autoClose: 3000 });
+const notifyError = (message) => toast.error(message, { position: "top-right", autoClose: 3000 });
+const notifyInfo = (message) => toast.info(message, { position: "top-right", autoClose: 3000 });
 
 // Optimized PerformanceCell component
 const PerformanceCell = React.memo(({ actual, plan, unit = '', className = '' }) => {
@@ -146,6 +153,7 @@ const SalespersonDashboard = () => {
     const handleCreatePlan = async (e) => {
         e.preventDefault();
         if (!planForm.employeeId || !planForm.targetAmount || isNaN(planForm.targetAmount) || planForm.targetAmount <= 0) {
+            notifyError('Iltimos, barcha maydonlarni to\'g\'ri to\'ldiring');
             setFormError('Iltimos, barcha maydonlarni to\'g\'ri to\'ldiring');
             return;
         }
@@ -158,9 +166,11 @@ const SalespersonDashboard = () => {
             setShowPlanModal(false);
             setPlanForm({ employeeId: '', targetAmount: '', month: selectedMonth });
             setFormError('');
+            notifySuccess('Plan muvaffaqiyatli yaratildi!');
             refetchPlans();
         } catch (error) {
             console.error('Plan yaratishda xatolik:', error);
+            notifyError('Plan yaratishda xatolik yuz berdi');
             setFormError('Plan yaratishda xatolik yuz berdi');
         }
     };
@@ -169,6 +179,7 @@ const SalespersonDashboard = () => {
     const handleUpdatePlan = async (e) => {
         e.preventDefault();
         if (!planForm.employeeId || !planForm.targetAmount || isNaN(planForm.targetAmount) || planForm.targetAmount <= 0) {
+            notifyError('Iltimos, barcha maydonlarni to\'g\'ri to\'ldiring');
             setFormError('Iltimos, barcha maydonlarni to\'g\'ri to\'ldiring');
             return;
         }
@@ -183,9 +194,11 @@ const SalespersonDashboard = () => {
             setEditingPlan(null);
             setPlanForm({ employeeId: '', targetAmount: '', month: selectedMonth });
             setFormError('');
+            notifySuccess('Plan muvaffaqiyatli yangilandi!');
             refetchPlans();
         } catch (error) {
             console.error('Plan yangilashda xatolik:', error);
+            notifyError('Plan yangilashda xatolik yuz berdi');
             setFormError('Plan yangilashda xatolik yuz berdi');
         }
     };
@@ -195,11 +208,15 @@ const SalespersonDashboard = () => {
         if (window.confirm('Planni o\'chirishni tasdiqlaysizmi?')) {
             try {
                 await deletePlan(planId).unwrap();
+                notifySuccess('Plan muvaffaqiyatli o\'chirildi!');
                 refetchPlans();
             } catch (error) {
                 console.error('Plan o\'chirishda xatolik:', error);
+                notifyError('Plan o\'chirishda xatolik yuz berdi');
                 setFormError('Plan o\'chirishda xatolik yuz berdi');
             }
+        } else {
+            notifyInfo('Plan o\'chirish bekor qilindi');
         }
     };
 
@@ -272,6 +289,17 @@ const SalespersonDashboard = () => {
         );
     };
 
+    // Format number with thousands separator
+    const formatNumber = (value) => {
+        if (!value) return '';
+        return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    };
+
+    // Parse number by removing thousands separator
+    const parseNumber = (value) => {
+        return value.replace(/\./g, '');
+    };
+
     if (employeesLoading || plansLoading) {
         return (
             <div className="sdash-loading-wrapper">
@@ -282,6 +310,7 @@ const SalespersonDashboard = () => {
     }
 
     if (employeesError || plansError) {
+        notifyError('Ma\'lumotlarni yuklashda xatolik yuz berdi');
         return (
             <div className="sdash-error-wrapper">
                 <AlertCircle className="sdash-error-icon" />
@@ -292,18 +321,10 @@ const SalespersonDashboard = () => {
             </div>
         );
     }
-    const formatNumber = (value) => {
-        if (!value) return '';
-        return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    };
 
-    const parseNumber = (value) => {
-        return value.replace(/\./g, '');
-    };
-
-    console.log(filteredEmployees);
     return (
         <div className="sdash-main-container">
+            <ToastContainer />
             {/* Header */}
             <div className="sdash-header-section">
                 <div className="sdash-header-content">
@@ -524,8 +545,6 @@ const SalespersonDashboard = () => {
                                     inputMode="numeric"
                                     aria-label="Maqsad summasi"
                                 />
-
-                                {formError && <p className="form-error">{formError}</p>}
                                 <div className="form-actions">
                                     <button type="submit" className="sdash-primary-button">
                                         {editingPlan ? 'Yangilash' : 'Saqlash'}
@@ -533,7 +552,10 @@ const SalespersonDashboard = () => {
                                     <button
                                         type="button"
                                         className="sdash-secondary-btn"
-                                        onClick={() => setShowPlanModal(false)}
+                                        onClick={() => {
+                                            setShowPlanModal(false);
+                                            notifyInfo('Plan qo\'shish bekor qilindi');
+                                        }}
                                         aria-label="Bekor qilish"
                                     >
                                         Bekor qilish
@@ -556,7 +578,10 @@ const SalespersonDashboard = () => {
                             </h3>
                             <button
                                 className="modal-close-btn"
-                                onClick={() => setSelectedEmployee(null)}
+                                onClick={() => {
+                                    setSelectedEmployee(null);
+                                    notifyInfo('Faoliyat tarixi yopildi');
+                                }}
                                 aria-label="Modalni yopish"
                             >
                                 <X className="sdash-icon-sm" />

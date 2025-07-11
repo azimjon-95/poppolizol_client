@@ -93,8 +93,8 @@ export const cartSaleApi = api.injectEndpoints({
 
 
         //'/sales/customerall
-        getCustomerAll: builder.query({
-            query: () => '/sales/customerall',
+        getCompanys: builder.query({
+            query: () => '/companys',
             providesTags: ['CustomerSales'],
         }),
     }),
@@ -112,5 +112,5 @@ export const {
     useGetCustomerSalesQuery,
     useGetCustomerCompletedSalesQuery,
     useGetCustomerActiveSalesQuery,
-    useGetCustomerAllQuery
+    useGetCompanysQuery
 } = cartSaleApi;
