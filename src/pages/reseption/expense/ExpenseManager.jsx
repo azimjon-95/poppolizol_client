@@ -262,13 +262,10 @@ const ExpenseTracker = () => {
                                     <div>
                                         <p className="ruberoid-card-label">Balans</p>
                                         <p className={`ruberoid-card-amount ${balance >= 0 ? 'ruberoid-positive' : 'ruberoid-negative'}`}>
-                                            <GiTakeMyMoney /> {getBalance?.innerData?.cash?.toLocaleString()} so'm
+                                            <GiTakeMyMoney /> {getBalance?.innerData?.naqt?.toLocaleString()} so'm
                                         </p>
                                         <p className={`ruberoid-card-amount ${balance >= 0 ? 'ruberoid-positive' : 'ruberoid-negative'}`}>
-                                            <BsBank /> {getBalance?.innerData?.bankTransfer?.toLocaleString()} so'm
-                                        </p>
-                                        <p className={`ruberoid-card-amount ${balance >= 0 ? 'ruberoid-positive' : 'ruberoid-negative'}`}>
-                                            <BsCurrencyDollar />  {getBalance?.innerData?.dollarTransfer?.toLocaleString()}
+                                            <BsBank /> {getBalance?.innerData?.bank?.toLocaleString()} so'm
                                         </p>
                                     </div>
                                 </div>

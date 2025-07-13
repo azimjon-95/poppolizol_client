@@ -63,7 +63,10 @@ export const materialApi = api.injectEndpoints({
 
     // Kirimlar ro‘yxatini olish
     getIncomes: builder.query({
-      query: () => "/material/getincomes",
+      query: (selectedMonth) => ({
+        url: "/material/getincomes",
+        params: { month: selectedMonth },
+      }),
       providesTags: ["Incomes"],
     }),
 
@@ -72,6 +75,17 @@ export const materialApi = api.injectEndpoints({
       query: () => "/material/filtered-materials",
       providesTags: ["Incomes"],
     }),
+
+    //router.post('/pay-debtincome', materialService.payDebtIncom);
+    payDebtIncome: builder.mutation({
+      query: (data) => ({
+        url: "/material/paydebtincome",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Incomes"],
+    }),
+
   }),
 });
 export const {
@@ -86,5 +100,6 @@ export const {
   useCreateFirmMutation,
   useGetFirmsQuery,
   useGetIncomesQuery,
-  useGetFilteredMaterialsQuery
+  useGetFilteredMaterialsQuery,
+  usePayDebtIncomeMutation
 } = materialApi;
