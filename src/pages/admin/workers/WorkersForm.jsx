@@ -284,14 +284,15 @@ const EmployeeModal = ({
                         type="checkbox"
                         id="position"
                         checked={newEmployee.position === "Bo'lim boshlig'i"}
-                        onChange={() =>
+                        onChange={() => {
                           handleInputChange(
                             "position",
                             newEmployee.position === "Bo'lim boshlig'i"
                               ? ""
                               : "Bo'lim boshlig'i"
-                          )
-                        }
+                          ),
+                            handleInputChange("role", "unit_head");
+                        }}
                       />
                       <span>Bo'lim boshlig'i</span>
                     </label>

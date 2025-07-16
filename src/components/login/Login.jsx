@@ -18,21 +18,21 @@ import "./login.css";
 const Login = () => {
   // Initialize authMode from localStorage, default to true if not set
   const [authMode, setAuthMode] = useState(() => {
-    const savedAuthMode = localStorage.getItem('authMode');
+    const savedAuthMode = localStorage.getItem("authMode");
     return savedAuthMode !== null ? JSON.parse(savedAuthMode) : true;
   });
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-    pin: '',
+    username: "",
+    password: "",
+    pin: "",
   });
 
   // Save authMode to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('authMode', JSON.stringify(authMode));
+    localStorage.setItem("authMode", JSON.stringify(authMode));
   }, [authMode]);
 
   const handleInputChange = (e) => {
@@ -43,39 +43,47 @@ const Login = () => {
   };
 
   const clearForm = () => {
-    setFormData({ username: '', password: '', pin: '' });
+    setFormData({ username: "", password: "", pin: "" });
     setShowPassword(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const data = authMode === true
-      ? { login: formData.username.trim(), password: formData.password.trim() }
-      : { pin: formData.pin.trim() };
+    const data =
+      authMode === true
+        ? {
+            login: formData.username.trim(),
+            password: formData.password.trim(),
+          }
+        : { pin: formData.pin.trim() };
 
     if (!data.login && !data.pin) {
-      toast.warn('Iltimos, login yoki PIN kodini kiriting!');
+      toast.warn("Iltimos, login yoki PIN kodini kiriting!");
       return;
     }
 
     setLoading(true);
 
     try {
-      const endpoint = authMode === true ? '/admin/login' : '/admin/pin';
+      const endpoint = authMode === true ? "/admin/login" : "/admin/pin";
       const res = await axios.post(endpoint, data);
       const { message: successMessage, innerData } = res.data;
-      const doctorName = `${innerData?.employee?.firstName || ''} ${innerData?.employee?.lastName || ''}`.trim();
+      const doctorName = `${innerData?.employee?.firstName || ""} ${
+        innerData?.employee?.lastName || ""
+      }`.trim();
 
-      localStorage.setItem('workerId', innerData?.employee?._id);
-      localStorage.setItem('admin_fullname', doctorName);
-      localStorage.setItem('token', innerData?.token);
-      localStorage.setItem('role', innerData?.employee?.role);
+      localStorage.setItem("workerId", innerData?.employee?._id);
+      localStorage.setItem("admin_fullname", doctorName);
+      localStorage.setItem("token", innerData?.token);
+      localStorage.setItem("role", innerData?.employee?.role);
 
-      toast.success(successMessage || 'Muvaffaqiyatli tizimga kirdingiz!');
+      toast.success(successMessage || "Muvaffaqiyatli tizimga kirdingiz!");
       clearForm();
+
       navigate(`/${innerData?.employee?.role}`);
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Tizimga kirishda xatolik yuz berdi!';
+      const errorMessage =
+        error.response?.data?.message || "Tizimga kirishda xatolik yuz berdi!";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -118,7 +126,10 @@ const Login = () => {
           <div className="bpf-authentication-panel-container">
             <div className="bpf-form-fields-container">
               <div className="bpf-input-field-grouping-wrapper">
-                <label htmlFor="username" className="bpf-field-label-typography">
+                <label
+                  htmlFor="username"
+                  className="bpf-field-label-typography"
+                >
                   Foydalanuvchi nomi
                 </label>
                 <div className="bpf-interactive-input-container">
@@ -139,7 +150,10 @@ const Login = () => {
               </div>
 
               <div className="bpf-input-field-grouping-wrapper">
-                <label htmlFor="password" className="bpf-field-label-typography">
+                <label
+                  htmlFor="password"
+                  className="bpf-field-label-typography"
+                >
                   Parol
                 </label>
                 <div className="bpf-interactive-input-container">
@@ -161,7 +175,11 @@ const Login = () => {
                     onClick={() => setShowPassword(!showPassword)}
                     className="bpf-password-visibility-toggle-button"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -186,7 +204,7 @@ const Login = () => {
                   <Lock className="w-5 h-5 text-blue-300" />
                 </div>
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   id="pin"
                   name="pin"
                   value={formData.pin}
@@ -200,7 +218,11 @@ const Login = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="rgh-pin-visibility-toggle"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5 text-blue-300" /> : <Eye className="w-5 h-5 text-blue-300" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5 text-blue-300" />
+                  ) : (
+                    <Eye className="w-5 h-5 text-blue-300" />
+                  )}
                 </button>
               </div>
 
@@ -214,7 +236,10 @@ const Login = () => {
             </div>
           </div>
         )}
-        <div onClick={() => setAuthMode(!authMode)} className="bpf-security-certification-badge">
+        <div
+          onClick={() => setAuthMode(!authMode)}
+          className="bpf-security-certification-badge"
+        >
           <Shield className="w-4 h-4" />
           <span className="bpf-security-badge-text">Xavfsiz ulanish</span>
         </div>
