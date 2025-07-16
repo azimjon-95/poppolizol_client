@@ -12,7 +12,8 @@ function Layout() {
   const location = useLocation();
 
   useEffect(() => {
-    if (!role || !menuItems[role]) {
+    // if (!role || !menuItems[role]) {
+    if (!role) {
       navigate("/login");
     }
   }, [role, navigate]);
@@ -20,24 +21,16 @@ function Layout() {
   const isDirectorPath = location.pathname === "/director" || "/expense";
   return (
     <div className="layout">
-      {
-        role === "saler_meneger" || role === "saler"
-          ?
-          <></>
-          :
-          <div className="layout_left">
-            <Sidebar />
-          </div>
-      }
+      {role === "saler_meneger" || role === "saler" ? (
+        <></>
+      ) : (
+        <div className="layout_left">
+          <Sidebar />
+        </div>
+      )}
 
       <div className="layout_right">
-        {
-          role === "saler_meneger" || role === "saler"
-            ?
-            <></>
-            :
-            <Header />
-        }
+        {role === "saler_meneger" || role === "saler" ? <></> : <Header />}
         <main
           style={{
             background: ["director", "expense"].includes(isDirectorPath)

@@ -73,12 +73,15 @@ function AttendanceHistory() {
       title: "Davomat %",
       dataIndex: "percentage",
       key: "percentage",
-      render: (text) => `${text} kun`,
+      render: (text, record) =>
+        record.employee.position === "Bo'lim boshlig'i"
+          ? `${text - 0.2} smena`
+          : `${text} smena`,
     },
     {
       title: "Bo‘lim",
-      dataIndex: "department",
-      key: "department",
+      dataIndex: "unit",
+      key: "unit",
     },
   ];
 
