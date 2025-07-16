@@ -24,14 +24,21 @@ export const ProductionSystemApi = api.injectEndpoints({
 
         // Initiate production process
         startProductionProcess: builder.mutation({
-            query: ({ productNormaId, quantityToProduce, selectedMarket }) => ({
+            query: ({ productNormaId, productName, quantityToProduce, consumedMaterials, materialStatistics }) => ({
                 url: "/production-process",
                 method: "POST",
-                body: { productNormaId, quantityToProduce, selectedMarket },
+                body: {
+                    productNormaId,
+                    productName,
+                    quantityToProduce,
+                    consumedMaterials,
+                    materialStatistics
+                },
             }),
             transformResponse: (response) => response.innerData, // Extract innerData from response
             invalidatesTags: ["FinishedProducts", "ProductionHistory"], // Invalidate related caches
         }),
+
 
         //router.post("/production/bn5"
         createBn5Production: builder.mutation({
@@ -63,6 +70,28 @@ export const ProductionSystemApi = api.injectEndpoints({
             }),
             providesTags: ["Inventory"], // For cache invalidation
         }),
+
+        // router.put("/finished-products/:id", productionSystem.updateFinished);
+        // router.delete("/finished-products/:id", productionSystem.deleteFinished);
+        updateFinished: builder.mutation({
+            query: ({ id, data }) => ({
+                url: `/finished-products/${id}`,
+                method: "PUT",
+                body: data,
+            }),
+            transformResponse: (response) => response.innerData, // Extract innerData from response
+            invalidatesTags: ["FinishedProducts"], // Invalidate related caches
+        }),
+
+        deleteFinished: builder.mutation({
+            query: (id) => ({
+                url: `/finished-products/${id}`,
+                method: "DELETE",
+            }),
+            transformResponse: (response) => response.innerData, // Extract innerData from response
+            invalidatesTags: ["FinishedProducts"], // Invalidate related caches
+        }),
+
     }),
 });
 
@@ -73,5 +102,7 @@ export const {
     useStartProductionProcessMutation,
     useCreateBn5ProductionMutation,
     useGetInventoryQuery,
-    useProductionForSalesBN5Mutation
+    useProductionForSalesBN5Mutation,
+    useUpdateFinishedMutation,
+    useDeleteFinishedMutation
 } = ProductionSystemApi;

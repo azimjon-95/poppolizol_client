@@ -1,450 +1,359 @@
-import React, { useState } from "react";
-import {
-  Tabs,
-  Table,
-  Form,
-  Input,
-  Button,
-  Row,
-  Col,
-  Select,
-  Space,
-  Modal,
-  Popconfirm,
-} from "antd";
-import {
-  MinusCircleOutlined,
-  PlusOutlined,
-  EyeOutlined,
-  EditOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
-import {
-  useDeleteNormaMutation,
-  useGetAllNormaQuery,
-  useUpdateNormaMutation,
-} from "../../context/normaApi";
+import React, { useState, useMemo, useCallback } from "react";
+import { Tabs, Table, Form, Input, Button, Row, Col, Select, Space, Modal, Popconfirm, InputNumber } from "antd";
+import { MinusCircleOutlined, PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { useDeleteNormaMutation, useGetAllNormaQuery, useUpdateNormaMutation } from "../../context/normaApi";
 import { useGetAllMaterialsQuery } from "../../context/materialApi";
+import { NumberFormat } from "../../hook/NumberFormat";
 import AddProductNorma from "./AddProductNorma";
 import "./ProductNorma.css";
 import { toast } from "react-toastify";
 
 const { Option } = Select;
 
-
 const ProductNorma = () => {
-  const [updateForm] = Form.useForm();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDescription, setSelectedDescription] = useState("");
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [editingNormaId, setEditingNormaId] = useState(null);
-  const [isViewMaterials, setIsViewMaterials] = useState(false);
-  const [selectedMaterials, setSelectedMaterials] = useState([]);
+  const [form] = Form.useForm();
+  const [modalState, setModalState] = useState({
+    isDescriptionOpen: false,
+    isMaterialsOpen: false,
+    isUpdateOpen: false,
+    isViewOpen: true,
+    selectedDescription: "",
+    selectedMaterials: [],
+    editingNormaId: null,
+  });
 
-  // RTK Query hook’lari
+  // RTK Query hooks
   const { data: normas, isLoading: normasLoading } = useGetAllNormaQuery();
-  const { data: materialsData, isLoading: materialsLoading } =
-    useGetAllMaterialsQuery();
+  const { data: materialsData, isLoading: materialsLoading } = useGetAllMaterialsQuery();
+  const [deleteProductNorma] = useDeleteNormaMutation();
+  const [updateProductNorma, { isLoading: updateLoading }] = useUpdateNormaMutation();
 
-  const [deleteProductNorma, { isLoading: deleteLoading }] =
-    useDeleteNormaMutation();
-  const [updateProductNorma, { isLoading: updateLoading }] =
-    useUpdateNormaMutation();
+  const materials = materialsData?.innerData || [];
+  const normasData = useMemo(() => normas?.innerData || [], [normas]);
 
-  let materials = materialsData?.innerData || [];
-
-  // Normalar ro‘yxati uchun ma'lumotlar
-  const normasData = normas?.innerData || [];
-
-  // delete confirm
-  const confirmDelete = async (id) => {
-    try {
-      await deleteProductNorma(id).unwrap();
-      toast.success("Norma o'chirildi");
-    } catch (err) {
-      toast.error(err?.data?.message || "Norma o'chirilmadi");
-    }
-  };
-
-  // Edit button handler
-  const handleEdit = (norma) => {
-    setEditingNormaId(norma._id);
-    // Pre-fill form with norma data
-    updateForm.setFieldsValue({
-      productName: norma.productName,
-      category: norma.category,
-      color: norma.color,
-      size: norma.size,
-      uniqueCode: norma.uniqueCode,
-      description: norma.description || "",
-      materials: norma.materials.map((m) => ({
-        materialId: m.materialId?._id || m.materialId,
-        quantity: m.quantity,
-      })),
-      image: norma.image
-        ? [{ uid: "-1", name: "image", status: "done", url: norma.image }]
-        : [],
-    });
-    setIsUpdateModalOpen(true);
-  };
-
-  const onUpdateFinish = async (values) => {
-    try {
-      const updateData = {
-        productName: values.productName,
-        category: values.category,
-        color: values.color,
-        size: values.size,
-        description: values.description || "",
-        materials: values.materials.map((newMaterial) => {
-          const existingMaterial = normasData
-            .find((norma) => norma._id === editingNormaId)
-            ?.materials.find(
-              (m) =>
-                (m.materialId?._id || m.materialId) === newMaterial.materialId
-            );
-          return {
-            materialId: newMaterial.materialId,
-            quantity: newMaterial.quantity || existingMaterial?.quantity || "",
-          };
-        }),
-      };
-
-      const res = await updateProductNorma({
-        id: editingNormaId,
-        body: updateData,
-      }).unwrap();
-      toast.success(res.message || "Norma muvaffaqiyatli yangilandi");
-      setIsUpdateModalOpen(false);
-      updateForm.resetFields();
-
-      setEditingNormaId(null);
-    } catch (error) {
-      message.error(
-        "Norma yangilashda xatolik: " + (error.data?.message || "Noma'lum xato")
-      );
-    }
-  };
-
-  const columns = [
-    { title: "Nomi", dataIndex: "productName", key: "productName" },
-    { title: "O'lchov", dataIndex: "size", key: "size" },
-    { title: "Kategoriya", dataIndex: "category", key: "category" },
-    {
-      title: "Qo'shilgan sana",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (date) => new Date(date).toLocaleDateString("uz-UZ"),
-    },
-    {
-      title: "Materiallar",
-      dataIndex: "materials",
-      key: "materials",
-      render: (materials) => (
-        <EyeOutlined
-          style={{ cursor: "pointer" }}
-          onClick={() => {
-            setSelectedMaterials(materials);
-            setIsViewMaterials(true);
-          }}
-        />
-      ),
-    },
-
-    {
-      title: "Tavsif",
-      dataIndex: "description",
-      key: "description",
-      render: (description) => (
-        <EyeOutlined
-          style={{ cursor: "pointer" }}
-          onClick={() => showModal(description)}
-        />
-      ),
-    },
-    {
-      title: "Amallar",
-      render: (_, item) => {
-        return (
-          <div className="norma_actions">
-            <Popconfirm
-              title="Rostdan ham o'chirmoqchimisiz?"
-              onConfirm={() => confirmDelete(item._id)}
-            >
+  // Memoized table columns
+  const columns = useMemo(
+    () => [
+      { title: "Nomi", dataIndex: "productName", key: "productName" },
+      { title: "Kategoriya", dataIndex: "category", key: "category" },
+      {
+        title: "Qo'shilgan sana",
+        dataIndex: "createdAt",
+        key: "createdAt",
+        render: (date) => new Date(date).toLocaleDateString("uz-UZ"),
+      },
+      { title: "Sotuv narxi", dataIndex: "salePrice", key: "salePrice", render: (price) => NumberFormat(price) + " so'm" },
+      {
+        title: "Materiallar",
+        dataIndex: "materials",
+        key: "materials",
+        render: (materials) => (
+          <EyeOutlined
+            style={{ cursor: "pointer" }}
+            onClick={() => setModalState((prev) => ({ ...prev, isMaterialsOpen: true, selectedMaterials: materials }))}
+          />
+        ),
+      },
+      {
+        title: "Harajatlar",
+        render: (_, item) => (
+          <EyeOutlined
+            style={{ cursor: "pointer" }}
+            onClick={() => setModalState((prev) => ({ ...prev, isDescriptionOpen: true, selectedDescription: item }))}
+          />
+        ),
+      },
+      {
+        title: "Amallar",
+        render: (_, item) => (
+          <Space className="norma_actions">
+            <Popconfirm title="Rostdan ham o'chirmoqchimisiz?" onConfirm={() => handleDelete(item._id)}>
               <Button type="primary" danger icon={<DeleteOutlined />} />
             </Popconfirm>
             <EditOutlined onClick={() => handleEdit(item)} />
-          </div>
-        );
+          </Space>
+        ),
       },
+    ],
+    []
+  );
+
+  // Memoized material columns for the materials modal
+  const materialColumns = useMemo(
+    () => [
+      { title: "Material nomi", dataIndex: "name", key: "name", render: (_, record) => record.materialId.name },
+      { title: "Miqdor", dataIndex: "quantity", key: "quantity" },
+      { title: "O'lchov birligi", dataIndex: "unit", key: "unit", render: (_, record) => record.materialId.unit },
+    ],
+    []
+  );
+
+  // Handle delete
+  const handleDelete = useCallback(
+    async (id) => {
+      try {
+        await deleteProductNorma(id).unwrap();
+        toast.success("Norma o'chirildi");
+      } catch (err) {
+        toast.error(err?.data?.message || "Norma o'chirilmadi");
+      }
     },
-  ];
+    [deleteProductNorma]
+  );
 
-  // Modalni ochish funksiyasi
-  const showModal = (description) => {
-    setSelectedDescription(description);
-    setIsModalOpen(true);
-  };
+  // Handle edit
+  const handleEdit = useCallback(
+    (norma) => {
+      setModalState((prev) => ({ ...prev, editingNormaId: norma._id, isUpdateOpen: true }));
+      form.setFieldsValue({
+        productName: norma.productName,
+        category: norma.category,
+        size: norma.size,
+        salePrice: norma.salePrice,
+        description: norma.description || "",
+        materials: norma.materials.map((m) => ({
+          materialId: m.materialId?._id || m.materialId,
+          quantity: m.quantity,
+        })),
+        cost: {
+          gasPerUnit: norma.cost?.gasPerUnit || 0,
+          electricityPerUnit: norma.cost?.electricityPerUnit || 0,
+          laborCost: norma.cost?.laborCost || 0,
+          otherExpenses: norma.cost?.otherExpenses || 0,
+        },
+      });
+    },
+    [form]
+  );
 
-  // Modalni yopish funksiyasi
-  const handleOk = () => setIsModalOpen(false);
+  // Handle form submission
+  const onUpdateFinish = useCallback(
+    async (values) => {
+      try {
+        const updateData = {
+          productName: values.productName,
+          category: values.category,
+          size: values.size,
+          salePrice: values.salePrice,
+          description: values.description || "",
+          materials: values.materials.map((newMaterial) => ({
+            materialId: newMaterial.materialId,
+            quantity: newMaterial.quantity,
+          })),
+          cost: {
+            gasPerUnit: values.cost.gasPerUnit || 0,
+            electricityPerUnit: values.cost.electricityPerUnit || 0,
+            laborCost: values.cost.laborCost || 0,
+            otherExpenses: values.cost.otherExpenses || 0,
+          },
+        };
 
-  // Update modalni yopish
-  const handleUpdateOk = () => {
-    setIsUpdateModalOpen(false);
-    updateForm.resetFields();
-    setEditingNormaId(null);
-  };
+        const res = await updateProductNorma({ id: modalState.editingNormaId, body: updateData }).unwrap();
+        toast.success(res.message || "Norma muvaffaqiyatli yangilandi");
+        setModalState((prev) => ({ ...prev, isUpdateOpen: false, editingNormaId: null }));
+        form.resetFields();
+      } catch (error) {
+        toast.error(error.data?.message || "Norma yangilashda xatolik");
+      }
+    },
+    [updateProductNorma, modalState.editingNormaId, form]
+  );
 
-  const handleUpdateCancel = () => {
-    setIsUpdateModalOpen(false);
-    updateForm.resetFields();
-    setEditingNormaId(null);
-  };
+  // Handle modal close
+  const handleModalClose = useCallback(() => {
+    setModalState((prev) => ({
+      ...prev,
+      isDescriptionOpen: false,
+      isMaterialsOpen: false,
+      isUpdateOpen: false,
+      selectedDescription: "",
+      selectedMaterials: [],
+      editingNormaId: null,
+    }));
+    form.resetFields();
+  }, [form]);
+
+  // Render table based on category
+  const renderTable = useCallback(
+    (category) => (
+      <Table
+        columns={columns}
+        dataSource={normasData.filter((norma) => norma.category === category)}
+        loading={normasLoading}
+        rowKey="_id"
+        pagination={false}
+        bordered
+        size="small"
+      />
+    ),
+    [columns, normasData, normasLoading]
+  );
 
   return (
     <div className="product_norma">
-      <Tabs defaultActiveKey="1">
-        <Tabs.TabPane tab="Normalar ro‘yxati" key="1">
-          <Table
-            columns={columns}
-            dataSource={normasData}
-            loading={normasLoading}
-            rowKey="_id"
-            pagination={false}
-            bordered
-            size="small"
-          />
-          <Modal
-            title="Tavsif"
-            open={isModalOpen}
-            onOk={handleOk}
-            onCancel={handleOk}
-            okText="Yopish"
-            footer={(_, { OkBtn }) => (
-              <>
-                <OkBtn />
-              </>
-            )}
-          >
-            <p>{selectedDescription || "Tavsif mavjud emas"}</p>
-          </Modal>
-          {/* view materials */}
-          <Modal
-            title="Materiallar"
-            open={isViewMaterials}
-            onOk={() => setIsViewMaterials(false)}
-            onCancel={() => setIsViewMaterials(false)}
-            okText="Yopish"
-            footer={(_, { OkBtn }) => (
-              <>
-                <OkBtn />
-              </>
-            )}
-          >
-            <Table
-              columns={[
-                {
-                  title: "Material nomi",
-                  dataIndex: "name",
-                  key: "name",
-                  render: (text, record) => record.materialId.name,
-                },
-                { title: "Miqdor", dataIndex: "quantity", key: "quantity" },
-                {
-                  title: "O'lchov birligi",
-                  dataIndex: "unit",
-                  key: "unit",
-                  render: (text, record) => record.materialId.unit,
-                },
-              ]}
-              dataSource={selectedMaterials}
-              rowKey="_id"
-              size="small"
-              pagination={false}
-            />
-          </Modal>
-
-          {/* Update Modal */}
-          <Modal
-            title="Normani tahrirlash"
-            open={isUpdateModalOpen}
-            onOk={handleUpdateOk}
-            onCancel={handleUpdateCancel}
-            footer={null}
-            width={800}
-          >
-            <Form
-              form={updateForm}
-              layout="vertical"
-              onFinish={onUpdateFinish}
-              initialValues={{ materials: [{ materialId: "", quantity: "" }] }}
-            >
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item
-                    label="Mahsulot nomi"
-                    name="productName"
-                    rules={[
-                      { required: true, message: "Mahsulot nomini kiriting!" },
-                    ]}
-                  >
-                    <Input placeholder="Masalan: Kichik sumka" />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    label="Kategoriya"
-                    name="category"
-                    rules={[
-                      { required: true, message: "Kategoriyani tanlang!" },
-                    ]}
-                  >
-                    <Input placeholder="Yangi kategoriyani kiriting" />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item
-                    name="size"
-                    label="O'lcham"
-                    rules={[{ required: true, message: "O'lchamni tanlang!" }]}
-                  >
-                    <Input type="text" placeholder="O'lcham" />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Form.List name="materials">
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map(({ key, name, ...restField }) => {
-                      // Tanlangan materialId'ga mos units ni olish
-                      const selectedMaterialId = updateForm.getFieldValue([
-                        "materials",
-                        name,
-                        "materialId",
-                      ]);
-                      const selectedMaterial = materials?.find(
-                        (m) => m._id === selectedMaterialId
-                      );
-                      const availableUnits = selectedMaterial?.units || [];
-
-                      return (
-                        <Space
-                          key={key}
-                          align="baseline"
-                          style={{ display: "flex", marginBottom: 8 }}
-                        >
-                          {/* Material tanlash */}
-                          <Form.Item
-                            {...restField}
-                            name={[name, "materialId"]}
-                            rules={[
-                              {
-                                required: true,
-                                message: "Materialni tanlang!",
-                              },
-                            ]}
-                          >
-                            <Select
-                              placeholder="Materialni tanlang"
-                              loading={materialsLoading}
-                              style={{ width: 200 }}
-                              showSearch
-                              optionFilterProp="children"
-                              onChange={() => {
-                                // material o‘zgarganda unit ni reset qilish
-                                const updatedMaterials = [
-                                  ...(updateForm.getFieldValue("materials") ||
-                                    []),
-                                ];
-                                updatedMaterials[name] = {
-                                  ...updatedMaterials[name],
-                                  unit: undefined,
-                                };
-                                updateForm.setFieldsValue({
-                                  materials: updatedMaterials,
-                                });
-                              }}
-                            >
-                              {materials?.map((material) => (
-                                <Option key={material._id} value={material._id}>
-                                  {material.name}
-                                </Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-
-                          {/* Miqdor */}
-                          <Form.Item
-                            {...restField}
-                            name={[name, "quantity"]}
-                            rules={[
-                              { required: true, message: "Miqdorni kiriting!" },
-                            ]}
-                          >
-                            <Input
-                              type="number"
-                              placeholder="Miqdor"
-                              style={{ width: 100 }}
-                            />
-                          </Form.Item>
-
-                          {/* O‘chirish tugmasi */}
-                          <MinusCircleOutlined onClick={() => remove(name)} />
-                        </Space>
-                      );
-                    })}
-
-                    <Form.Item>
-                      <Button
-                        type="dashed"
-                        onClick={() => add()}
-                        block
-                        icon={<PlusOutlined />}
-                      >
-                        Material qo‘shish
-                      </Button>
-                    </Form.Item>
-                  </>
-                )}
-              </Form.List>
-
-              <Row gutter={16}>
-                <Col span={24}>
-                  <Form.Item
-                    label="Tavsif"
-                    name="description"
-                    rules={[{ required: false }]}
-                  >
-                    <Input.TextArea
-                      placeholder="Qo‘shimcha ma'lumot"
-                      rows={4}
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={updateLoading}
-                >
-                  {updateLoading ? "Yangilanmoqda..." : "Normani yangilash"}
-                </Button>
-              </Form.Item>
-            </Form>
-          </Modal>
+      <Tabs
+        tabBarExtraContent={{
+          right: (
+            <Button onClick={() => setModalState((prev) => ({ ...prev, isViewOpen: false }))} type="primary">
+              Qo'shish
+            </Button>
+          ),
+        }}
+        defaultActiveKey="ruberoid"
+      >
+        <Tabs.TabPane
+          tab={<span onClick={() => setModalState((prev) => ({ ...prev, isViewOpen: true }))}>Ruberoid</span>}
+          key="ruberoid"
+        >
+          {modalState.isViewOpen && renderTable("ruberoid")}
         </Tabs.TabPane>
-
-        {/* Norma qo‘shish */}
-        <Tabs.TabPane tab="Norma qo‘shish" key="2">
-          <AddProductNorma />
+        <Tabs.TabPane
+          tab={<span onClick={() => setModalState((prev) => ({ ...prev, isViewOpen: true }))}>Polizol</span>}
+          key="polizol"
+        >
+          {modalState.isViewOpen && renderTable("polizol")}
         </Tabs.TabPane>
       </Tabs>
+
+      {/* Description Modal */}
+      <Modal
+        title="Tavsif"
+        open={modalState.isDescriptionOpen}
+        onOk={handleModalClose}
+        onCancel={handleModalClose}
+        okText="Yopish"
+        footer={(_, { OkBtn }) => <OkBtn />}
+      >
+        {modalState?.selectedDescription?.cost ? (
+          <div>
+            <p><strong>Gas narxi (birlik uchun):</strong> {NumberFormat(modalState.selectedDescription.cost.gasPerUnit)} so‘m</p>
+            <p><strong>Elektr narxi (birlik uchun):</strong> {NumberFormat(modalState.selectedDescription.cost.electricityPerUnit)} so‘m</p>
+            <p><strong>Ish haqi:</strong> {NumberFormat(modalState.selectedDescription.cost.laborCost)} so‘m</p>
+            <p><strong>Boshqa xarajatlar:</strong> {NumberFormat(modalState.selectedDescription.cost.otherExpenses)} so‘m</p>
+          </div>
+        ) : (
+          <p>Tavsif mavjud emas</p>
+        )}
+      </Modal>
+
+      {/* Materials Modal */}
+      <Modal
+        title="Materiallar"
+        open={modalState.isMaterialsOpen}
+        onOk={handleModalClose}
+        onCancel={handleModalClose}
+        okText="Yopish"
+        footer={(_, { OkBtn }) => <OkBtn />}
+      >
+        <Table columns={materialColumns} dataSource={modalState.selectedMaterials} rowKey="_id" size="small" pagination={false} />
+      </Modal>
+
+      {/* Update Modal */}
+      <Modal title="Normani tahrirlash" open={modalState.isUpdateOpen} onCancel={handleModalClose} footer={null} width={800}>
+        <Form form={form} layout="vertical" onFinish={onUpdateFinish} initialValues={{ materials: [{ materialId: "", quantity: "" }] }}>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item label="Mahsulot nomi" name="productName" rules={[{ required: true, message: "Mahsulot nomini kiriting!" }]}>
+                <Input placeholder="Masalan: Kichik sumka" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Kategoriya" name="category" rules={[{ required: true, message: "Kategoriyani tanlang!" }]}>
+                <Select placeholder="Kategoriyani tanlang">
+                  <Option value="polizol">Polizol</Option>
+                  <Option value="ruberoid">Ruberoid</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+
+            <Col span={24}>
+              <Form.Item name="salePrice" label="Sotuv narxi" rules={[{ required: true, message: "Sotuv narxini kiriting!" }]}>
+                <InputNumber placeholder="Sotuv narxi" min={0} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name={["cost", "gasPerUnit"]} label="Gaz (kub metr)" rules={[{ required: true, message: "Gaz miqdorini kiriting!" }]}>
+                <InputNumber placeholder="Gaz miqdori" min={0} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name={["cost", "electricityPerUnit"]} label="Elektr energiyasi (kVt)" rules={[{ required: true, message: "Elektr miqdorini kiriting!" }]}>
+                <InputNumber placeholder="Elektr miqdori" min={0} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name={["cost", "laborCost"]} label="Ishchilar xarajati (so'm)" rules={[{ required: true, message: "Ishchilar xarajatini kiriting!" }]}>
+                <InputNumber placeholder="Ishchilar xarajati" min={0} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name={["cost", "otherExpenses"]} label="Boshqa xarajatlar (so'm)" rules={[{ required: true, message: "Boshqa xarajatlar kiriting!" }]}>
+                <InputNumber placeholder="Boshqa xarajatlar" min={0} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.List name="materials">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map(({ key, name, ...restField }) => (
+                  <Space key={key} align="baseline" style={{ display: "flex", marginBottom: 8 }}>
+                    <Form.Item
+                      {...restField}
+                      name={[name, "materialId"]}
+                      rules={[{ required: true, message: "Materialni tanlang!" }]}
+                    >
+                      <Select
+                        placeholder="Materialni tanlang"
+                        loading={materialsLoading}
+                        style={{ width: 200 }}
+                        showSearch
+                        optionFilterProp="children"
+                      >
+                        {materials?.map((material) => (
+                          <Option key={material._id} value={material._id}>
+                            {material.name}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                    <Form.Item
+                      {...restField}
+                      name={[name, "quantity"]}
+                      rules={[{ required: true, message: "Miqdorni kiriting!" }, { type: "number", min: 1, message: "Miqdor 1 dan kam bo'lmasligi kerak!" }]}
+                    >
+                      <InputNumber placeholder="Miqdor" min={1} style={{ width: 100 }} />
+                    </Form.Item>
+                    <MinusCircleOutlined onClick={() => remove(name)} />
+                  </Space>
+                ))}
+                <Form.Item>
+                  <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                    Material qo‘shish
+                  </Button>
+                </Form.Item>
+              </>
+            )}
+          </Form.List>
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item label="Tavsif" name="description">
+                <Input.TextArea placeholder="Qo‘shimcha ma'lumot" rows={4} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" loading={updateLoading}>
+              {updateLoading ? "Yangilanmoqda..." : "Normani yangilash"}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {!modalState.isViewOpen && <AddProductNorma setModalState={setModalState} />}
     </div>
   );
 };

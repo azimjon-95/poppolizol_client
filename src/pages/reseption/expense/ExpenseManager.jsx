@@ -184,20 +184,6 @@ const ExpenseTracker = () => {
         }
     }, []);
 
-    // Tanlangan tabni o'zgartirish va saqlash
-    const handleClick = (tabName) => {
-        setActiveTab(tabName);
-        localStorage.setItem('ruberoid-active-tab', tabName);
-
-        // Marshrutlarga yo‘naltirish
-        if (tabName === 'Harajatlar') {
-            navigate('/expense');
-        } else if (tabName === 'Maoshlar') {
-            navigate('/salary');
-        } else if (tabName === 'Sotuv') {
-            navigate('/sotuv');
-        }
-    };
 
 
     if (isLoading) return <div>Loading...</div>;
@@ -207,26 +193,6 @@ const ExpenseTracker = () => {
                 <div className="ruberoid-main-content">
                     {/* Form Panel */}
                     <div className="ruberoid-form-panel">
-                        <div className="ruberoid-form-panelheader">
-                            <button
-                                className={activeTab === 'Harajatlar' ? 'active' : ''}
-                                onClick={() => handleClick('Harajatlar')}
-                            >
-                                Harajatlar
-                            </button>
-                            <button
-                                className={activeTab === 'Maoshlar' ? 'active' : ''}
-                                onClick={() => handleClick('Maoshlar')}
-                            >
-                                Maoshlar
-                            </button>
-                            <button
-                                className={activeTab === 'Sotuv' ? 'active' : ''}
-                                onClick={() => handleClick('Sotuv')}
-                            >
-                                Sotuv
-                            </button>
-                        </div>
 
                         <div className="ruberoid-balance-cards">
                             <div className="ruberoid-balance-container">
@@ -247,12 +213,7 @@ const ExpenseTracker = () => {
                                                 .reduce((sum, t) => sum + t.amount, 0)
                                                 .toLocaleString()} so'm
                                         </p>
-                                        <p className="ruberoid-card-amount">
-                                            <BsCurrencyDollar /> {transactions?.innerData
-                                                ?.filter(t => t.type === 'kirim' && t.paymentMethod === 'dollar')
-                                                .reduce((sum, t) => sum + t.amount, 0)
-                                                .toLocaleString()} so'm
-                                        </p>
+
                                     </div>
                                 </div>
 
@@ -287,12 +248,7 @@ const ExpenseTracker = () => {
                                                 .reduce((sum, t) => sum + t.amount, 0)
                                                 .toLocaleString()} so'm
                                         </p>
-                                        <p className="ruberoid-card-amount">
-                                            <BsCurrencyDollar /> {transactions?.innerData
-                                                ?.filter(t => t.type === 'chiqim' && t.paymentMethod === 'dollar')
-                                                .reduce((sum, t) => sum + t.amount, 0)
-                                                .toLocaleString()} so'm
-                                        </p>
+
                                     </div>
                                 </div>
                             </div>
