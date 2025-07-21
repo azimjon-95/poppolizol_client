@@ -24,7 +24,18 @@ export const ProductionSystemApi = api.injectEndpoints({
 
         // Initiate production process
         startProductionProcess: builder.mutation({
-            query: ({ productNormaId, productName, quantityToProduce, consumedMaterials, materialStatistics }) => ({
+            query: (
+                {
+                    productNormaId,
+                    productName,
+                    quantityToProduce,
+                    defectiveDescription,
+                    defectiveReason,
+                    isDefective,
+                    consumedMaterials,
+                    materialStatistics
+                }
+            ) => ({
                 url: "/production-process",
                 method: "POST",
                 body: {
@@ -32,7 +43,10 @@ export const ProductionSystemApi = api.injectEndpoints({
                     productName,
                     quantityToProduce,
                     consumedMaterials,
-                    materialStatistics
+                    materialStatistics,
+                    defectiveDescription,
+                    defectiveReason,
+                    isDefective,
                 },
             }),
             transformResponse: (response) => response.innerData, // Extract innerData from response

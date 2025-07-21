@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import * as XLSX from "xlsx";
 import {
   Users,
   UserPlus,
@@ -13,9 +16,8 @@ import {
   MapPin,
   Download,
 } from "lucide-react";
-import * as XLSX from "xlsx";
-import { useSelector } from "react-redux";
 import { PhoneNumberFormat } from "../../../hook/NumberFormat";
+import { capitalizeFirstLetter } from "../../../hook/CapitalizeFirstLitter";
 import "./style.css";
 import EmployeeModal from "./WorkersForm";
 import {
@@ -24,7 +26,6 @@ import {
   useUpdateWorkerMutation,
   useDeleteWorkerMutation,
 } from "../../../context/workersApi";
-import { toast } from "react-toastify";
 
 const RuberoidFactoryHR = () => {
   const [filteredEmployees, setFilteredEmployees] = useState([]);
@@ -34,7 +35,7 @@ const RuberoidFactoryHR = () => {
   const { searchQuery } = useSelector((state) => state.search);
 
   const {
-    data: employees = [],
+    data: employees = { innerData: [] },
     isLoading,
     isError,
     error,
@@ -43,63 +44,69 @@ const RuberoidFactoryHR = () => {
   const [updateWorker] = useUpdateWorkerMutation();
   const [deleteWorker] = useDeleteWorkerMutation();
 
-  const departments = {
-    all: "Barcha bo'limlar",
-    ishlab_chiqarish: "Ishlab chiqarish",
-    sifat_nazorati: "Sifat nazorati",
-    saler_meneger: "Saler menejer",
-    ombor: "Ombor",
-    buxgalteriya: "Buxgalteriya",
-    elektrik: "Elektrik xizmati",
-    transport: "Ichki transport",
-    xavfsizlik: "Qo'riqlash xizmati",
-    tozalash: "Tozalash xizmati",
-    oshxona: "Ovqatlanish",
-    Sotuvchi: "Sotuvchi",
-  };
+  const departments = useMemo(
+    () => ({
+      all: "Barcha bo'limlar",
+      ishlab_chiqarish: "Ishlab chiqarish",
+      sifat_nazorati: "Sifat nazorati",
+      saler_meneger: "Sotuv menejer",
+      ombor: "Ombor",
+      buxgalteriya: "Buxgalteriya",
+      elektrik: "Elektrik xizmati",
+      transport: "Ichki transport",
+      xavfsizlik: "Qo'riqlash xizmati",
+      tozalash: "Tozalash xizmati",
+      oshxona: "Ovqatlanish",
+      Sotuvchi: "Sotuvchi",
+      saler_export: "Sotuvchi Ekspert",
+    }),
+    []
+  );
 
-  const paymentTypes = {
-    oylik: "Oylik maosh",
-    kunlik: "Kunlik maosh",
-    soatlik: "Soatlik maosh",
-    ishbay: "Ishbay maosh",
-  };
+  const paymentTypes = useMemo(
+    () => ({
+      oylik: "Oylik maosh",
+      kunlik: "Kunlik maosh",
+      soatlik: "Soatlik maosh",
+      ishbay: "Ishbay maosh",
+    }),
+    []
+  );
 
-  const roles = {
-    admin: "Administrator",
-    manager: "Menejer",
-    specialist: "Mutaxassis",
-    warehouse: "Omborchi",
-    accountant: "Buxgalter",
-    saler: "Sotuvchi",
-  };
+  const roles = useMemo(
+    () => ({
+      admin: "Administrator",
+      manager: "Menejer",
+      specialist: "Mutaxassis",
+      warehouse: "Omborchi",
+      accountant: "Buxgalter",
+      saler: "Sotuvchi",
+    }),
+    []
+  );
 
   useEffect(() => {
-    let filtered = employees;
+    const employeeList = Array.isArray(employees?.innerData) ? employees.innerData : [];
+    let filtered = [...employeeList];
 
     if (selectedDepartment !== "all") {
-      filtered = filtered.filter(
-        (emp) => emp.department === selectedDepartment
-      );
+      filtered = filtered.filter((emp) => emp.department === selectedDepartment);
     }
 
     if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
       filtered = filtered.filter((emp) =>
         [
-          emp.firstName,
-          emp.department || "",
-          emp.lastName,
-          departments[emp.department],
-          emp.position,
-          emp.phone,
-          emp.address,
-        ].some((field) =>
-          field.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+          emp.firstName || "",
+          emp.lastName || "",
+          emp.department ? departments[emp.department] : "",
+          emp.position || "",
+          emp.phone || "",
+          emp.address || "",
+        ].some((field) => field.toLowerCase().includes(lowerQuery))
       );
     }
 
-    // Faqat filtered o'zgargan bo'lsa, setFilteredEmployees chaqiriladi
     setFilteredEmployees((prev) => {
       const prevStr = JSON.stringify(prev);
       const nextStr = JSON.stringify(filtered);
@@ -144,7 +151,6 @@ const RuberoidFactoryHR = () => {
           <div className="confirm-toast-buttons">
             <button
               onClick={async () => {
-                console.log(id);
                 try {
                   await deleteWorker(id).unwrap();
                   toast.success("Ishchi muvaffaqiyatli o'chirildi!");
@@ -190,18 +196,18 @@ const RuberoidFactoryHR = () => {
   };
 
   const exportToExcel = () => {
-    const excelData = filteredEmployees?.innerData?.map((emp, index) => ({
+    const excelData = filteredEmployees.map((emp, index) => ({
       "№": index + 1,
-      Ism: emp.firstName,
-      Familya: emp.lastName,
+      Ism: emp.firstName || "",
+      Familya: emp.lastName || "",
       "Otasining ismi": emp.middleName || "",
-      "Bo'lim": departments[emp.department],
-      Lavozim: emp.position,
-      "Ish staji": emp.experience,
-      "Pasport seriyasi": emp.passportSeries,
-      Telefon: emp.phone,
-      Manzil: emp.address,
-      "To'lov turi": paymentTypes[emp.paymentType],
+      "Bo'lim": departments[emp.department] || "",
+      Lavozim: emp.position || "",
+      "Ish staji": emp.experience || "",
+      "Pasport seriyasi": emp.passportSeries || "",
+      Telefon: emp.phone || "",
+      Manzil: emp.address || "",
+      "To'lov turi": paymentTypes[emp.paymentType] || "",
       Miqdor: formatSalary(emp.salary, emp.paymentType),
       "Ofis xodimi": emp.isOfficeWorker ? "Ha" : "Yo'q",
       Login: emp.login || "Tayinlanmagan",
@@ -281,7 +287,21 @@ const RuberoidFactoryHR = () => {
   };
 
   if (isLoading) {
-    return <div className="ruberoid-factory-hr-container">Yuklanmoqda...</div>;
+    return (
+      <div className="ruberoid-factory-hr-container">
+        <div className="loading-spinner">Yuklanmoqda...</div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="ruberoid-factory-hr-container">
+        <div className="error-message">
+          Xatolik yuz berdi: {error?.data?.message || "Noma'lum xato"}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -300,7 +320,7 @@ const RuberoidFactoryHR = () => {
               <Users className="stat-icon" />
               <div className="stat-details">
                 <span className="stat-number">
-                  {employees?.innerData.length}
+                  {employees?.innerData?.length || 0}
                 </span>
                 <span className="stat-label">Jami ishchilar</span>
               </div>
@@ -309,7 +329,7 @@ const RuberoidFactoryHR = () => {
               <Shield className="stat-icon" />
               <div className="stat-details">
                 <span className="stat-number">
-                  {employees?.innerData?.filter((e) => e.isOfficeWorker).length}
+                  {employees?.innerData?.filter((e) => e.isOfficeWorker).length || 0}
                 </span>
                 <span className="stat-label">Ofis xodimlari</span>
               </div>
@@ -367,82 +387,91 @@ const RuberoidFactoryHR = () => {
               </tr>
             </thead>
             <tbody className="table-body-section">
-              {filteredEmployees?.innerData?.map((employee, inx) => (
-                <tr key={inx} className="employee-table-row">
-                  <td>
-                    <span className="employee-name-cell">
-                      {employee.firstName} {employee.lastName}{" "}
-                      {employee.middleName}
-                      {employee.isOfficeWorker && (
-                        <span className="office-worker-badge">
-                          <Shield className="badge-icon" />
-                        </span>
-                      )}
-                    </span>
-                  </td>
-                  <td>{departments[employee.department]}</td>
-                  <td>
-                    {employee.position === "Required" ? "-" : employee.position}
-                  </td>
-                  <td>
-                    <span className="experience-badge">
-                      <Clock className="experience-icon" />
-                      {employee.experience || 0}
-                    </span>
-                  </td>
-                  <td className="passport-series-cell">
-                    {employee.passportSeries}
-                  </td>
-                  <td className="phone-cell">
-                    <Phone className="phone-icon" />
-                    {PhoneNumberFormat(employee.phone)}
-                  </td>
-                  <td className="address-cell">
-                    <MapPin className="address-icon" />
-                    {employee.address}
-                  </td>
-                  <td className="salary-amount-cell">
-                    {formatSalary(employee.salary, employee.paymentType)}
-                  </td>
-                  <td className="login-credentials-cell">
-                    {employee.isOfficeWorker ? (
-                      <div className="credentials-info">
-                        <div className="login-display">
-                          <Key className="credentials-icon" />
-                          {employee.login || "Tayinlanmagan"}
-                        </div>
-                        {employee.role && (
-                          <span className="role-badge">
-                            {roles[employee.role]}
+              {filteredEmployees.length > 0 ? (
+                filteredEmployees.map((employee, inx) => (
+                  <tr key={inx} className="employee-table-row">
+                    <td>
+                      <span className="employee-name-cell">
+                        {capitalizeFirstLetter(employee?.firstName || "")}{" "}
+                        {capitalizeFirstLetter(employee?.lastName || "")}{" "}
+                        {capitalizeFirstLetter(employee?.middleName || "")}
+                        {employee.isOfficeWorker && (
+                          <span className="office-worker-badge">
+                            <Shield className="badge-icon" />
                           </span>
                         )}
-                      </div>
-                    ) : (
-                      <span className="no-credentials-text">
-                        Login talab qilinmaydi
                       </span>
-                    )}
-                  </td>
-                  <td className="actions-cell">
-                    <div className="action-buttons-group">
-                      <button
-                        onClick={() => setEditingEmployee(employee)}
-                        className="edit-action-btn"
-                        title="Tahrirlash"
-                      >
-                        <Edit className="action-icon" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteEmployee(employee._id)}
-                        className="delete-action-btn"
-                        title="O'chirish"
-                      >
-                        <Trash2 className="action-icon" />
-                      </button>
-                    </div>
+                    </td>
+                    <td>{departments[employee.department] || "-"}</td>
+                    <td>
+                      {employee.position === "Required" ? "-" : employee.position || "-"}
+                    </td>
+                    <td>
+                      <span className="experience-badge">
+                        <Clock className="experience-icon" />
+                        {employee.experience || 0}
+                      </span>
+                    </td>
+                    <td className="passport-series-cell">
+                      {employee.passportSeries || "-"}
+                    </td>
+                    <td className="phone-cell">
+                      <Phone className="phone-icon" />
+                      {PhoneNumberFormat(employee.phone || "")}
+                    </td>
+                    <td className="address-cell">
+                      <MapPin className="address-icon" />
+                      {capitalizeFirstLetter(employee.address || "")}
+                    </td>
+                    <td className="salary-amount-cell">
+                      {formatSalary(employee.salary, employee.paymentType)}
+                    </td>
+                    <td className="login-credentials-cell">
+                      {employee.isOfficeWorker ? (
+                        <div className="credentials-info">
+                          <div className="login-display">
+                            <Key className="credentials-icon" />
+                            {employee.login || "Tayinlanmagan"}
+                          </div>
+                          {employee.role && (
+                            <span className="role-badge">
+                              {roles[employee.role] || "Tayinlanmagan"}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="no-credentials-text">
+                          Login talab qilinmaydi
+                        </span>
+                      )}
+                    </td>
+                    <td className="actions-cell">
+                      <div className="action-buttons-group">
+                        <button
+                          onClick={() => setEditingEmployee(employee)}
+                          className="edit-action-btn"
+                          title="Tahrirlash"
+                        >
+                          <Edit className="action-icon" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteEmployee(employee._id)}
+                          className="delete-action-btn"
+                          title="O'chirish"
+                        >
+                          <Trash2 className="action-icon" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="10" className="no-data">
+                    Ma'lumot topilmadi
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -466,3 +495,4 @@ const RuberoidFactoryHR = () => {
 };
 
 export default RuberoidFactoryHR;
+

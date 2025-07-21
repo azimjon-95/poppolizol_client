@@ -198,7 +198,8 @@ const BitumProductionSystem = () => {
       <div className="spinner"></div>
     </div>
   );
-  console.log(materialObj);
+
+  console.log(material);
   return (
     <div className="bitum-system-container">
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
@@ -233,7 +234,7 @@ const BitumProductionSystem = () => {
           <div className="bitum-inventory-card">
             <h4><FaIndustry style={{ marginRight: 5 }} /> Tayyor Mahsulot</h4>
             {material?.bn?.length > 0 ? (
-              material.bn.map((val, inx) => (
+              material.bn?.filter((i) => i.isReturned !== true).map((val, inx) => (
                 <p key={inx} className="ready-product-inventory">
                   {val.productName}: {NumberFormat(val.quantity)} kg
                 </p>

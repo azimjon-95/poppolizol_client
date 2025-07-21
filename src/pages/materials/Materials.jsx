@@ -500,7 +500,7 @@ const WarehouseManagement = () => {
           </Modal>
 
           {/* Income Material Modal */}
-          <EditMaterialModal setIsIncomeModalOpen={setIsIncomeModalOpen} firmsLoading={firmsLoading} isIncomeModalOpen={isIncomeModalOpen} />
+          <EditMaterialModal refetch={refetch} setIsIncomeModalOpen={setIsIncomeModalOpen} firmsLoading={firmsLoading} isIncomeModalOpen={isIncomeModalOpen} />
 
         </div>
       }

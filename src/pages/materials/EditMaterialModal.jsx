@@ -29,7 +29,7 @@ const FormattedInput = ({ value, onChange, max, min, ...props }) => {
     return <Input value={value} onChange={handleChange} {...props} />;
 };
 
-const EditMaterialModal = ({ setIsIncomeModalOpen, isIncomeModalOpen }) => {
+const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen }) => {
     const [createIncome, { isLoading: createIncomeLoading }] = useCreateIncomeMutation();
     const { data: factories } = useGetFactoriesQuery();
     const { data: firms, isLoading: firmsLoading } = useGetFirmsQuery();
@@ -210,6 +210,7 @@ const EditMaterialModal = ({ setIsIncomeModalOpen, isIncomeModalOpen }) => {
             };
 
             await createIncome(incomeData).unwrap();
+            refetch();
             toast.success("Kirim muvaffaqiyatli qo'shildi");
             setIsIncomeModalOpen(false);
             setSelectedMaterials([]);
@@ -327,6 +328,7 @@ const EditMaterialModal = ({ setIsIncomeModalOpen, isIncomeModalOpen }) => {
                                                 name={`quantity_${material.id}`}
                                                 initialValue={material.quantity}
                                                 rules={[{ required: true, message: "Miqdor kiritish shart" }]}
+                                                className="warehouse-form-item"
                                             >
                                                 <FormattedInput
                                                     placeholder="Miqdor"
@@ -342,6 +344,7 @@ const EditMaterialModal = ({ setIsIncomeModalOpen, isIncomeModalOpen }) => {
                                                 name={`price_${material.id}`}
                                                 initialValue={material.price}
                                                 rules={[{ required: true, message: "Narx kiritish shart" }]}
+                                                className="warehouse-form-item"
                                             >
                                                 <FormattedInput
                                                     placeholder="Narx"
