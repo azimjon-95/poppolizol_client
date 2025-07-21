@@ -169,12 +169,7 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
                 (sum, material) => sum + Number(material.quantity) * Number(material.price),
                 0
             );
-            const totalWithTransportAndWorkers = materialsWithCosts.reduce(
-                (sum, material) => sum + Number(material.quantity) * (
-                    Number(material.price) + Number(material.transportCostPerUnit) + Number(material.workerCostPerUnit)
-                ),
-                0
-            );
+
             const vatAmount = paymentType === "bank" ? (baseTotal * Number(vatPercentage)) / (100 + Number(vatPercentage)) : 0;
             const totalWithoutVat = baseTotal - vatAmount;
             const workerPayments = calculateWorkerPayments();

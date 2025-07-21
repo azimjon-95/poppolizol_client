@@ -437,6 +437,31 @@
     border-radius: 15px;
     overflow: hidden;
     border: 1px solid #ccc;
+    overflow-y: auto;
+    height: calc(100vh - 205px);
+}
+
+.ruberoid-table-container::-webkit-scrollbar {
+    width: 5px;
+    /* Width of the scrollbar */
+}
+
+.ruberoid-table-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    /* Track background, semi-transparent */
+    border-radius: 16px;
+    /* Rounded track to match container */
+}
+
+.ruberoid-table-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    /* Thumb color, subtle to blend with glassmorphism */
+    border-radius: 16px;
+    /* Rounded thumb */
+    border: 2px solid transparent;
+    /* Optional: adds spacing around thumb */
+    background-clip: content-box;
+    /* Ensures border doesn't affect thumb color */
 }
 
 .ruberoid-transactions-table {
