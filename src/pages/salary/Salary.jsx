@@ -43,8 +43,39 @@ function Salary() {
     });
   });
 
+  let totalProduced =
+    data?.reduce((sum, record) => sum + record.producedCount, 0) || 0;
+
+  let totalLoaded =
+    data?.reduce((sum, record) => sum + record.loadedCount, 0) || 0;
+
+  let totalSum = data?.reduce((sum, record) => sum + record.totalSum, 0) || 0;
+
   return (
     <Card className="salary-card" title="Ish haqi vedomosti">
+      <div
+        className="salary_header"
+        style={{ display: "flex", justifyContent: "space-between",textAlign:"right" }}
+      >
+        <div className="salary_header_left"></div>
+        <div className="salary_header_right">
+          <p>
+            Jami ishlab chiqarish:{" "}
+            <b>
+              {totalProduced} ta - {(totalProduced * 2800)?.toLocaleString()} so'm
+            </b>{" "}
+          </p>
+          <p>
+            Jami sotuv chiqarish:{" "}
+            <b>
+              {totalLoaded} ta - {(totalLoaded * 400)?.toLocaleString()} so'm{" "}
+            </b>{" "}
+          </p>
+          <p>
+            Jami hisoblandi: <b>{totalSum.toLocaleString()} so'm</b>{" "}
+          </p>
+        </div>
+      </div>
       <table border={1}>
         <thead>
           <tr>
