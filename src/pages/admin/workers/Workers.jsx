@@ -59,6 +59,7 @@ const RuberoidFactoryHR = () => {
       oshxona: "Ovqatlanish",
       Sotuvchi: "Sotuvchi",
       saler_export: "Sotuvchi Ekspert",
+      director: "Direktor",
     }),
     []
   );
@@ -81,6 +82,7 @@ const RuberoidFactoryHR = () => {
       warehouse: "Omborchi",
       accountant: "Buxgalter",
       saler: "Sotuvchi",
+      director: "Direktor",
     }),
     []
   );

@@ -112,7 +112,17 @@
     display: grid;
     grid-template-columns: 1fr 1.5fr;
     gap: 10px;
+    width: 100%;
     align-items: start;
+}
+
+.ruberoid-date-filters {
+    width: 100%;
+}
+
+.ruberoid-main-content_director {
+    width: 100%;
+    grid-template-columns: 1fr;
 }
 
 /* Form Panel */
@@ -377,6 +387,7 @@
     background: linear-gradient(145deg, #ffffff, #f0f0f0);
     border-radius: 20px;
     padding: 25px 15px;
+
     box-shadow:
         20px 20px 40px rgba(0, 0, 0, 0.1),
         -20px -20px 40px rgba(255, 255, 255, 0.5);
