@@ -33,7 +33,7 @@ const RuberoidFactoryHR = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const { searchQuery } = useSelector((state) => state.search);
-
+  const role = localStorage.getItem("role")
   const {
     data: employees = { innerData: [] },
     isLoading,
@@ -59,6 +59,7 @@ const RuberoidFactoryHR = () => {
       oshxona: "Ovqatlanish",
       Sotuvchi: "Sotuvchi",
       saler_export: "Sotuvchi Ekspert",
+      director: "Direktor",
     }),
     []
   );
@@ -81,6 +82,7 @@ const RuberoidFactoryHR = () => {
       warehouse: "Omborchi",
       accountant: "Buxgalter",
       saler: "Sotuvchi",
+      director: "Direktor",
     }),
     []
   );
@@ -288,15 +290,15 @@ const RuberoidFactoryHR = () => {
 
   if (isLoading) {
     return (
-      <div className="ruberoid-factory-hr-container">
-        <div className="loading-spinner">Yuklanmoqda...</div>
+      <div className="ruberoid-factory-hr-loading">
+        <div className="loading-spinner"></div>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="ruberoid-factory-hr-container">
+      <div className="ruberoid-factory-hr-loading">
         <div className="error-message">
           Xatolik yuz berdi: {error?.data?.message || "Noma'lum xato"}
         </div>
@@ -335,13 +337,17 @@ const RuberoidFactoryHR = () => {
               </div>
             </div>
             <div className="controls-panel-section">
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="add-employee-btn"
-              >
-                <UserPlus className="btn-icon" />
-                Yangi ishchi qo'shish
-              </button>
+              {
+                role !== "director" && (
+                  <button
+                    onClick={() => setShowAddModal(true)}
+                    className="add-employee-btn"
+                  >
+                    <UserPlus className="btn-icon" />
+                    Yangi ishchi qo'shish
+                  </button>
+                )
+              }
               <div className="department-filter-wrapper">
                 <Filter className="filter-dropdown-icon" />
                 <select
@@ -383,7 +389,11 @@ const RuberoidFactoryHR = () => {
                 <th>Manzil</th>
                 <th>Miqdor</th>
                 <th>Login ma'lumotlari</th>
-                <th>Amallar</th>
+                {
+                  role !== "director" && (
+                    <th>Amallar</th>
+                  )
+                }
               </tr>
             </thead>
             <tbody className="table-body-section">
@@ -445,24 +455,28 @@ const RuberoidFactoryHR = () => {
                         </span>
                       )}
                     </td>
-                    <td className="actions-cell">
-                      <div className="action-buttons-group">
-                        <button
-                          onClick={() => setEditingEmployee(employee)}
-                          className="edit-action-btn"
-                          title="Tahrirlash"
-                        >
-                          <Edit className="action-icon" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteEmployee(employee._id)}
-                          className="delete-action-btn"
-                          title="O'chirish"
-                        >
-                          <Trash2 className="action-icon" />
-                        </button>
-                      </div>
-                    </td>
+                    {
+                      role !== "director" && (
+                        <td className="actions-cell">
+                          <div className="action-buttons-group">
+                            <button
+                              onClick={() => setEditingEmployee(employee)}
+                              className="edit-action-btn"
+                              title="Tahrirlash"
+                            >
+                              <Edit className="action-icon" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEmployee(employee._id)}
+                              className="delete-action-btn"
+                              title="O'chirish"
+                            >
+                              <Trash2 className="action-icon" />
+                            </button>
+                          </div>
+                        </td>
+                      )
+                    }
                   </tr>
                 ))
               ) : (

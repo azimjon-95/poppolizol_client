@@ -695,6 +695,41 @@
         font-size: 18px;
     }
 
+    .mvb-modal-total-info {
+        text-wrap: nowrap;
+    }
+
+    .mvb-modal-cost-difference {
+        text-wrap: nowrap;
+    }
+
+    .mvb-modal-table-wrapper {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        overflow-x: auto;
+    }
+
+    .mvb-modal-stats {
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 0px !important;
+        padding: 4px 15px !important;
+        margin-bottom: 4px;
+    }
+
+    .mvb-materials-cost {
+        text-wrap: nowrap;
+    }
+
+    .mvb-product-name {
+        text-wrap: nowrap;
+    }
+
+    .mvb-history-list {
+        padding: 0px !important;
+    }
+
     .mvb-modal-header {
         padding: 16px 20px;
     }

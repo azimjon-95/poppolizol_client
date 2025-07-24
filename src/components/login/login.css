@@ -22,6 +22,12 @@
     border-radius: 8px;
 }
 
+.text-redtext-sm {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
 /* Main Container Styles */
 .bpf-authentication-wrapper {
     min-height: 100vh;

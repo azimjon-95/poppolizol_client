@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./Sidebar.css";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 import { menuItems } from "../../utils/SidebarMenu";
 
@@ -88,7 +88,7 @@ function Sidebar() {
                 setActiveSubPath(""); // submenu bo'lmasa
               }}
             >
-              {item.icon} <span>{item.label}</span>
+              {item.icon} <span className="itemMOBlabel">{item.label}</span>
             </NavLink>
 
           )

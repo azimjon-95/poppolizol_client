@@ -13,7 +13,7 @@ const DeliveryProduct = ({
     modalState
 }) => {
     const [deliverProduct] = useDeliverProductMutation();
-
+    const role = localStorage.getItem("role");
 
 
     const processDelivery = useCallback(async () => {
@@ -53,11 +53,15 @@ const DeliveryProduct = ({
                     return (
                         <div key={index} className="invoice-delivery-item">
                             <label>
-                                <input
-                                    type="checkbox"
-                                    checked={item.selected || false}
-                                    onChange={(e) => handleDeliveryItemChange(index, 'selected', e.target.checked)}
-                                />
+                                {
+                                    role !== "director" && (
+                                        <input
+                                            type="checkbox"
+                                            checked={item.selected || false}
+                                            onChange={(e) => handleDeliveryItemChange(index, 'selected', e.target.checked)}
+                                        />
+                                    )
+                                }
                                 {item.productName || 'Noma\'lum'} ({item.category || 'Noma\'lum'})
                             </label>
                             <div>
@@ -87,14 +91,18 @@ const DeliveryProduct = ({
                         </div>
                     );
                 })}
-                <button
-                    className="invoice-btn invoice-btn-success"
-                    onClick={() => processDelivery()}
-                    disabled={!deliveryItems.some(item => item.selected && item.deliveryQuantity > 0)}
-                >
-                    <DeliveryIcon size={16} />
-                    Yuborishni tasdiqlash
-                </button>
+                {
+                    role !== "director" && (
+                        <button
+                            className="invoice-btn invoice-btn-success"
+                            onClick={() => processDelivery()}
+                            disabled={!deliveryItems.some(item => item.selected && item.deliveryQuantity > 0)}
+                        >
+                            <DeliveryIcon size={16} />
+                            Yuborishni tasdiqlash
+                        </button>
+                    )
+                }
             </div>
         </Modal>
     )

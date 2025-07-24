@@ -23,6 +23,45 @@ export const menuItems = {
       path: "/warehouse",
       label: "Ombor",
     },
+
+    {
+      icon: <GiFactory size={20} />,
+      path: "/production",
+      label: "Ishlab chiqarish",
+    },
+    {
+      icon: <FaMoneyBillWave size={20} />,
+      path: "/expense",
+      label: "Xarajatlar",
+    },
+
+    {
+      icon: <FaTruckMoving size={20} />,
+      path: "/sales",
+      label: "Sotuv bo'limi",
+    },
+    {
+      icon: <CalendarOutlined size={20} />,
+      path: "/salary",
+      label: "Maoshlar",
+    },
+  ],
+  accountant: [
+    {
+      icon: <MdDashboard size={20} />,
+      path: "/director",
+      label: "Boshqaruv paneli",
+    },
+    {
+      icon: <FaUsers size={20} />,
+      path: "/workers",
+      label: "Hodimlar",
+    },
+    {
+      icon: <FaWarehouse size={20} />,
+      path: "/warehouse",
+      label: "Ombor",
+    },
     {
       icon: <BiCategoryAlt size={20} />,
       path: "/norma",

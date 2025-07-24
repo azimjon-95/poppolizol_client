@@ -18,7 +18,6 @@ const ExpenseTracker = () => {
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
     const [formattedAmount, setFormattedAmount] = useState('');
-    const [showPopover, setShowPopover] = useState(null);
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
@@ -219,12 +218,13 @@ const ExpenseTracker = () => {
         }
     };
 
+    const role = localStorage.getItem("role")
     if (isLoading) return <div>Loading...</div>;
 
     return (
         <div className="ruberoid-expense-tracker">
-            <div className="ruberoid-container">
-                <div className="ruberoid-main-content">
+            <div className={`ruberoid-main-content${role === "director" ? "_director" : ""}`}>
+                {role !== "director" &&
                     <div className="ruberoid-form-panel">
                         <div className="ruberoid-form-box">
                             <button
@@ -304,92 +304,91 @@ const ExpenseTracker = () => {
 
                         {renderTabContent()}
                     </div>
-
-                    <div className="ruberoid-table-panel">
-                        <div className="ruberoid-date-filters">
-                            <div className="ruberoid-date-group">
-                                <label className="ruberoid-date-label">
-                                    <Calendar className="ruberoid-date-icon" />
-                                    Boshlanish sanasi
-                                </label>
-                                <input
-                                    type="date"
-                                    value={startDate}
-                                    onChange={(e) => setStartDate(e.target.value)}
-                                    className="ruberoid-date-input"
-                                />
-                            </div>
-                            <div className="ruberoid-date-group">
-                                <label className="ruberoid-date-label">
-                                    <Calendar className="ruberoid-date-icon" />
-                                    Tugash sanasi
-                                </label>
-                                <input
-                                    type="date"
-                                    value={endDate}
-                                    onChange={(e) => setEndDate(e.target.value)}
-                                    className="ruberoid-date-input"
-                                />
-                            </div>
+                }
+                <div className="ruberoid-table-panel">
+                    <div className="ruberoid-date-filters">
+                        <div className="ruberoid-date-group">
+                            <label className="ruberoid-date-label">
+                                <Calendar className="ruberoid-date-icon" />
+                                Boshlanish sanasi
+                            </label>
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                className="ruberoid-date-input"
+                            />
                         </div>
+                        <div className="ruberoid-date-group">
+                            <label className="ruberoid-date-label">
+                                <Calendar className="ruberoid-date-icon" />
+                                Tugash sanasi
+                            </label>
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                className="ruberoid-date-input"
+                            />
+                        </div>
+                    </div>
 
-                        <div className="ruberoid-table-container">
-                            <table className="ruberoid-transactions-table">
-                                <thead>
+                    <div className="ruberoid-table-container">
+                        <table className="ruberoid-transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>Tur</th>
+                                    <th>Sana</th>
+                                    <th>Kategoriya</th>
+                                    <th>To'lov</th>
+                                    <th>Summa</th>
+                                    <th>Tavsif</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {transactions.innerData.length === 0 ? (
                                     <tr>
-                                        <th>Tur</th>
-                                        <th>Sana</th>
-                                        <th>Kategoriya</th>
-                                        <th>To'lov</th>
-                                        <th>Summa</th>
-                                        <th>Tavsif</th>
+                                        <td colSpan="6" className="ruberoid-no-data">
+                                            Ma'lumotlar topilmadi
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {transactions.innerData.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="6" className="ruberoid-no-data">
-                                                Ma'lumotlar topilmadi
+                                ) : (
+                                    transactions.innerData.map((transaction, index) => (
+                                        <tr key={index} className="ruberoid-transaction-row">
+                                            <td>
+                                                <div className="ruberoid-type-indicator">
+                                                    {transaction.type === 'kirim' ? (
+                                                        <TrendingUp className="ruberoid-income-icon" />
+                                                    ) : (
+                                                        <TrendingDown className="ruberoid-expense-icon" />
+                                                    )}
+                                                </div>
                                             </td>
+                                            <td>
+                                                {new Date(transaction.date).toLocaleString('uz-UZ', {
+                                                    year: 'numeric',
+                                                    month: '2-digit',
+                                                    day: '2-digit',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: false,
+                                                }).replace(',', '').replace(/\//g, '.')}
+                                            </td>
+                                            <td>{transaction.category}</td>
+                                            <td>
+                                                <span className="ruberoid-payment-badge">
+                                                    {paymentMethods[transaction.paymentMethod]}
+                                                </span>
+                                            </td>
+                                            <td className={transaction.type === 'kirim' ? 'ruberoid-income-amount' : 'ruberoid-expense-amount'}>
+                                                {transaction.amount.toLocaleString()} so'm
+                                            </td>
+                                            <td className="ruberoid-description">{transaction.description}</td>
                                         </tr>
-                                    ) : (
-                                        transactions.innerData.map((transaction, index) => (
-                                            <tr key={index} className="ruberoid-transaction-row">
-                                                <td>
-                                                    <div className="ruberoid-type-indicator">
-                                                        {transaction.type === 'kirim' ? (
-                                                            <TrendingUp className="ruberoid-income-icon" />
-                                                        ) : (
-                                                            <TrendingDown className="ruberoid-expense-icon" />
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    {new Date(transaction.date).toLocaleString('uz-UZ', {
-                                                        year: 'numeric',
-                                                        month: '2-digit',
-                                                        day: '2-digit',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                        hour12: false,
-                                                    }).replace(',', '').replace(/\//g, '.')}
-                                                </td>
-                                                <td>{transaction.category}</td>
-                                                <td>
-                                                    <span className="ruberoid-payment-badge">
-                                                        {paymentMethods[transaction.paymentMethod]}
-                                                    </span>
-                                                </td>
-                                                <td className={transaction.type === 'kirim' ? 'ruberoid-income-amount' : 'ruberoid-expense-amount'}>
-                                                    {transaction.amount.toLocaleString()} so'm
-                                                </td>
-                                                <td className="ruberoid-description">{transaction.description}</td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

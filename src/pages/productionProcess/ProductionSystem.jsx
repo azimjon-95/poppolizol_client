@@ -46,6 +46,7 @@ const ProductionSystem = () => {
   const [updateFinished, { isLoading: updateLoading }] = useUpdateFinishedMutation();
   const [deleteFinished, { isLoading: deleteLoading }] = useDeleteFinishedMutation();
   const [consumedQuantities, setConsumedQuantities] = useState({});
+  const role = localStorage.getItem("role");
 
   // Handle errors
   if (normasError) {
@@ -400,175 +401,179 @@ const ProductionSystem = () => {
         )}
       </Modal>
 
-      <Tabs defaultActiveKey="production" className="custom-tabs">
-        <TabPane
-          tab={
-            <span style={{ display: "flex", alignItems: "center" }}>
-              <Factory size={20} style={{ marginRight: 8 }} />
-              Ruberoid va Polizol Ishlab Chiqarish
-            </span>
-          }
-          key="production"
-        >
-          <div className="space-y-8">
-            <div className="production-card">
-              <div className="category-buttons">
-                <button
-                  className={`category-button ${selectedCategory === "ruberoid" ? "active" : ""}`}
-                  onClick={() => setSelectedCategory("ruberoid")}
-                >
-                  Ruberoid
-                </button>
-                <button
-                  className={`category-button ${selectedCategory === "polizol" ? "active" : ""}`}
-                  onClick={() => setSelectedCategory("polizol")}
-                >
-                  Polizol
-                </button>
-              </div>
+      <Tabs defaultActiveKey={role === "director" ? "finished" : "production"} className="custom-tabs">
+        {
+          role !== "director" &&
+          <TabPane
+            tab={
+              <span style={{ display: "flex", alignItems: "center" }}>
+                <Factory size={20} style={{ marginRight: 8 }} />
+                Ruberoid va Polizol Ishlab Chiqarish
+              </span>
+            }
+            key="production"
+          >
+            <div className="space-y-8">
+              <div className="production-card">
+                <div className="category-buttons">
+                  <button
+                    className={`category-button ${selectedCategory === "ruberoid" ? "active" : ""}`}
+                    onClick={() => setSelectedCategory("ruberoid")}
+                  >
+                    Ruberoid
+                  </button>
+                  <button
+                    className={`category-button ${selectedCategory === "polizol" ? "active" : ""}`}
+                    onClick={() => setSelectedCategory("polizol")}
+                  >
+                    Polizol
+                  </button>
+                </div>
 
-              <div className="production-form-box">
-                <div className="production-form-grid">
-                  <div>
-                    <label className="form-label">Mahsulot turini tanlang</label>
-                    <div className="norma-menu">
-                      {normasLoading ? (
-                        <p>Yuklanmoqda...</p>
-                      ) : filteredNormas?.length > 0 ? (
-                        filteredNormas.map((norma) => (
-                          <div
-                            key={norma._id}
-                            className={`norma-item ${selectedNorma === norma._id ? "selected" : ""}`}
-                            onClick={() => setSelectedNorma(norma._id)}
-                          >
-                            {capitalizeFirstLetter(norma.productName)}
-                          </div>
-                        ))
-                      ) : (
-                        <p>Mahsulot topilmadi</p>
-                      )}
+                <div className="production-form-box">
+                  <div className="production-form-grid">
+                    <div>
+                      <label className="form-label">Mahsulot turini tanlang</label>
+                      <div className="norma-menu">
+                        {normasLoading ? (
+                          <p>Yuklanmoqda...</p>
+                        ) : filteredNormas?.length > 0 ? (
+                          filteredNormas.map((norma) => (
+                            <div
+                              key={norma._id}
+                              className={`norma-item ${selectedNorma === norma._id ? "selected" : ""}`}
+                              onClick={() => setSelectedNorma(norma._id)}
+                            >
+                              {capitalizeFirstLetter(norma.productName)}
+                            </div>
+                          ))
+                        ) : (
+                          <p>Mahsulot topilmadi</p>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  {selectedNorma && (
+                    <div className="materials-required-card">
+                      <h3 className="materials-required-title">Kerakli xom ashyolar:</h3>
+                      {normas?.innerData
+                        ?.find((n) => n._id === selectedNorma)
+                        ?.materials?.map((req, index) => (
+                          <div key={index} className="material-item">
+                            <span>{req.materialId?.name}</span>
+                            <span className="material-quantity">
+                              Norma: {req.quantity} {req.materialId?.unit}
+                            </span>
+                            <span className="material-quantity">
+                              Jami kerak: {NumberFormat(req.quantity * quantityToProduce)} {req.materialId?.unit}
+                            </span>
+                            <span className="material-status-icons" style={{ width: "120px" }}>
+                              <HiOutlineArrowTrendingDown
+                                className={`status-icon ${getIconStatus(req.materialId._id) === "insufficient" ? "active insufficient" : ""}`}
+                              />
+                              <HiOutlineArrowTrendingUp
+                                className={`status-icon ${getIconStatus(req.materialId._id) === "exceed" ? "active exceed" : ""}`}
+                              />
+                              <HiOutlineArrowsRightLeft
+                                className={`status-icon ${getIconStatus(req.materialId._id) === "equal" ? "active equal" : ""}`}
+                              />
+                            </span>
+                            <span className="materialId_unitInp">
+                              <input
+                                type="number"
+                                placeholder="Sariflangan miqdori..."
+                                value={consumedQuantities[req.materialId._id] || ""}
+                                onChange={(e) => handleConsumedQuantityChange(req.materialId._id, e.target.value)}
+                                className="material-consumed-input"
+                                min="0"
+                              />
+                              <span className="materialId_unit">{req.materialId?.unit}</span>
+                            </span>
+                          </div>
+                        )) || <p>Xom ashyo ma'lumotlari topilmadi</p>}
+                      <Form form={form} layout="vertical">
+                        <Form.Item name="isDefective" valuePropName="checked">
+                          <Checkbox onChange={(e) => setIsDefective(e.target.checked)}>Brak mahsulot</Checkbox>
+                        </Form.Item>
+                        {isDefective && (
+                          <>
+                            <Form.Item
+                              label="Brak sababi"
+                              name="defectiveReason"
+                              rules={[{ required: true, message: "Iltimos, brak sababini kiriting" }]}
+                            >
+                              <Input placeholder="Sababni kiriting" />
+                            </Form.Item>
+                            <Form.Item
+                              label="Brak tavsifi"
+                              name="defectiveDescription"
+                            >
+                              <Input.TextArea placeholder="Tavsifni kiriting" rows={4} />
+                            </Form.Item>
+                          </>
+                        )}
+                      </Form>
+                    </div>
+                  )}
                 </div>
-                {selectedNorma && (
-                  <div className="materials-required-card">
-                    <h3 className="materials-required-title">Kerakli xom ashyolar:</h3>
-                    {normas?.innerData
-                      ?.find((n) => n._id === selectedNorma)
-                      ?.materials?.map((req, index) => (
-                        <div key={index} className="material-item">
-                          <span>{req.materialId?.name}</span>
-                          <span className="material-quantity">
-                            Norma: {req.quantity} {req.materialId?.unit}
-                          </span>
-                          <span className="material-quantity">
-                            Jami kerak: {NumberFormat(req.quantity * quantityToProduce)} {req.materialId?.unit}
-                          </span>
-                          <span className="material-status-icons" style={{ width: "120px" }}>
-                            <HiOutlineArrowTrendingDown
-                              className={`status-icon ${getIconStatus(req.materialId._id) === "insufficient" ? "active insufficient" : ""}`}
-                            />
-                            <HiOutlineArrowTrendingUp
-                              className={`status-icon ${getIconStatus(req.materialId._id) === "exceed" ? "active exceed" : ""}`}
-                            />
-                            <HiOutlineArrowsRightLeft
-                              className={`status-icon ${getIconStatus(req.materialId._id) === "equal" ? "active equal" : ""}`}
-                            />
-                          </span>
-                          <span className="materialId_unitInp">
-                            <input
-                              type="number"
-                              placeholder="Sariflangan miqdori..."
-                              value={consumedQuantities[req.materialId._id] || ""}
-                              onChange={(e) => handleConsumedQuantityChange(req.materialId._id, e.target.value)}
-                              className="material-consumed-input"
-                              min="0"
-                            />
-                            <span className="materialId_unit">{req.materialId?.unit}</span>
-                          </span>
-                        </div>
-                      )) || <p>Xom ashyo ma'lumotlari topilmadi</p>}
-                    <Form form={form} layout="vertical">
-                      <Form.Item name="isDefective" valuePropName="checked">
-                        <Checkbox onChange={(e) => setIsDefective(e.target.checked)}>Brak mahsulot</Checkbox>
-                      </Form.Item>
-                      {isDefective && (
-                        <>
-                          <Form.Item
-                            label="Brak sababi"
-                            name="defectiveReason"
-                            rules={[{ required: true, message: "Iltimos, brak sababini kiriting" }]}
-                          >
-                            <Input placeholder="Sababni kiriting" />
-                          </Form.Item>
-                          <Form.Item
-                            label="Brak tavsifi"
-                            name="defectiveDescription"
-                          >
-                            <Input.TextArea placeholder="Tavsifni kiriting" rows={4} />
-                          </Form.Item>
-                        </>
-                      )}
-                    </Form>
+
+                <div>
+                  <label className="form-label">Ishlab chiqarish miqdori</label>
+                  <div className="quantity-input-container">
+                    <button
+                      onClick={() => setQuantityToProduce(Math.max(1, quantityToProduce - 1))}
+                      className="quantity-button quantity-button-left"
+                    >
+                      <Minus size={22} />
+                    </button>
+                    <input
+                      type="number"
+                      value={quantityToProduce}
+                      onChange={(e) =>
+                        setQuantityToProduce(Math.max(1, parseInt(e.target.value) || 1))
+                      }
+                      className="quantity-input"
+                      min="1"
+                    />
+                    <button
+                      onClick={() => setQuantityToProduce(quantityToProduce + 1)}
+                      className="quantity-button quantity-button-right"
+                    >
+                      <Plus size={22} />
+                    </button>
                   </div>
-                )}
-              </div>
-
-              <div>
-                <label className="form-label">Ishlab chiqarish miqdori</label>
-                <div className="quantity-input-container">
-                  <button
-                    onClick={() => setQuantityToProduce(Math.max(1, quantityToProduce - 1))}
-                    className="quantity-button quantity-button-left"
-                  >
-                    <Minus size={22} />
-                  </button>
-                  <input
-                    type="number"
-                    value={quantityToProduce}
-                    onChange={(e) =>
-                      setQuantityToProduce(Math.max(1, parseInt(e.target.value) || 1))
-                    }
-                    className="quantity-input"
-                    min="1"
-                  />
-                  <button
-                    onClick={() => setQuantityToProduce(quantityToProduce + 1)}
-                    className="quantity-button quantity-button-right"
-                  >
-                    <Plus size={22} />
-                  </button>
                 </div>
+
+                <button
+                  disabled={
+                    !selectedNorma ||
+                    quantityToProduce <= 0 ||
+                    normasLoading ||
+                    productionLoading
+                  }
+                  onClick={handleProduce}
+                  className="produce-button"
+                >
+                  {productionLoading ? "Ishlab chiqarilmoqda..." : "Ishlab Chiqarish"}
+                </button>
               </div>
-
-              <button
-                disabled={
-                  !selectedNorma ||
-                  quantityToProduce <= 0 ||
-                  normasLoading ||
-                  productionLoading
-                }
-                onClick={handleProduce}
-                className="produce-button"
-              >
-                {productionLoading ? "Ishlab chiqarilmoqda..." : "Ishlab Chiqarish"}
-              </button>
             </div>
-          </div>
-        </TabPane>
-
-        <TabPane
-          tab={
-            <span style={{ display: "flex", alignItems: "center" }}>
-              <GiOilDrum size={20} style={{ marginRight: 8 }} />
-              BN-5 Ishlab Chiqarish
-            </span>
-          }
-          key="bitum"
-        >
-          <BitumProductionSystem />
-        </TabPane>
-
+          </TabPane>
+        }
+        {
+          role !== "director" &&
+          <TabPane
+            tab={
+              <span style={{ display: "flex", alignItems: "center" }}>
+                <GiOilDrum size={20} style={{ marginRight: 8 }} />
+                BN-5 Ishlab Chiqarish
+              </span>
+            }
+            key="bitum"
+          >
+            <BitumProductionSystem />
+          </TabPane>
+        }
         <TabPane
           tab={
             <span style={{ display: "flex", alignItems: "center" }}>
@@ -634,7 +639,7 @@ const ProductionSystem = () => {
               ) : filteredProducts?.length > 0 ? (
                 filteredProducts.map((product, inx) => (
                   <div key={inx} className="product-card-container">
-                    <div className="product-card_actins">
+                    {/* <div className="product-card_actins">
                       <button
                         onClick={() => handleUpdate(product)}
                         disabled={deleteLoading || updateLoading}
@@ -650,7 +655,7 @@ const ProductionSystem = () => {
                       >
                         <RiDeleteBinLine />
                       </button>
-                    </div>
+                    </div> */}
                     {product.category === "Stakan" || product.category === "Qop" ? (
                       <div className="product-imagebn">
                         <img src={betumImg} alt="Bitum" />
@@ -747,6 +752,7 @@ const ProductionSystem = () => {
                     </div>
                   </div>
                 ))
+
               ) : (
                 <div className="empty-state-container">
                   <Archive size={48} className="empty-icon" />
@@ -756,6 +762,7 @@ const ProductionSystem = () => {
             </div>
           </div>
         </TabPane>
+
 
         <TabPane
           tab={

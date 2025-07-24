@@ -52,9 +52,9 @@ const Login = () => {
     const data =
       authMode === true
         ? {
-            login: formData.username.trim(),
-            password: formData.password.trim(),
-          }
+          login: formData.username.trim(),
+          password: formData.password.trim(),
+        }
         : { pin: formData.pin.trim() };
 
     if (!data.login && !data.pin) {
@@ -68,9 +68,8 @@ const Login = () => {
       const endpoint = authMode === true ? "/admin/login" : "/admin/pin";
       const res = await axios.post(endpoint, data);
       const { message: successMessage, innerData } = res.data;
-      const doctorName = `${innerData?.employee?.firstName || ""} ${
-        innerData?.employee?.lastName || ""
-      }`.trim();
+      const doctorName = `${innerData?.employee?.firstName || ""} ${innerData?.employee?.lastName || ""
+        }`.trim();
 
       localStorage.setItem("workerId", innerData?.employee?._id);
       localStorage.setItem("admin_fullname", doctorName);

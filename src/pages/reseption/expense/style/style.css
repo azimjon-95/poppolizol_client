@@ -112,7 +112,17 @@
     display: grid;
     grid-template-columns: 1fr 1.5fr;
     gap: 10px;
+    width: 100%;
     align-items: start;
+}
+
+.ruberoid-date-filters {
+    width: 100%;
+}
+
+.ruberoid-main-content_director {
+    width: 100%;
+    grid-template-columns: 1fr;
 }
 
 /* Form Panel */
@@ -377,6 +387,7 @@
     background: linear-gradient(145deg, #ffffff, #f0f0f0);
     border-radius: 20px;
     padding: 25px 15px;
+
     box-shadow:
         20px 20px 40px rgba(0, 0, 0, 0.1),
         -20px -20px 40px rgba(255, 255, 255, 0.5);
@@ -710,6 +721,47 @@
         gap: 10px;
     }
 
+    .ruberoid-transaction-row td {
+        text-wrap: nowrap;
+    }
+
+    .ruberoid-date-filters {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5px;
+        margin-bottom: 5px;
+        padding-bottom: 2px;
+        border-bottom: 1px solid #cccccc00;
+    }
+
+    .ruberoid-date-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        display: 100% !important;
+    }
+
+
+
+    .ruberoid-date-input {
+        display: 100% !important;
+        padding: 5px 12px;
+        border: 2px solid #ccc;
+        border-radius: 5px;
+        background: linear-gradient(145deg, #ffffff, #f0f0f0);
+        color: #333;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .ruberoid-expense-tracker {
+        padding: 0px;
+        border-radius: 0px !important;
+        overflow-y: hidden !important;
+        /* background: #000; */
+        height: 100vh;
+    }
+
     .ruberoid-balance-cards {
         gap: 10px;
     }
@@ -724,12 +776,28 @@
 
     .ruberoid-form-panel,
     .ruberoid-table-panel {
-        padding: 15px;
+        padding: 10px 5px;
+        border-radius: 0px;
+    }
+
+    .ruberoid-table-panel {
+        padding-bottom: 0;
     }
 
     .ruberoid-table-container {
+        background: linear-gradient(145deg, #f0f0f0, #ffffff);
+        border-radius: 15px;
         overflow-x: auto;
+        border: 1px solid #ccc;
+        overflow-y: auto;
+        height: calc(100vh - 186px);
     }
+
+    /* .ruberoid-date-filters {
+        width: 100%;
+        display: flex;
+        grid-template-columns: repeat(1fr) !important;
+    } */
 
     .ruberoid-transactions-table {
         min-width: 600px;

@@ -177,6 +177,10 @@ aside {
     z-index: 1000;
   }
 
+  .itemMOBlabel {
+    display: none;
+  }
+
   .sidebar_logo {
     display: none;
     /* Mobil ekranda logo yo‘qoladi */
@@ -209,10 +213,14 @@ aside {
     flex-direction: column;
   }
 
+  .sidebar_menu_item svg {
+    font-size: 20px;
+  }
+
   .sidebar_links a:hover {
     background-color: var(--bg-color);
     color: var(--main-color) !important;
-    padding: 0 3px 3px 3px;
+    /* padding: 0 3px 3px 3px; */
   }
 
   .sidebar_menu_item span {

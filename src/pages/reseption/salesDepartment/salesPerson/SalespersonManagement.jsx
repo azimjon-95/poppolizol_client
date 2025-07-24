@@ -68,6 +68,8 @@ const SalespersonDashboard = () => {
         month: selectedMonth,
     });
     const [formError, setFormError] = useState('');
+    const role = localStorage.getItem("role");
+    const workersId = localStorage.getItem("workerId");
 
     // API hooks
     const { data: salesEmployees = [], isLoading: employeesLoading, error: employeesError } = useGetSalesEmployeesQuery();
@@ -75,7 +77,7 @@ const SalespersonDashboard = () => {
     const [createPlan] = useCreatePlanMutation();
     const [updatePlan] = useUpdatePlanMutation();
     const [deletePlan] = useDeletePlanMutation();
-    console.log(salesEmployees);
+
 
     // Generate month options for the last 12 months and next 3 months
     const generateMonthOptions = () => {
@@ -149,6 +151,7 @@ const SalespersonDashboard = () => {
 
         return matchesSearch && matchesStatus;
     });
+
 
     // Handle plan creation
     const handleCreatePlan = async (e) => {
@@ -416,7 +419,7 @@ const SalespersonDashboard = () => {
                                     </td> */}
                                     <td className="sdash-data-cell">
                                         <div className="sdash-action-group">
-                                            {employee.currentPlan ? (
+                                            {employee.currentPlan && role !== "saler" ? (
                                                 <>
                                                     <button
                                                         onClick={() => openEditPlanModal(employee.currentPlan)}
@@ -436,15 +439,20 @@ const SalespersonDashboard = () => {
                                                     </button>
                                                 </>
                                             ) : (
-                                                <button
-                                                    onClick={() => openCreatePlanModal(employee._id)}
-                                                    className="sdash-action-btn sdash-create-btn"
-                                                    title="Plan qo'shish"
-                                                    aria-label="Plan qo'shish"
-                                                >
-                                                    <Plus className="sdash-icon-xs" />
-                                                </button>
+                                                <>
+                                                    {role !== "saler" &&
+                                                        <button button
+                                                            onClick={() => openCreatePlanModal(employee._id)}
+                                                            className="sdash-action-btn sdash-create-btn"
+                                                            title="Plan qo'shish"
+                                                            aria-label="Plan qo'shish"
+                                                        >
+                                                            <Plus className="sdash-icon-xs" />
+                                                        </button>
+                                                    }
+                                                </>
                                             )}
+
                                             <button
                                                 onClick={() => {
                                                     setSelectedEmployee(employee);
@@ -466,169 +474,173 @@ const SalespersonDashboard = () => {
             </div>
 
             {/* Plan Modal */}
-            {showPlanModal && (
-                <div className="modal-overlay" onClick={() => setShowPlanModal(false)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3 className="modal-title">
-                                <Target className="sdash-icon-md" />
-                                {editingPlan ? 'Planni tahrirlash' : 'Yangi plan qo\'shish'}
-                            </h3>
-                            <button
-                                className="modal-close-btn"
-                                onClick={() => setShowPlanModal(false)}
-                                aria-label="Modalni yopish"
-                            >
-                                <X className="sdash-icon-sm" />
-                            </button>
-                        </div>
-                        <div className="modal-body">
-                            <form onSubmit={editingPlan ? handleUpdatePlan : handleCreatePlan}>
-                                <div className="form-group">
-                                    <label className="form-label">Sotuvchi:</label>
-                                    <select
-                                        value={planForm.employeeId}
-                                        onChange={(e) => setPlanForm({ ...planForm, employeeId: e.target.value })}
-                                        className="form-select"
-                                        disabled={editingPlan}
-                                        aria-label="Sotuvchini tanlash"
-                                    >
-                                        <option value="">Sotuvchini tanlang</option>
-                                        {salesEmployees?.innerData?.map((employee) => (
-                                            <option key={employee._id} value={employee._id}>
-                                                {employee.firstName} {employee.lastName}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Oy:</label>
-                                    <select
-                                        value={planForm.month}
-                                        onChange={(e) => setPlanForm({ ...planForm, month: e.target.value })}
-                                        className="form-select"
-                                        aria-label="Oyni tanlash"
-                                    >
-                                        {generateMonthOptions().map((month) => (
-                                            <option key={month.value} value={month.value}>
-                                                {month.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <input
-                                    type="text"
-                                    value={formatNumber(planForm.targetAmount)}
-                                    onChange={(e) => {
-                                        const rawValue = parseNumber(e.target.value);
-                                        if (!isNaN(rawValue)) {
-                                            setPlanForm({ ...planForm, targetAmount: rawValue });
-                                        }
-                                    }}
-                                    className="form-input"
-                                    placeholder="Summani kiriting"
-                                    inputMode="numeric"
-                                    aria-label="Maqsad summasi"
-                                />
-                                <div className="form-actions">
-                                    <button type="submit" className="sdash-primary-button">
-                                        {editingPlan ? 'Yangilash' : 'Saqlash'}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="sdash-secondary-btn"
-                                        onClick={() => {
-                                            setShowPlanModal(false);
-                                            notifyInfo('Plan qo\'shish bekor qilindi');
+            {
+                showPlanModal && (
+                    <div className="modal-overlay" onClick={() => setShowPlanModal(false)}>
+                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">
+                                    <Target className="sdash-icon-md" />
+                                    {editingPlan ? 'Planni tahrirlash' : 'Yangi plan qo\'shish'}
+                                </h3>
+                                <button
+                                    className="modal-close-btn"
+                                    onClick={() => setShowPlanModal(false)}
+                                    aria-label="Modalni yopish"
+                                >
+                                    <X className="sdash-icon-sm" />
+                                </button>
+                            </div>
+                            <div className="modal-body">
+                                <form onSubmit={editingPlan ? handleUpdatePlan : handleCreatePlan}>
+                                    <div className="form-group">
+                                        <label className="form-label">Sotuvchi:</label>
+                                        <select
+                                            value={planForm?.employeeId}
+                                            onChange={(e) => setPlanForm({ ...planForm, employeeId: e.target.value })}
+                                            className="form-select"
+                                            disabled={editingPlan}
+                                            aria-label="Sotuvchini tanlash"
+                                        >
+                                            <option value="">Sotuvchini tanlang</option>
+                                            {salesEmployees?.innerData?.map((employee) => (
+                                                <option key={employee._id} value={employee._id}>
+                                                    {employee.firstName} {employee.lastName}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Oy:</label>
+                                        <select
+                                            value={planForm.month}
+                                            onChange={(e) => setPlanForm({ ...planForm, month: e.target.value })}
+                                            className="form-select"
+                                            aria-label="Oyni tanlash"
+                                        >
+                                            {generateMonthOptions().map((month) => (
+                                                <option key={month.value} value={month.value}>
+                                                    {month.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={formatNumber(planForm.targetAmount)}
+                                        onChange={(e) => {
+                                            const rawValue = parseNumber(e.target.value);
+                                            if (!isNaN(rawValue)) {
+                                                setPlanForm({ ...planForm, targetAmount: rawValue });
+                                            }
                                         }}
-                                        aria-label="Bekor qilish"
-                                    >
-                                        Bekor qilish
-                                    </button>
-                                </div>
-                            </form>
+                                        className="form-input"
+                                        placeholder="Summani kiriting"
+                                        inputMode="numeric"
+                                        aria-label="Maqsad summasi"
+                                    />
+                                    <div className="form-actions">
+                                        <button type="submit" className="sdash-primary-button">
+                                            {editingPlan ? 'Yangilash' : 'Saqlash'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="sdash-secondary-btn"
+                                            onClick={() => {
+                                                setShowPlanModal(false);
+                                                notifyInfo('Plan qo\'shish bekor qilindi');
+                                            }}
+                                            aria-label="Bekor qilish"
+                                        >
+                                            Bekor qilish
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Activity Modal */}
-            {selectedEmployee && (
-                <div className="modal-overlay" onClick={() => setSelectedEmployee(null)}>
-                    <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3 className="modal-title">
-                                <Activity className="sdash-icon-md" />
-                                {selectedEmployee.firstName} {selectedEmployee.lastName} - Faoliyat tarixi
-                            </h3>
-                            <button
-                                className="modal-close-btn"
-                                onClick={() => {
-                                    setSelectedEmployee(null);
-                                    notifyInfo('Faoliyat tarixi yopildi');
-                                }}
-                                aria-label="Modalni yopish"
-                            >
-                                <X className="sdash-icon-sm" />
-                            </button>
-                        </div>
-                        <div className="modal-body">
-                            <div className="activity-summary">
-                                <div className="summary-cards">
-                                    <div className="summary-card">
-                                        <div className="summary-value">{selectedEmployee.allPlans?.length || 0}</div>
-                                        <div className="summary-label">Jami planlar</div>
-                                    </div>
-                                    <div className="summary-card">
-                                        <div className="summary-value">{selectedEmployee.currentPlan?.achievedAmount?.toLocaleString() || 0}</div>
-                                        <div className="summary-label">Joriy oy bajarilgan</div>
-                                    </div>
-                                    <div className="summary-card">
-                                        <div className="summary-value">
-                                            {selectedEmployee.currentPlan
-                                                ? Math.round((selectedEmployee.currentPlan.achievedAmount / selectedEmployee.currentPlan.targetAmount) * 100)
-                                                : 0}
-                                            %
+            {
+                selectedEmployee && (
+                    <div className="modal-overlay" onClick={() => setSelectedEmployee(null)}>
+                        <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">
+                                    <Activity className="sdash-icon-md" />
+                                    {selectedEmployee.firstName} {selectedEmployee.lastName} - Faoliyat tarixi
+                                </h3>
+                                <button
+                                    className="modal-close-btn"
+                                    onClick={() => {
+                                        setSelectedEmployee(null);
+                                        notifyInfo('Faoliyat tarixi yopildi');
+                                    }}
+                                    aria-label="Modalni yopish"
+                                >
+                                    <X className="sdash-icon-sm" />
+                                </button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="activity-summary">
+                                    <div className="summary-cards">
+                                        <div className="summary-card">
+                                            <div className="summary-value">{selectedEmployee.allPlans?.length || 0}</div>
+                                            <div className="summary-label">Jami planlar</div>
                                         </div>
-                                        <div className="summary-label">Bajarish foizi</div>
+                                        <div className="summary-card">
+                                            <div className="summary-value">{selectedEmployee.currentPlan?.achievedAmount?.toLocaleString() || 0}</div>
+                                            <div className="summary-label">Joriy oy bajarilgan</div>
+                                        </div>
+                                        <div className="summary-card">
+                                            <div className="summary-value">
+                                                {selectedEmployee.currentPlan
+                                                    ? Math.round((selectedEmployee.currentPlan.achievedAmount / selectedEmployee.currentPlan.targetAmount) * 100)
+                                                    : 0}
+                                                %
+                                            </div>
+                                            <div className="summary-label">Bajarish foizi</div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div className="plans-history">
-                                <h4>Planlar tarixi:</h4>
-                                <div className="plans-list">
-                                    {selectedEmployee.allPlans?.map((plan) => (
-                                        <div key={plan._id} className="plan-card">
-                                            <div className="plan-header">
-                                                <div className="plan-month">{plan.month}</div>
-                                                <div className={`plan-status ${plan.achievedAmount >= plan.targetAmount ? 'completed' : 'pending'}`}>
-                                                    {plan.achievedAmount >= plan.targetAmount ? 'Bajarilgan' : 'Jarayonda'}
-                                                </div>
-                                            </div>
-                                            <div className="plan-details">
-                                                <div className="plan-amounts">
-                                                    <span>Plan: {plan.targetAmount.toLocaleString()} so'm</span>
-                                                    <span>Bajarilgan: {plan.achievedAmount.toLocaleString()} so'm</span>
-                                                </div>
-                                                <div className="plan-progress">
-                                                    <div className="progress-bar">
-                                                        <div
-                                                            className="progress-fill"
-                                                            style={{ width: `${Math.min((plan.achievedAmount / plan.targetAmount) * 100, 100)}%` }}
-                                                        />
+                                <div className="plans-history">
+                                    <h4>Planlar tarixi:</h4>
+                                    <div className="plans-list">
+                                        {selectedEmployee.allPlans?.map((plan) => (
+                                            <div key={plan._id} className="plan-card">
+                                                <div className="plan-header">
+                                                    <div className="plan-month">{plan.month}</div>
+                                                    <div className={`plan-status ${plan.achievedAmount >= plan.targetAmount ? 'completed' : 'pending'}`}>
+                                                        {plan.achievedAmount >= plan.targetAmount ? 'Bajarilgan' : 'Jarayonda'}
                                                     </div>
-                                                    <span className="progress-text">{Math.round((plan.achievedAmount / plan.targetAmount) * 100)}%</span>
+                                                </div>
+                                                <div className="plan-details">
+                                                    <div className="plan-amounts">
+                                                        <span>Plan: {plan.targetAmount.toLocaleString()} so'm</span>
+                                                        <span>Bajarilgan: {plan.achievedAmount.toLocaleString()} so'm</span>
+                                                    </div>
+                                                    <div className="plan-progress">
+                                                        <div className="progress-bar">
+                                                            <div
+                                                                className="progress-fill"
+                                                                style={{ width: `${Math.min((plan.achievedAmount / plan.targetAmount) * 100, 100)}%` }}
+                                                            />
+                                                        </div>
+                                                        <span className="progress-text">{Math.round((plan.achievedAmount / plan.targetAmount) * 100)}%</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

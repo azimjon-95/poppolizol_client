@@ -19,7 +19,7 @@
 }
 
 .warehouse-stats-row {
-  margin-bottom: 32px;
+  margin-bottom: 12px;
 }
 
 .warehouse-modal_left {
@@ -111,6 +111,7 @@
 .warehouse-stat-number {
   font-size: 24px;
   font-weight: bold;
+  text-wrap: nowrap;
   color: #333;
   line-height: 1;
 }
@@ -128,7 +129,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   overflow-y: auto;
   overflow-x: hidden;
-  height: calc(100vh - 200px);
+  height: calc(100vh - 170px);
 }
 
 .warehouse-table-card::-webkit-scrollbar {
@@ -536,15 +537,104 @@ h4:where(.css-dev-only-do-not-override-mc1tut).ant-typography {
 
 @media (max-width: 480px) {
   .warehouse-stat-number {
-    font-size: 20px;
+    font-size: 13px;
+  }
+
+  .warehouse-quantity-number {
+    color: #333;
+    font-size: 13px;
+  }
+
+  .warehouse-table-card {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    overflow-y: auto;
+    overflow-x: auto;
+    height: calc(100vh - 170px);
+  }
+
+  .warehouse-quantity-display {
+    text-wrap: nowrap !important;
+    font-size: 13px !important;
+  }
+
+  .warehouse-material-name {
+    display: flex;
+    align-items: center;
+    text-wrap: nowrap !important;
+    gap: 8px;
+  }
+
+  .warehouse-copy-btn {
+    display: none;
+  }
+
+  .warehouse-table-header {
+    width: 100%;
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row !important;
+    margin-bottom: 5px;
+    padding: 2px 10px;
+    flex-wrap: nowrap !important;
+    gap: 0px;
+  }
+
+  .warehouse-add-btn {
+    background: linear-gradient(135deg, #40c4ff, #0288d1);
+    border: none;
+    height: 30px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 16px;
+    box-shadow: 0 4px 16px rgba(64, 196, 255, 0.3);
+    color: #fff;
+  }
+
+  .warehouse-stats-row {
+    margin-bottom: 0px;
+  }
+
+  .warehouse-main-content>div {
+    padding: 0px !important;
+    gap: 0 !important;
+  }
+
+  .warehouse-main-content>div>div {
+    margin-bottom: 5px !important;
+    gap: 0 !important;
+
+
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+
+  }
+
+  .warehouse-stat-label {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.45);
+    margin-top: 0px;
+  }
+
+  .warehouse-container {
+    padding: 5px;
+  }
+
+  .warehouse-container .ant-card-body {
+    padding: 5px 0px !important;
+    border-radius: 0 0 8px 8px;
   }
 
   .warehouse-stat-icon {
-    font-size: 24px;
+    display: none;
   }
 
   .warehouse-table-title {
-    font-size: 18px;
+    font-size: 15px !important;
   }
 
   .warehouse-materials-table {

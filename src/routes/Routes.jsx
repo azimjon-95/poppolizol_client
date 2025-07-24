@@ -14,49 +14,49 @@ export const routes = [
   {
     path: "/director",
     element: <Dashboard />,
-    role: ["director"],
+    role: ["director", "accountant", "admin"],
     private: true,
   },
   {
     path: "/workers",
     element: <Workers />,
-    role: ["director"],
+    role: ["director", "accountant", "admin"],
     private: true,
   },
   {
     path: "/expense",
     element: <ExpenseManager />,
-    role: ["director"],
+    role: ["director", "accountant", "admin"],
     private: true,
   },
   {
     path: "/warehouse",
     element: <Materials />,
-    role: ["director"],
+    role: ["director", "accountant", "admin"],
     private: true,
   },
   {
     path: "/norma",
     element: <Norma />,
-    role: ["director"],
+    role: ["director", "accountant", "admin"],
     private: true,
   },
   {
     path: "/production",
     element: <ProductionSystem />,
-    role: ["director"],
+    role: ["director", "accountant", "admin"],
     private: true,
   },
   {
     path: "/setting",
     element: <FactoryConfigPanel />,
-    role: ["director"],
+    role: ["director", "accountant", "admin"],
     private: true,
   },
   {
     path: "/sales",
     element: <FactorySalesSystem />,
-    role: ["director"],
+    role: ["director", "accountant", "admin"],
     private: true,
   },
   {
@@ -71,17 +71,16 @@ export const routes = [
     role: ["saler_meneger", "saler"],
     private: true,
   },
-
   {
     path: "/attendance",
     element: <Atendance />,
-    role: ["director"],
+    role: ["director", "accountant", "admin"],
     private: true,
   },
   {
     path: "/Salary",
     element: <Salary />,
-    role: ["director"],
+    role: ["director", "accountant", "admin"],
     private: true,
   },
 ];
