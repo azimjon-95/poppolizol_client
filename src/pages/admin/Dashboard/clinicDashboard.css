@@ -30,40 +30,64 @@
     margin-right: 0.5rem;
 }
 
-.small-icon {
-    width: 1rem;
-    height: 1rem;
-}
-
-.green {
-    color: #22c55e;
-}
-
-.red {
-    color: #ef4444;
-}
-
-.positive {
-    color: #22c55e;
-}
-
-.negative {
-    color: #ef4444;
-}
-
-
 /* Stats Grid */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(4, minmax(250px, 1fr));
+    /* 4 columns for larger screens */
+    grid-template-rows: repeat(2, auto);
+    /* 2 rows */
+    gap: .5rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 900px) {
+    .stats-grid {
+        display: flex;
+        flex-wrap: nowrap;
+        /* Prevents wrapping to form a single row */
+        overflow-x: auto;
+        /* Enables horizontal scrolling */
+        grid-template-columns: none;
+        /* Remove grid columns */
+        grid-template-rows: none;
+        /* Remove grid rows */
+        padding-bottom: 1rem;
+        /* Space for scrollbar */
+    }
+
+    .stats-grid::-webkit-scrollbar {
+        height: 7px;
+        /* Scrollbar height for horizontal scroll */
+    }
+
+    .stats-grid::-webkit-scrollbar-track {
+        background: #1e293b;
+        /* Matches dashboard background */
+        border-radius: 4px;
+    }
+
+    .stats-grid::-webkit-scrollbar-thumb {
+        background-color: #64748b;
+        /* Scrollbar thumb color */
+        border-radius: 4px;
+    }
+
+    .stat-card {
+        flex: 0 0 auto;
+        /* Prevents cards from shrinking or growing */
+        width: 250px;
+        /* Fixed width for each card in carousel */
+        margin-right: 1rem;
+        /* Space between cards in carousel */
+    }
 }
 
 .stat-card {
     border-radius: 0.75rem;
     padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding-bottom: 1rem;
+    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
     transition: transform 0.3s;
 }
 
@@ -71,15 +95,31 @@
     transform: translateY(-5px);
 }
 
-.sales-card {
+.balance-card {
     background: linear-gradient(to right, #16a34a, #15803d);
 }
 
-.products-card {
+.lend-card {
     background: linear-gradient(to right, #2563eb, #1d4ed8);
 }
 
-.orders-card {
+.borrow-card {
+    background: linear-gradient(to right, #7c3aed, #6d28d9);
+}
+
+.warehouse-card {
+    background: linear-gradient(to right, #eab308, #d97706);
+}
+
+.finished-card {
+    background: linear-gradient(to right, #16a34a, #15803d);
+}
+
+.income-card {
+    background: linear-gradient(to right, #2563eb, #1d4ed8);
+}
+
+.expense-card {
     background: linear-gradient(to right, #7c3aed, #6d28d9);
 }
 
@@ -93,27 +133,36 @@
     align-items: center;
 }
 
-.stat-label {
+.stat-label_card {
     font-size: 0.875rem;
-    color: #d1d5db;
+    color: #d1d5db !important;
     font-weight: medium;
 }
 
 .stat-value {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #ffffff;
+    color: #ffffff !important;
 }
 
 .stat-change {
     font-size: 0.75rem;
     margin-top: 0.25rem;
+    color: #ffffff !important;
 }
 
 .stat-icon {
     width: 3rem;
     height: 3rem;
-    color: #e5e7eb;
+    color: #e5e7eb !important;
+}
+
+.positive {
+    color: #00ff5e;
+}
+
+.negative {
+    color: #ef4444;
 }
 
 /* Card */
@@ -121,7 +170,7 @@
     background-color: #1e293b;
     border-radius: 0.75rem;
     padding: 1.5rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -134,61 +183,41 @@
     align-items: center;
 }
 
-/* Table */
-.table-container {
-    overflow-x: auto;
-}
-
-.data-tabledash {
-    width: 100%;
-    text-align: left;
-    font-size: 0.875rem;
-    border-collapse: collapse;
-}
-
-.data-tabledash thead tr {
-    color: #94a3b8;
-    border-bottom: 1px solid #475569;
-}
-
-.data-tabledash th {
-    padding: 0.75rem 1rem;
-    font-weight: medium;
-}
-
-.data-tabledash tbody tr {
-    border-bottom: 1px solid #4f617b;
-    transition: background-color 0.3s;
-    background-color: #334155;
-}
-
-
-
-.data-tabledash td {
-    padding: 0.75rem 1rem;
-}
-
-
-
 /* Charts Grid */
 .charts-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 /* Salespeople Grid */
 .salespeople-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
+    width: 100%;
+    height: 195px;
+    min-height: 195px;
+    padding: 1% 10px;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.salespeople-grid::-webkit-scrollbar {
+    height: 4px;
+}
+
+.salespeople-grid::-webkit-scrollbar-thumb {
+    background-color: rgb(255, 255, 255);
+    border-radius: 5px;
 }
 
 .salesperson-card {
     background-color: #334155;
     border-radius: 0.5rem;
     padding: 1rem;
+    height: 140px;
+    min-width: 350px;
 }
 
 .salesperson-header {
@@ -204,31 +233,17 @@
 }
 
 .rank-badge {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 9999px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-right: 0.75rem;
+    padding: 4px;
     font-weight: bold;
-    color: #ffffff;
-}
-
-.rank-1 {
+    color: #000000;
     background-color: #facc15;
-}
-
-.rank-2 {
-    background-color: #9ca3af;
-}
-
-.rank-3 {
-    background-color: #ea580c;
-}
-
-.rank-4 {
-    background-color: #475569;
 }
 
 .salesperson-name {
@@ -252,6 +267,11 @@
     font-size: 0.875rem;
     color: #94a3b8;
     margin-bottom: 0.25rem;
+}
+
+.progress-labels>span {
+    display: flex;
+    flex-direction: column;
 }
 
 .progress-bar {
@@ -308,42 +328,126 @@
     color: #ffffff;
 }
 
-/* Payment Stats Grid */
-.payment-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
+/* Skeleton Styles */
+.skeleton {
+    background: #334155;
+    /* Matches salesperson-card background for consistency */
+    border-radius: 4px;
+    animation: pulse 1.5s ease-in-out infinite;
 }
 
-.payment-stat {
-    border-radius: 0.5rem;
-    padding: 1rem;
-    text-align: center;
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
-.payment-stat.cash {
-    background-color: #16a34a;
+.skeleton-card {
+    background: linear-gradient(to right, #334155, #475569);
+    /* Mimics stat-card gradient */
 }
 
-.payment-stat.card {
-    background-color: #2563eb;
+.skeleton-label {
+    width: 100px;
+    height: 14px;
+    margin-bottom: 8px;
 }
 
-.payment-stat.bank {
-    background-color: #7c3aed;
+.skeleton-value {
+    width: 150px;
+    height: 24px;
 }
 
-.stat-percentage {
-    font-size: 0.875rem;
-    color: #d1d5db;
+.skeleton-icon {
+    width: 3rem;
+    height: 3rem;
+}
+
+.skeleton-title {
+    width: 200px;
+    height: 20px;
+}
+
+.skeleton-chart {
+    width: 100%;
+    height: 300px;
+    border-radius: 8px;
+}
+
+.skeleton-rank-badge {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+
+.skeleton-name {
+    width: 100px;
+    height: 16px;
+}
+
+.skeleton-percentage {
+    width: 50px;
+    height: 14px;
+}
+
+.skeleton-progress {
+    width: 100%;
+    height: 8px;
+    border-radius: 9999px;
+}
+
+.skeleton-stat {
+    width: 80px;
+    height: 12px;
+}
+
+.skeleton-color-indicator {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 0.25rem;
+}
+
+.skeleton-payment-name {
+    width: 60px;
+    height: 12px;
+}
+
+.skeleton-payment-amount {
+    width: 100px;
+    height: 12px;
+}
+
+/* Ensure responsiveness for skeleton stat cards */
+@media (max-width: 900px) {
+    .skeleton-card {
+        flex: 0 0 auto;
+        width: 250px;
+        margin-right: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .skeleton-value {
+        width: 120px;
+        height: 20px;
+    }
+
+    .skeleton-title {
+        width: 150px;
+        height: 18px;
+    }
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .header-title {
-        font-size: 1.5rem;
-    }
-
     .stat-value {
         font-size: 1.25rem;
     }
@@ -355,10 +459,8 @@
 
 @media (max-width: 640px) {
 
-    .stats-grid,
     .charts-grid,
-    .salespeople-grid,
-    .payment-stats-grid {
+    .salespeople-grid {
         grid-template-columns: 1fr;
     }
 }

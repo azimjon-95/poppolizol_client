@@ -97,6 +97,23 @@ export const cartSaleApi = api.injectEndpoints({
             query: () => '/companys',
             providesTags: ['CustomerSales'],
         }),
+
+        // Get transports
+        getTransport: builder.query({
+            query: () => '/transports',
+            providesTags: ['Transport'],
+        }),
+
+
+        // Route to process delivery for a sale
+        deliverProduct: builder.mutation({
+            query: (body) => ({
+                url: '/deliver',
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: ['Sale', 'CustomerSales'],
+        }),
     }),
 });
 
@@ -112,5 +129,7 @@ export const {
     useGetCustomerSalesQuery,
     useGetCustomerCompletedSalesQuery,
     useGetCustomerActiveSalesQuery,
-    useGetCompanysQuery
+    useGetCompanysQuery,
+    useGetTransportQuery,
+    useDeliverProductMutation
 } = cartSaleApi;

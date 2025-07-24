@@ -100,9 +100,35 @@
     backdrop-filter: blur(10px);
     border-radius: 16px;
     padding: 18px;
+    overflow-y: auto;
+    height: calc(100vh - 190px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
+
+.hr-main-content::-webkit-scrollbar {
+    width: 9px;
+    /* Width of the scrollbar */
+}
+
+.hr-main-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    /* Track background, semi-transparent */
+    border-radius: 16px;
+    /* Rounded track to match container */
+}
+
+.hr-main-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    /* Thumb color, subtle to blend with glassmorphism */
+    border-radius: 16px;
+    /* Rounded thumb */
+    border: 2px solid transparent;
+    /* Optional: adds spacing around thumb */
+    background-clip: content-box;
+    /* Ensures border doesn't affect thumb color */
+}
+
 
 .controls-panel-section {
     gap: 20px;

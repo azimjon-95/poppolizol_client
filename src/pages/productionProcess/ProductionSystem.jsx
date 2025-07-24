@@ -1,10 +1,9 @@
-import React, { useState } from "react";
-import { Tabs, Modal, Form, Input, Button } from "antd";
+import React, { useState, useMemo } from "react";
+import { Tabs, Modal, Form, Input, Button, Checkbox, Select } from "antd";
 import ruberoid from "../../assets/ruberoid.jpg";
 import betumImg from "../../assets/betum.jpg";
 import { GiOilDrum } from "react-icons/gi";
 import { RiDeleteBinLine } from "react-icons/ri";
-import { FaEdit } from "react-icons/fa";
 import { useGetAllNormaQuery } from "../../context/normaApi";
 import { HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineArrowsRightLeft } from "react-icons/hi2";
 import {
@@ -24,13 +23,20 @@ import InventoryTable from "./bitumProduction/InventoryTable";
 import ProductionHistoryTable from "./productionHistory/ProductionHistoryTable";
 
 const { TabPane } = Tabs;
+const { Option } = Select;
 
 const ProductionSystem = () => {
   const [selectedNorma, setSelectedNorma] = useState("");
   const [quantityToProduce, setQuantityToProduce] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("polizol");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+  const [isDefectiveModalOpen, setIsDefectiveModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedReturnProduct, setSelectedReturnProduct] = useState(null);
+  const [selectedDefectiveProduct, setSelectedDefectiveProduct] = useState(null);
+  const [isDefective, setIsDefective] = useState(false);
+  const [filterValue, setFilterValue] = useState("all"); // New state for filter selection
   const [form] = Form.useForm();
 
   // RTK Query hooks
@@ -64,7 +70,7 @@ const ProductionSystem = () => {
     }));
   };
 
-  // Handle production process
+  // Handle production process with defective info
   const handleProduce = async () => {
     if (!selectedNorma || quantityToProduce <= 0) {
       return toast.warning("Iltimos, mahsulot turi va miqdorini tanlang");
@@ -87,6 +93,14 @@ const ProductionSystem = () => {
     }) || [];
 
     try {
+      const defectiveData = isDefective
+        ? {
+          isDefective: true,
+          defectiveReason: form.getFieldValue("defectiveReason") || "",
+          defectiveDescription: form.getFieldValue("defectiveDescription") || "",
+        }
+        : {};
+
       await startProduction({
         productNormaId: selectedNorma,
         productName: selectedNormaData?.productName,
@@ -96,15 +110,20 @@ const ProductionSystem = () => {
           quantity: stat.consumedQuantity,
         })),
         materialStatistics: materialStats,
+        ...defectiveData,
       }).unwrap();
       toast.success(
-        `Muvaffaqiyatli ishlab chiqarildi: ${quantityToProduce} dona ${selectedNormaData?.productName}`
+        `Muvaffaqiyatli ishlab chiqarildi: ${quantityToProduce} dona ${selectedNormaData?.productName}${isDefective ? " (Brak sifatida belgilandi)" : ""
+        }`
       );
       setSelectedNorma("");
       setQuantityToProduce(1);
       setConsumedQuantities({});
+      setIsDefective(false);
+      form.resetFields();
     } catch (error) {
-      toast.error(error.data?.message || "Ishlab chiqarishda xatolik yuz berdi");
+      console.log(error);
+      toast.error(error.data?.innerData || error.data?.message || "Ishlab chiqarishda xatolik yuz berdi");
     }
   };
 
@@ -132,8 +151,23 @@ const ProductionSystem = () => {
     form.setFieldsValue({
       quantity: product.quantity,
       productionCost: product.productionCost,
+      isDefective: product.isDefective,
+      defectiveReason: product.defectiveInfo?.defectiveReason || "",
+      defectiveDescription: product.defectiveInfo?.defectiveDescription || "",
     });
     setIsModalOpen(true);
+  };
+
+  // Handle defective info modal
+  const handleShowDefectiveInfo = (product) => {
+    setSelectedDefectiveProduct(product);
+    setIsDefectiveModalOpen(true);
+  };
+
+  // Handle return info modal
+  const handleShowReturnInfo = (product) => {
+    setSelectedReturnProduct(product);
+    setIsReturnModalOpen(true);
   };
 
   // Handle modal form submission
@@ -143,6 +177,18 @@ const ProductionSystem = () => {
         id: selectedProduct._id,
         quantity: parseFloat(values.quantity),
         productionCost: parseFloat(values.productionCost),
+        isDefective: values.isDefective || false,
+        defectiveInfo: values.isDefective
+          ? {
+            defectiveReason: values.defectiveReason || "",
+            defectiveDescription: values.defectiveDescription || "",
+            defectiveDate: values.isDefective ? new Date() : null,
+          }
+          : {
+            defectiveReason: "",
+            defectiveDescription: "",
+            defectiveDate: null,
+          },
       }).unwrap();
       toast.success("Mahsulot muvaffaqiyatli yangilandi");
       setIsModalOpen(false);
@@ -169,6 +215,57 @@ const ProductionSystem = () => {
     if (consumed < required) return "insufficient";
     return "equal";
   };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString("uz-UZ", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  // Create unique options for the Select component
+  const productOptions = useMemo(() => {
+    const options = [
+      { value: "all", label: "Barchasi" },
+      { value: "returned", label: "Mijozdan qaytgan" },
+      { value: "defective", label: "Brak mahsulot" },
+    ];
+
+    // Extract unique productName and category combinations
+    const productMap = new Map();
+    finishedProducts?.forEach((product) => {
+      const key = `${product.productName}|${product.category}`;
+      if (!productMap.has(key)) {
+        productMap.set(key, {
+          value: key,
+          label: `${capitalizeFirstLetter(product.productName)} (${product.category})`,
+        });
+      }
+    });
+
+    return [...options, ...Array.from(productMap.values())];
+  }, [finishedProducts]);
+
+  // Filter products based on selected filterValue
+  const filteredProducts = useMemo(() => {
+    if (filterValue === "all") {
+      return finishedProducts;
+    } else if (filterValue === "returned") {
+      return finishedProducts?.filter((product) => product.isReturned);
+    } else if (filterValue === "defective") {
+      return finishedProducts?.filter((product) => product.isDefective);
+    } else {
+      const [productName, category] = filterValue.split("|");
+      return finishedProducts?.filter(
+        (product) =>
+          product.productName === productName && product.category === category
+      );
+    }
+  }, [finishedProducts, filterValue]);
 
   return (
     <div className="production-system-container">
@@ -210,12 +307,97 @@ const ProductionSystem = () => {
           >
             <Input type="number" min="0" step="1000" />
           </Form.Item>
+          <Form.Item name="isDefective" valuePropName="checked">
+            <Checkbox onChange={(e) => setIsDefective(e.target.checked)}>Brak mahsulot</Checkbox>
+          </Form.Item>
+          {isDefective && (
+            <>
+              <Form.Item
+                label="Brak sababi"
+                name="defectiveReason"
+                rules={[{ required: true, message: "Iltimos, brak sababini kiriting" }]}
+              >
+                <Input placeholder="Sababni kiriting" />
+              </Form.Item>
+              <Form.Item
+                label="Brak tavsifi"
+                name="defectiveDescription"
+              >
+                <Input.TextArea placeholder="Tavsifni kiriting" rows={4} />
+              </Form.Item>
+            </>
+          )}
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={updateLoading}>
               Saqlash
             </Button>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* Defective Info Modal */}
+      <Modal
+        title="Brak Mahsulot Ma'lumotlari"
+        open={isDefectiveModalOpen}
+        onCancel={() => {
+          setIsDefectiveModalOpen(false);
+          setSelectedDefectiveProduct(null);
+        }}
+        footer={[
+          <Button
+            key="close"
+            onClick={() => {
+              setIsDefectiveModalOpen(false);
+              setSelectedDefectiveProduct(null);
+            }}
+          >
+            Yopish
+          </Button>,
+        ]}
+      >
+        {selectedDefectiveProduct ? (
+          <div>
+            <p><strong>Mahsulot Nomi:</strong> {capitalizeFirstLetter(selectedDefectiveProduct.productName)}</p>
+            <p><strong>Kategoriya:</strong> {selectedDefectiveProduct.category}</p>
+            <p><strong>Brak Sababi:</strong> {selectedDefectiveProduct.defectiveInfo?.defectiveReason || "Noma'lum"}</p>
+            <p><strong>Brak Tavsifi:</strong> {selectedDefectiveProduct.defectiveInfo?.defectiveDescription || "Tavsif yo'q"}</p>
+            <p><strong>Brak Sanasi:</strong> {selectedDefectiveProduct.defectiveInfo?.defectiveDate ? formatDate(selectedDefectiveProduct.defectiveInfo.defectiveDate) : "Noma'lum"}</p>
+          </div>
+        ) : (
+          <p>Yuklanmoqda...</p>
+        )}
+      </Modal>
+
+      {/* Return Info Modal */}
+      <Modal
+        title="Qaytarilgan Mahsulot Ma'lumotlari"
+        open={isReturnModalOpen}
+        onCancel={() => {
+          setIsReturnModalOpen(false);
+          setSelectedReturnProduct(null);
+        }}
+        footer={[
+          <Button
+            key="close"
+            onClick={() => {
+              setIsReturnModalOpen(false);
+              setSelectedReturnProduct(null);
+            }}
+          >
+            Yopish
+          </Button>,
+        ]}
+      >
+        {selectedReturnProduct ? (
+          <div>
+            <p><strong>Mahsulot Nomi:</strong> {capitalizeFirstLetter(selectedReturnProduct.productName)}</p>
+            <p><strong>Kategoriya:</strong> {selectedReturnProduct.category}</p>
+            <p><strong>Qaytarilgan Sana:</strong> {formatDate(selectedReturnProduct.returnInfo.returnDate)}</p>
+            <p><strong>Qaytarish Sababi:</strong> {selectedReturnProduct.returnInfo.returnReason}</p>
+          </div>
+        ) : (
+          <p>Yuklanmoqda...</p>
+        )}
       </Modal>
 
       <Tabs defaultActiveKey="production" className="custom-tabs">
@@ -306,6 +488,28 @@ const ProductionSystem = () => {
                           </span>
                         </div>
                       )) || <p>Xom ashyo ma'lumotlari topilmadi</p>}
+                    <Form form={form} layout="vertical">
+                      <Form.Item name="isDefective" valuePropName="checked">
+                        <Checkbox onChange={(e) => setIsDefective(e.target.checked)}>Brak mahsulot</Checkbox>
+                      </Form.Item>
+                      {isDefective && (
+                        <>
+                          <Form.Item
+                            label="Brak sababi"
+                            name="defectiveReason"
+                            rules={[{ required: true, message: "Iltimos, brak sababini kiriting" }]}
+                          >
+                            <Input placeholder="Sababni kiriting" />
+                          </Form.Item>
+                          <Form.Item
+                            label="Brak tavsifi"
+                            name="defectiveDescription"
+                          >
+                            <Input.TextArea placeholder="Tavsifni kiriting" rows={4} />
+                          </Form.Item>
+                        </>
+                      )}
+                    </Form>
                   </div>
                 )}
               </div>
@@ -386,23 +590,40 @@ const ProductionSystem = () => {
                 </p>
               </div>
             </div>
-            <div className="mki-summary-section">
-              <div className="mki-summary-item">
-                <span className="mki-summary-icon">📦</span>
-                <span className="mki-summary-label">Mahsulotlar soni: </span>
-                <span className="mki-summary-value">{finishedProducts?.length || 0} ta</span>
-              </div>
-              <div className="mki-summary-item">
-                <span className="mki-summary-icon">💸</span>
-                <span className="mki-summary-label">Umumiy tannarx: </span>
-                <span className="mki-summary-value">
-                  {NumberFormat(
-                    finishedProducts?.reduce(
-                      (total, product) => total + +product.productionCost * +product.quantity,
-                      0
-                    ) || 0
-                  )} so'm
-                </span>
+            <div className="Select_mki-summary">
+              <Select
+                value={filterValue}
+                onChange={(value) => setFilterValue(value)}
+                style={{ width: 250 }}
+              >
+                {productOptions.map((option) => (
+                  <Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
+              </Select>
+              <div className="mki-summary-section">
+                <div className="mki-summary-item">
+                  <span className="mki-summary-icon">📦</span>
+                  <span className="mki-summary-label">Mahsulotlar soni: </span>
+                  <span className="mki-summary-value">
+                    {filteredProducts?.length || 0} ta
+                  </span>
+                </div>
+                <div className="mki-summary-item">
+                  <span className="mki-summary-icon">💸</span>
+                  <span className="mki-summary-label">Umumiy tannarx: </span>
+                  <span className="mki-summary-value">
+                    {NumberFormat(
+                      filteredProducts?.reduce(
+                        (total, product) =>
+                          total + +product.productionCost * +product.quantity,
+                        0
+                      ) || 0
+                    )}{" "}
+                    so'm
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -410,10 +631,18 @@ const ProductionSystem = () => {
             <div className="finished-products-grid">
               {productsLoading ? (
                 <p className="loading-text">Yuklanmoqda...</p>
-              ) : finishedProducts?.length > 0 ? (
-                finishedProducts.map((product, inx) => (
+              ) : filteredProducts?.length > 0 ? (
+                filteredProducts.map((product, inx) => (
                   <div key={inx} className="product-card-container">
                     <div className="product-card_actins">
+                      <button
+                        onClick={() => handleUpdate(product)}
+                        disabled={deleteLoading || updateLoading}
+                        title="Tahrirlash"
+                        className="edit-button"
+                      >
+                        ✏️
+                      </button>
                       <button
                         onClick={() => handleDelete(product._id)}
                         disabled={deleteLoading || updateLoading}
@@ -421,21 +650,70 @@ const ProductionSystem = () => {
                       >
                         <RiDeleteBinLine />
                       </button>
-                      {/* <button
-                        onClick={() => handleUpdate(product)}
-                        disabled={deleteLoading || updateLoading}
-                        title="Tahrirlash"
-                      >
-                        <FaEdit />
-                      </button> */}
                     </div>
                     {product.category === "Stakan" || product.category === "Qop" ? (
                       <div className="product-imagebn">
-                        <img src={betumImg} alt="Ruberoid" />
+                        <img src={betumImg} alt="Bitum" />
+                        {product.isReturned && (
+                          <div className="return-info">
+                            <p style={{ color: "#d32f2f", fontWeight: "bold" }}>
+                              Mijozdan qaytgan
+                            </p>
+                            <Button
+                              type="link"
+                              onClick={() => handleShowReturnInfo(product)}
+                              style={{ padding: 0, color: "#1890ff" }}
+                            >
+                              Batafsil
+                            </Button>
+                          </div>
+                        )}
+                        {product.isDefective && (
+                          <div className="defective-info">
+                            <p style={{ color: "#ff9800", fontWeight: "bold" }}>
+                              Brak mahsulot
+                            </p>
+                            <Button
+                              type="link"
+                              onClick={() => handleShowDefectiveInfo(product)}
+                              style={{ padding: 0, color: "#1890ff" }}
+                            >
+                              Batafsil
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="product-image">
                         <img src={ruberoid} alt="Ruberoid" />
+                        {product.isReturned && (
+                          <div className="return-info">
+                            <p style={{ color: "#d32f2f", fontWeight: "bold" }}>
+                              Mijozdan qaytgan
+                            </p>
+                            <Button
+                              type="link"
+                              onClick={() => handleShowReturnInfo(product)}
+                              style={{ padding: 0, color: "#1890ff" }}
+                            >
+                              Batafsil
+                            </Button>
+                          </div>
+                        )}
+                        {product.isDefective && (
+                          <div className="defective-infobox">
+                            <p style={{ color: "#000000", fontWeight: "bold" }}>
+                              Brak mahsulot
+                            </p>
+                            <Button
+                              type="link"
+                              onClick={() => handleShowDefectiveInfo(product)}
+                              style={{ padding: 0, color: "#0084ff" }}
+                            >
+                              Batafsil
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     )}
                     {product.category === "Stakan" || product.category === "Qop" ? (

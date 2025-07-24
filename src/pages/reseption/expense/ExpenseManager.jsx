@@ -1,112 +1,67 @@
 import React, { useState, useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { GiTakeMyMoney } from "react-icons/gi";
-import { BsBank } from "react-icons/bs";
-import { useNavigate } from "react-router-dom";
-import { BsCurrencyDollar } from "react-icons/bs";
-import { GrMoney } from "react-icons/gr";
-import { TrendingUp, TrendingDown, DollarSign, CreditCard, Banknote, Calendar, Plus, Minus, Trash2 } from 'lucide-react';
+import { GiTakeMyMoney } from 'react-icons/gi';
+import { BsBank } from 'react-icons/bs';
+import { GrMoney } from 'react-icons/gr';
+import { TrendingUp, TrendingDown, CreditCard, Banknote, Calendar, Plus, Minus } from 'lucide-react';
 import { useCreateExpenseMutation, useGetExpensesQuery, useDeleteExpenseMutation, useGetBalanceQuery } from '../../../context/expenseApi';
-import { Popover } from 'antd';
-import './style.css';
+import TransportTable from './TransportTable';
+import DebtComponent from './DebtComponent';
+import './style/style.css';
 
 const ExpenseTracker = () => {
+    const [activeTab, setActiveTab] = useState(() => localStorage.getItem('ruberoid-active-tab') || 'Expenses');
     const [transactionType, setTransactionType] = useState('kirim');
     const [paymentMethod, setPaymentMethod] = useState('naqt');
     const [category, setCategory] = useState('');
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
-    const [showPopover, setShowPopover] = useState(null); // Track popover visibility and transaction ID
-    const [activeTab, setActiveTab] = useState('Harajatlar'); // default holatda bo‘sh
-    const navigate = useNavigate()
     const [formattedAmount, setFormattedAmount] = useState('');
-    const formatDateForInput = (date) => date.toISOString().split('T')[0]; // YYYY-MM-DD
-
+    const [showPopover, setShowPopover] = useState(null);
     const today = new Date();
-    const tomorrow = new Date();
+    const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
+    const [startDate, setStartDate] = useState(today.toISOString().split('T')[0]);
+    const [endDate, setEndDate] = useState(tomorrow.toISOString().split('T')[0]);
 
-    const [startDate, setStartDate] = useState(formatDateForInput(today));
-    const [endDate, setEndDate] = useState(formatDateForInput(tomorrow));
-    const { data: transactions = [], isLoading } = useGetExpensesQuery({ startDate, endDate });
-    const { data: getBalance = [], refetch } = useGetBalanceQuery();
+    const { data: transactions = { innerData: [] }, isLoading } = useGetExpensesQuery({ startDate, endDate });
+    const { data: balance = { innerData: { naqt: 0, bank: 0 } }, refetch } = useGetBalanceQuery();
     const [createExpense] = useCreateExpenseMutation();
-    const [deleteExpense] = useDeleteExpenseMutation();
+    // const [deleteExpense] = useDeleteExpenseMutation();
 
     const categories = {
         kirim: [
-            'Mahsulot sotuvlari',
-            'Investitsiya',
-            'Bank krediti',
-            'Subsidiyalar',
-            'Qayta sotilgan chiqindilar',
-            'Ijara daromadi',
-            'Qo‘shimcha xizmatlar',
-            'Homiylik / Grantlar',
-            'Avans / Oldindan to‘lov',
-            'Valyuta tushumi',
-            'Stok (zaxira) mahsulot savdosi',
-            'Yordamchi korxona daromadi',
-            'Muddatli to‘lovlar',
-            'Eski uskuna sotilishi',
-            'Loyihalardan tushum',
-            'Boshqa'
+            'Mahsulot sotuvlari', 'Investitsiya', 'Bank krediti', 'Subsidiyalar', 'Qayta sotilgan chiqindilar',
+            'Ijara daromadi', 'Qo‘shimcha xizmatlar', 'Homiylik / Grantlar', 'Avans / Oldindan to‘lov',
+            'Valyuta tushumi', 'Stok (zaxira) mahsulot savdosi', 'Yordamchi korxona daromadi',
+            'Muddatli to‘lovlar', 'Eski uskuna sotilishi', 'Loyihalardan tushum', 'Boshqa'
         ],
         chiqim: [
-            'Xomashyo xaridi',
-            'Ishchilar maoshi',
-            'Bonuslar va mukofotlar',
-            'Elektr energiyasi',
-            'Gaz ta’minoti',
-            'Suv ta’minoti',
-            'Transport xarajatlari',
-            'Uskuna ta’miri',
-            'Texnik xizmat',
-            'Ishlab chiqarish sarfi',
-            'Qadoqlash materiallari',
-            'Kiyim-bosh va himoya vositalari',
-            'Ofis xarajatlari',
-            'Marketing va reklama',
-            'Soliqlar va yig‘imlar',
-            'Ijara haqi',
-            'Xavfsizlik / Qo‘riqlash',
-            'Chiqindilar utilizatsiyasi',
-            'Moliyaviy xizmatlar (bank, auditor)',
-            'Internet va aloqa',
-            'IT xizmatlar (dasturiy ta’minot)',
-            'Ishlab chiqarish vositalari xaridi',
-            'Litsenziya va ruxsatnomalar',
-            'Kadrlar o‘qitish / trening',
-            'Komandirovka xarajatlari',
-            'Ofis mebellari va texnikasi',
-            'Suv / kanalizatsiya tizimi xizmatlari',
-            'Sud va yuridik xarajatlar',
-            'Sertifikatlash / sifat nazorati',
-            'Boshqa'
+            'Xomashyo xaridi', 'Ishchilar maoshi', 'Bonuslar va mukofotlar', 'Elektr energiyasi', 'Gaz ta’minoti',
+            'Suv ta’minoti', 'Transport xarajatlari', 'Uskuna ta’miri', 'Texnik xizmat', 'Ishlab chiqarish sarfi',
+            'Qadoqlash materiallari', 'Kiyim-bosh va himoya vositalari', 'Ofis xarajatlari', 'Marketing va reklama',
+            'Soliqlar va yig‘imlar', 'Ijara haqi', 'Xavfsizlik / Qo‘riqlash', 'Chiqindilar utilizatsiyasi',
+            'Moliyaviy xizmatlar (bank, auditor)', 'Internet va aloqa', 'IT xizmatlar (dasturiy ta’minot)',
+            'Ishlab chiqarish vositalari xaridi', 'Litsenziya va ruxsatnomalar', 'Kadrlar o‘qitish / trening',
+            'Komandirovka xarajatlari', 'Ofis mebellari va texnikasi', 'Suv / kanalizatsiya tizimi xizmatlari',
+            'Sud va yuridik xarajatlar', 'Sertifikatlash / sifat nazorati', 'Boshqa'
         ]
     };
 
     const paymentMethods = {
         naqt: 'Naqt pul',
-        dollar: 'Dollar',
         bank: 'Bank orqali'
     };
 
-    const handleSubmit = async () => {
-        if (!category) {
-            toast.error("Kategoriya tanlanmagan!");
-            return;
-        }
-        if (!amount) {
-            toast.error("Summa maydoni to'ldirilmagan!");
-            return;
-        }
+    useEffect(() => {
+        localStorage.setItem('ruberoid-active-tab', activeTab);
+    }, [activeTab]);
 
-        if (parseFloat(amount) <= 0) {
-            toast.error('Summa 0 dan katta bo\'lishi kerak!');
-            return;
-        }
+    const handleSubmit = async () => {
+        if (!category) return toast.error('Kategoriya tanlanmagan!');
+        if (!amount) return toast.error("Summa maydoni to'ldirilmagan!");
+        if (parseFloat(amount) <= 0) return toast.error('Summa 0 dan katta bo\'lishi kerak!');
 
         try {
             const newTransaction = {
@@ -119,241 +74,237 @@ const ExpenseTracker = () => {
             };
 
             await createExpense(newTransaction).unwrap();
-            refetch()
+            refetch();
             setAmount('');
             setDescription('');
             setCategory('');
-            setFormattedAmount("");
+            setFormattedAmount('');
             toast.success(`${transactionType === 'kirim' ? 'Kirim' : 'Chiqim'} muvaffaqiyatli qo'shildi!`);
         } catch (error) {
             toast.error(error.data?.message || 'Xatolik yuz berdi!');
         }
     };
 
-    const handleDelete = async (relatedId) => {
-        try {
-            await deleteExpense(relatedId).unwrap();
-            toast.success('Ok delete');
-            refetch()
-            setShowPopover(null); // Close popover after deletion
-        } catch (error) {
-            toast.error(error.data?.message || 'O\'chirishda xatolik yuz berdi!');
-            setShowPopover(null); // Close popover on error
+    // const handleDelete = async (relatedId) => {
+    //     try {
+    //         await deleteExpense(relatedId).unwrap();
+    //         toast.success('Transaksiya o‘chirildi');
+    //         refetch();
+    //         setShowPopover(null);
+    //     } catch (error) {
+    //         toast.error(error.data?.message || 'O‘chirishda xatolik yuz berdi!');
+    //         setShowPopover(null);
+    //     }
+    // };
+
+    // const togglePopover = (transactionId) => {
+    //     setShowPopover(showPopover === transactionId ? null : transactionId);
+    // };
+
+    // const popoverContent = (transactionId) => (
+    //     <div className="ruberoid-popover-content">
+    //         <p className="ruberoid-popover-text">Transaksiyani o'chirishni tasdiqlaysizmi?</p>
+    //         <div className="ruberoid-popover-buttons">
+    //             <button onClick={() => handleDelete(transactionId)} className="ruberoid-popover-btn ruberoid-confirm-btn">
+    //                 Tasdiqlash
+    //             </button>
+    //             <button onClick={() => setShowPopover(null)} className="ruberoid-popover-btn ruberoid-cancel-btn">
+    //                 Bekor qilish
+    //             </button>
+    //         </div>
+    //     </div>
+    // );
+
+    // const totalIncome = transactions.innerData
+    //     .filter(t => t.type === 'kirim')
+    //     .reduce((sum, t) => sum + t.amount, 0);
+
+    // const totalExpense = transactions.innerData
+    //     .filter(t => t.type === 'chiqim')
+    //     .reduce((sum, t) => sum + t.amount, 0);
+
+    const renderTabContent = () => {
+        switch (activeTab) {
+            case 'Transport':
+                return <TransportTable />;
+            case 'Debts':
+                return <DebtComponent />;
+            case 'Expenses':
+            default:
+                return (
+                    <form className="ruberoid-transaction-form" onSubmit={(e) => e.preventDefault()}>
+                        <div className="ruberoid-type-buttons">
+                            <button
+                                type="button"
+                                className={`ruberoid-type-btn ${transactionType === 'kirim' ? 'ruberoid-active-income' : ''}`}
+                                onClick={() => { setTransactionType('kirim'); setCategory(''); }}
+                            >
+                                <Plus className="ruberoid-btn-icon" />
+                                Kirim
+                            </button>
+                            <button
+                                type="button"
+                                className={`ruberoid-type-btn ${transactionType === 'chiqim' ? 'ruberoid-active-expense' : ''}`}
+                                onClick={() => { setTransactionType('chiqim'); setCategory(''); }}
+                            >
+                                <Minus className="ruberoid-btn-icon" />
+                                Chiqim
+                            </button>
+                        </div>
+
+                        <div className="ruberoid-form-group">
+                            <label className="ruberoid-form-label">To'lov turi</label>
+                            <div className="ruberoid-payment-methods">
+                                {Object.entries(paymentMethods).map(([key, value]) => (
+                                    <button
+                                        key={key}
+                                        type="button"
+                                        className={`ruberoid-payment-btn ${paymentMethod === key ? 'ruberoid-active-payment' : ''}`}
+                                        onClick={() => setPaymentMethod(key)}
+                                    >
+                                        {key === 'naqt' ? <Banknote className="ruberoid-payment-icon" /> : <CreditCard className="ruberoid-payment-icon" />}
+                                        {value}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="ruberoid-form-group">
+                            <label className="ruberoid-form-label">Kategoriya</label>
+                            <select
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                                className="ruberoid-form-select"
+                            >
+                                <option value="">Kategoriya tanlang</option>
+                                {categories[transactionType].map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="ruberoid-form-group">
+                            <label className="ruberoid-form-label">Summa (so'm)</label>
+                            <input
+                                type="text"
+                                value={formattedAmount}
+                                onChange={(e) => {
+                                    const raw = e.target.value.replace(/\./g, '').replace(/\D/g, '');
+                                    const numberValue = parseInt(raw || '0', 10);
+                                    setAmount(numberValue);
+                                    setFormattedAmount(numberValue.toLocaleString('uz-UZ'));
+                                }}
+                                className="ruberoid-form-input"
+                                placeholder="Summani kiriting"
+                            />
+                        </div>
+
+                        <div className="ruberoid-form-group">
+                            <label className="ruberoid-form-label">Tavsif</label>
+                            <textarea
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                className="ruberoid-form-textarea"
+                                placeholder="Qo'shimcha ma'lumot kiriting"
+                                rows="3"
+                            />
+                        </div>
+
+                        <button onClick={handleSubmit} className="ruberoid-submit-btn">
+                            <Plus className="ruberoid-btn-icon" />
+                            {transactionType === 'kirim' ? 'Kirim qo\'shish' : 'Chiqim qo\'shish'}
+                        </button>
+                    </form>
+                );
         }
     };
-
-    const togglePopover = (transactionId) => {
-        setShowPopover(showPopover === transactionId ? null : transactionId);
-    };
-
-    const popoverContent = (transactionId) => (
-        <div className="ruberoid-popover-content">
-            <p className="ruberoid-popover-text">Transaksiyani o'chirishni tasdiqlaysizmi?</p>
-            <div className="ruberoid-popover-buttons">
-                <button
-                    onClick={() => handleDelete(transactionId)}
-                    className="ruberoid-popover-btn ruberoid-confirm-btn"
-                >
-                    Tasdiqlash
-                </button>
-                <button
-                    onClick={() => setShowPopover(null)}
-                    className="ruberoid-popover-btn ruberoid-cancel-btn"
-                >
-                    Bekor qilish
-                </button>
-            </div>
-        </div>
-    );
-
-    const totalIncome = transactions?.innerData?.filter(t => t.type === 'kirim')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-    const totalExpense = transactions?.innerData?.filter(t => t.type === 'chiqim')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-    const balance = totalIncome - totalExpense;
-
-
-    // ================================================
-    // Refreshdan keyin ham eslab qolish
-    useEffect(() => {
-        const savedTab = localStorage.getItem('ruberoid-active-tab');
-        if (savedTab) {
-            setActiveTab(savedTab);
-        }
-    }, []);
-
-
 
     if (isLoading) return <div>Loading...</div>;
+
     return (
         <div className="ruberoid-expense-tracker">
             <div className="ruberoid-container">
                 <div className="ruberoid-main-content">
-                    {/* Form Panel */}
                     <div className="ruberoid-form-panel">
+                        <div className="ruberoid-form-box">
+                            <button
+                                className={activeTab === 'Expenses' ? 'ruberoid-active-tab' : ''}
+                                onClick={() => setActiveTab('Expenses')}
+                            >
+                                Xarajatlar
+                            </button>
+                            <button
+                                className={activeTab === 'Transport' ? 'ruberoid-active-tab' : ''}
+                                onClick={() => setActiveTab('Transport')}
+                            >
+                                Transport
+                            </button>
+                            <button
+                                className={activeTab === 'Debts' ? 'ruberoid-active-tab' : ''}
+                                onClick={() => setActiveTab('Debts')}
+                            >
+                                Qarzlar
+                            </button>
+                        </div>
 
                         <div className="ruberoid-balance-cards">
                             <div className="ruberoid-balance-container">
-                                {/* Income Card */}
                                 <div className="ruberoid-balance-card ruberoid-income-card">
                                     <TrendingUp className="ruberoid-card-icon" />
                                     <div>
                                         <p className="ruberoid-card-label">Kirim</p>
                                         <p className="ruberoid-card-amount">
-                                            <GiTakeMyMoney /> {transactions?.innerData
-                                                ?.filter(t => t.type === 'kirim' && t.paymentMethod === 'naqt')
-                                                .reduce((sum, t) => sum + t.amount, 0)
+                                            <GiTakeMyMoney /> {transactions.innerData
+                                                .filter(t => t.type === 'kirim' && t.paymentMethod === 'naqt')
+                                                .reduce((sum, t) => sum + t - amount, 0)
                                                 .toLocaleString()} so'm
                                         </p>
                                         <p className="ruberoid-card-amount">
-                                            <BsBank /> {transactions?.innerData
-                                                ?.filter(t => t.type === 'kirim' && t.paymentMethod === 'bank')
+                                            <BsBank /> {transactions.innerData
+                                                .filter(t => t.type === 'kirim' && t.paymentMethod === 'bank')
                                                 .reduce((sum, t) => sum + t.amount, 0)
                                                 .toLocaleString()} so'm
                                         </p>
-
                                     </div>
                                 </div>
 
-                                {/* Balance Card */}
                                 <div className="ruberoid-balance-card ruberoid-total-card">
                                     <GrMoney className="ruberoid-card-icon" />
                                     <div>
                                         <p className="ruberoid-card-label">Balans</p>
-                                        <p className={`ruberoid-card-amount ${balance >= 0 ? 'ruberoid-positive' : 'ruberoid-negative'}`}>
-                                            <GiTakeMyMoney /> {getBalance?.innerData?.naqt?.toLocaleString()} so'm
+                                        <p className={`ruberoid-card-amount ${balance.innerData.naqt >= 0 ? 'ruberoid-positive' : 'ruberoid-negative'}`}>
+                                            <GiTakeMyMoney /> {balance.innerData.naqt.toLocaleString()} so'm
                                         </p>
-                                        <p className={`ruberoid-card-amount ${balance >= 0 ? 'ruberoid-positive' : 'ruberoid-negative'}`}>
-                                            <BsBank /> {getBalance?.innerData?.bank?.toLocaleString()} so'm
+                                        <p className={`ruberoid-card-amount ${balance.innerData.bank >= 0 ? 'ruberoid-positive' : 'ruberoid-negative'}`}>
+                                            <BsBank /> {balance.innerData.bank.toLocaleString()} so'm
                                         </p>
                                     </div>
                                 </div>
 
-                                {/* Expense Card */}
                                 <div className="ruberoid-balance-card ruberoid-expense-card">
                                     <TrendingDown className="ruberoid-card-icon" />
                                     <div>
                                         <p className="ruberoid-card-label">Chiqim</p>
                                         <p className="ruberoid-card-amount">
-                                            <GiTakeMyMoney /> {transactions?.innerData
-                                                ?.filter(t => t.type === 'chiqim' && t.paymentMethod === 'naqt')
+                                            <GiTakeMyMoney /> {transactions.innerData
+                                                .filter(t => t.type === 'chiqim' && t.paymentMethod === 'naqt')
                                                 .reduce((sum, t) => sum + t.amount, 0)
                                                 .toLocaleString()} so'm
                                         </p>
                                         <p className="ruberoid-card-amount">
-                                            <BsBank /> {transactions?.innerData
-                                                ?.filter(t => t.type === 'chiqim' && t.paymentMethod === 'bank')
+                                            <BsBank /> {transactions.innerData
+                                                .filter(t => t.type === 'chiqim' && t.paymentMethod === 'bank')
                                                 .reduce((sum, t) => sum + t.amount, 0)
                                                 .toLocaleString()} so'm
                                         </p>
-
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <form className="ruberoid-transaction-form" onSubmit={(e) => e.preventDefault()}>
-                            {/* Transaction Type Buttons */}
-                            <div className="ruberoid-type-buttons">
-                                <button
-                                    type="button"
-                                    className={`ruberoid-type-btn ${transactionType === 'kirim' ? 'ruberoid-active-income' : ''}`}
-                                    onClick={() => {
-                                        setTransactionType('kirim');
-                                        setCategory('');
-                                    }}
-                                >
-                                    <Plus className="ruberoid-btn-icon" />
-                                    Kirim
-                                </button>
-                                <button
-                                    type="button"
-                                    className={`ruberoid-type-btn ${transactionType === 'chiqim' ? 'ruberoid-active-expense' : ''}`}
-                                    onClick={() => {
-                                        setTransactionType('chiqim');
-                                        setCategory('');
-                                    }}
-                                >
-                                    <Minus className="ruberoid-btn-icon" />
-                                    Chiqim
-                                </button>
-                            </div>
-
-                            {/* Payment Method */}
-                            <div className="ruberoid=form-group">
-                                <label className="ruberoid-form-label">To'lov turi</label>
-                                <div className="ruberoid-payment-methods">
-                                    {Object.entries(paymentMethods).map(([key, value]) => (
-                                        <button
-                                            key={key}
-                                            type="button"
-                                            className={`ruberoid-payment-btn ${paymentMethod === key ? 'ruberoid-active-payment' : ''}`}
-                                            onClick={() => setPaymentMethod(key)}
-                                        >
-                                            {key === 'naqt' && <Banknote className="ruberoid-payment-icon" />}
-                                            {key === 'dollar' && <DollarSign className="ruberoid-payment-icon" />}
-                                            {key === 'bank' && <CreditCard className="ruberoid-payment-icon" />}
-                                            {value}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Category */}
-                            <div className="ruberoid-form-group">
-                                <label className="ruberoid-form-label">Kategoriya</label>
-                                <select
-                                    value={category}
-                                    onChange={(e) => setCategory(e.target.value)}
-                                    className="ruberoid-form-select"
-                                >
-                                    <option value="">Kategoriya tanlang</option>
-                                    {categories[transactionType].map(cat => (
-                                        <option key={cat} value={cat}>{cat}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Amount */}
-                            <div className="ruberoid-form-group">
-                                <label className="ruberoid-form-label">Summa (so'm)</label>
-                                <input
-                                    type="text"
-                                    value={formattedAmount}
-                                    onChange={(e) => {
-                                        const raw = e.target.value.replace(/\./g, "").replace(/\D/g, "");
-                                        const numberValue = parseInt(raw || "0", 10);
-                                        setAmount(numberValue);
-                                        const formatted = numberValue.toLocaleString("uz-UZ");
-                                        setFormattedAmount(formatted);
-                                    }}
-                                    className="ruberoid-form-input"
-                                    placeholder="Summani kiriting"
-                                />
-                            </div>
-
-                            {/* Description */}
-                            <div className="ruberoid-form-group">
-                                <label className="ruberoid-form-label">Tavsif</label>
-                                <textarea
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    className="ruberoid-form-textarea"
-                                    placeholder="Qo'shimcha ma'lumot kiriting"
-                                    rows="3"
-                                />
-                            </div>
-
-                            <button onClick={handleSubmit} className="ruberoid-submit-btn">
-                                <Plus className="ruberoid-btn-icon" />
-                                {transactionType === 'kirim' ? 'Kirim qo\'shish' : 'Chiqim qo\'shish'}
-                            </button>
-                        </form>
+                        {renderTabContent()}
                     </div>
 
-                    {/* Table Panel */}
                     <div className="ruberoid-table-panel">
                         <div className="ruberoid-date-filters">
                             <div className="ruberoid-date-group">
@@ -392,19 +343,18 @@ const ExpenseTracker = () => {
                                         <th>To'lov</th>
                                         <th>Summa</th>
                                         <th>Tavsif</th>
-                                        <th>Amallar</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {transactions.length === 0 ? (
+                                    {transactions.innerData.length === 0 ? (
                                         <tr>
-                                            <td colSpan="7" className="ruberoid-no-data">
+                                            <td colSpan="6" className="ruberoid-no-data">
                                                 Ma'lumotlar topilmadi
                                             </td>
                                         </tr>
                                     ) : (
-                                        transactions?.innerData?.map((transaction, inx) => (
-                                            <tr key={inx} className="ruberoid-transaction-row">
+                                        transactions.innerData.map((transaction, index) => (
+                                            <tr key={index} className="ruberoid-transaction-row">
                                                 <td>
                                                     <div className="ruberoid-type-indicator">
                                                         {transaction.type === 'kirim' ? (
@@ -431,27 +381,9 @@ const ExpenseTracker = () => {
                                                     </span>
                                                 </td>
                                                 <td className={transaction.type === 'kirim' ? 'ruberoid-income-amount' : 'ruberoid-expense-amount'}>
-                                                    {transaction.amount.toLocaleString()} {transaction.paymentMethod !== "dollar" && "so'm"}
+                                                    {transaction.amount.toLocaleString()} so'm
                                                 </td>
                                                 <td className="ruberoid-description">{transaction.description}</td>
-                                                <td className="ruberoid-delete-cell">
-                                                    <Popover
-                                                        content={popoverContent(transaction._id)}
-                                                        title={null}
-                                                        trigger="click"
-                                                        visible={showPopover === transaction._id}
-                                                        onVisibleChange={(visible) => setShowPopover(visible ? transaction._id : null)}
-                                                        placement="topRight"
-                                                    >
-                                                        <button
-                                                            onClick={() => togglePopover(transaction._id)}
-                                                            className="ruberoid-delete-btn hover:bg-red-600 bg-red-500 text-white p-2 rounded-full transition-colors duration-200"
-                                                            title="O'chirish"
-                                                        >
-                                                            <Trash2 size={16} />
-                                                        </button>
-                                                    </Popover>
-                                                </td>
                                             </tr>
                                         ))
                                     )}

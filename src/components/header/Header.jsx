@@ -67,7 +67,7 @@ function Header() {
         description: 'Iltimos, qaytadan urinib ko‘ring.',
         placement: 'topRight',
       });
-      console.error("Logout error:", error);
+
     } finally {
       setIsModalOpen(false);
       setIsLoggingOut(false);
@@ -224,3 +224,4 @@ function Header() {
 }
 
 export default Header;
+

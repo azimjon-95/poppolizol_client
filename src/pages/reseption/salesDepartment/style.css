@@ -6,6 +6,40 @@
     color: #2d3748;
 }
 
+.sacod-product-card-defective {
+    border: 2px solid #ff4d4f;
+    /* Red border for defective products */
+    background-color: #fff1f0;
+    /* Light red background */
+}
+
+.sacod-defective-info {
+    background-color: #ff4d4f;
+    color: white;
+    padding: 5px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 4px 4px 0 0;
+}
+
+.sacod-defective-details-btn {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+}
+
+.sacod-defective-details-btn:hover {
+    background-color: #d9363e;
+}
+
 .sacod-cart-content {
     width: 100%;
     display: flex;
@@ -274,6 +308,13 @@
 
 .sacod-cart-items::-webkit-scrollbar {
     width: 6px;
+}
+
+.sacod-content-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .sacod-cart-items::-webkit-scrollbar-track {
@@ -1582,7 +1623,7 @@ textarea.sacod-form-input {
     }
 
     .sacod-content-section {
-        padding: 1rem;
+        padding: .2rem;
     }
 
     .sacod-filter-controls {
@@ -2067,6 +2108,8 @@ textarea.sacod-form-input {
     font-family: inherit;
 }
 
+
+
 .form-group input:focus,
 .form-group textarea:focus,
 .rating-select:focus {
@@ -2212,12 +2255,7 @@ textarea.sacod-form-input {
     }
 }
 
-.sacod-content-section {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
+
 
 
 
@@ -2566,6 +2604,12 @@ textarea.sacod-form-input {
     /* border: 1px solid #ef9a9a; */
 }
 
+.sacod-product-card-defective {
+    background-color: #fdfae3;
+    padding: 7px 1.5rem 1.5rem 1.5rem;
+    /* border: 1px solid #ef9a9a; */
+}
+
 .sacod-returned-info {
     /* border-bottom: 1px solid #ddd; */
     text-align: center;
@@ -2614,17 +2658,71 @@ textarea.sacod-form-input {
         gap: 30px;
         flex-direction: column !important;
         justify-content: space-between;
+        overflow-y: auto !important;
+        background: #000;
+        height: 100vh;
+    }
+
+    .sacod-remove-btn {
+        position: absolute;
+        top: 5px;
+        right: 8px;
+    }
+
+    .sacod-cart-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 0.5rem;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        height: 100vh;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .sacod-order-summary {
+        height: 100vh;
+        width: 100%;
+    }
+
+    .sacod-price-input {
+        width: 63px !important;
+        padding: 6px 8px;
+        border: none;
+        outline: none;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .sacod-cart-items {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        padding: 1.5rem 0.5rem;
+        margin-bottom: 0.5rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        height: 100vh !important;
+        overflow-y: auto;
     }
 
     .sacod-cart-item {
         flex-direction: column;
         gap: 15px;
+        padding: 10px;
+        position: relative;
         align-items: flex-start;
     }
 
     .sacod-cart-item-controls {
         width: 100%;
         justify-content: space-between;
+    }
+
+    .sacod-content-section {
+        height: 100vh;
     }
 
     .doc-wrapper {

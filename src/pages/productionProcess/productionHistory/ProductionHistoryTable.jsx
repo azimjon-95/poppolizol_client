@@ -382,12 +382,12 @@ const ProductionHistoryTable = () => {
                                             <td className="mvb-modal-td mvb-modal-required-cell"></td>
                                             <td className="mvb-modal-td mvb-modal-consumed-cell"></td>
                                             <td className="mvb-modal-td mvb-modal-difference-cell"></td>
-                                            <td className="mvb-modal-td mvb-modal-status-cell"></td>
                                             <td className="mvb-modal-td mvb-modal-total-cell">
                                                 <div className="mvb-modal-total-info">
                                                     {formatCurrency(selectedData.reduce((sum, item) => sum + (item.totalCost || 0), 0))}
                                                 </div>
                                             </td>
+                                            <td className="mvb-modal-td mvb-modal-status-cell"></td>
                                             <td className="mvb-modal-td mvb-modal-cost-difference-cell"></td>
                                         </tr>
                                     </tfoot>

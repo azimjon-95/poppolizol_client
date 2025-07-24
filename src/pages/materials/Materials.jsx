@@ -8,7 +8,7 @@ import {
 } from "../../context/materialApi";
 import { capitalizeFirstLetter } from "../../hook/CapitalizeFirstLitter";
 import { useSelector } from "react-redux";
-import { DeleteOutlined, EditOutlined, PlusOutlined, ShopOutlined, BarChartOutlined, BuildOutlined, SafetyOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, PlusOutlined, ShopOutlined, BarChartOutlined, BuildOutlined, SafetyOutlined, CopyOutlined } from "@ant-design/icons";
 import { LuPackagePlus } from "react-icons/lu";
 import { toast } from "react-toastify";
 import FormattedInput from "../../components/FormattedInput";
@@ -97,6 +97,22 @@ const WarehouseManagement = () => {
     }
   };
 
+  const handleCopyMaterialName = (name) => {
+    navigator.clipboard.writeText(name).then(() => {
+      toast.success(
+        <span>
+          <strong>{capitalizeFirstLetter(name)}</strong> nomli material nusxalandi
+        </span>,
+        {
+          autoClose: 2000,
+          className: 'warehouse-toast-copy',
+        }
+      );
+    }).catch(() => {
+      toast.error("Nusxalashda xatolik yuz berdi");
+    });
+  };
+
   const materialColumns = [
     {
       title: "Material",
@@ -107,6 +123,12 @@ const WarehouseManagement = () => {
         <div className="warehouse-material-name">
           <LuPackagePlus className="warehouse-material-icon" />
           <Text strong>{capitalizeFirstLetter(text)}</Text>
+          <Button
+            type="link"
+            icon={<CopyOutlined />}
+            onClick={() => handleCopyMaterialName(text)}
+            className="warehouse-copy-btn"
+          />
         </div>
       ),
     },
@@ -293,11 +315,11 @@ const WarehouseManagement = () => {
                     className="warehouse-add-btn"
                     onClick={() => setIsFirmModalOpen(true)}
                   >
-                    Figura qo'shish
+                    Firma qo'shish
                   </Button>
                   <Button
                     type="primary"
-                    icon={<BarChartOutlined />}
+                    // icon={<Bar12 BarChartOutlined />}
                     className="warehouse-add-btn warehouse-income-list-btn"
                     onClick={() => setIsIncomeListModalOpen(!isIncomeListModalOpen)}
                   >
@@ -500,7 +522,7 @@ const WarehouseManagement = () => {
           </Modal>
 
           {/* Income Material Modal */}
-          <EditMaterialModal setIsIncomeModalOpen={setIsIncomeModalOpen} firmsLoading={firmsLoading} isIncomeModalOpen={isIncomeModalOpen} />
+          <EditMaterialModal refetch={refetch} setIsIncomeModalOpen={setIsIncomeModalOpen} firmsLoading={firmsLoading} isIncomeModalOpen={isIncomeModalOpen} />
 
         </div>
       }

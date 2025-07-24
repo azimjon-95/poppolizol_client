@@ -140,16 +140,19 @@ const Bn5ProcessDialog = ({ refetch, material, gasPrice, electricityPrice }) => 
                     label: input.label,
                     bn5Amount: parseFloat(input.bn) || 0,
                     quantity: parseFloat(input.value) || 0,
-                    unit: input.label === "Qop" ? "dona" : "kg",
+                    unit: "kg",
                     rope: input.label === "Qop" ? (parseFloat(input.value) * 1.5).toFixed(2) : 0,
                 })),
                 timestamp: new Date().toISOString(),
             };
 
             const res = await createBn5Production(payload);
-            refetch()
-            console.log(res);
 
+            if (res?.error.status === 400) {
+                return toast.error(res?.error.data.message || 'Xatolik yuz berdi, iltimos qaytadan urinib ko‘ring!');
+            }
+
+            refetch()
             toast.success('Mahsulot muvaffiyatli qadoqlandi va serverga tayyor!');
             setShowBn5ProcessDialog(false);
         } catch (error) {

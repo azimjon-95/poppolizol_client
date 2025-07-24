@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { User, TrendingUp, TrendingDown, AlertCircle, Check, Calendar, Phone, MapPin, Users, Activity, Filter, RefreshCw, Eye, X, Plus, Edit, Trash2, Target } from 'lucide-react';
+import { User, AlertCircle, Phone, MapPin, Users, Activity, Filter, RefreshCw, Eye, X, Plus, Edit, Trash2, Target } from 'lucide-react';
 import {
     useGetSalesEmployeesQuery,
     useGetAllPlansQuery,
@@ -75,6 +75,7 @@ const SalespersonDashboard = () => {
     const [createPlan] = useCreatePlanMutation();
     const [updatePlan] = useUpdatePlanMutation();
     const [deletePlan] = useDeletePlanMutation();
+    console.log(salesEmployees);
 
     // Generate month options for the last 12 months and next 3 months
     const generateMonthOptions = () => {
@@ -154,7 +155,6 @@ const SalespersonDashboard = () => {
         e.preventDefault();
         if (!planForm.employeeId || !planForm.targetAmount || isNaN(planForm.targetAmount) || planForm.targetAmount <= 0) {
             notifyError('Iltimos, barcha maydonlarni to\'g\'ri to\'ldiring');
-            setFormError('Iltimos, barcha maydonlarni to\'g\'ri to\'ldiring');
             return;
         }
 
@@ -165,13 +165,11 @@ const SalespersonDashboard = () => {
             }).unwrap();
             setShowPlanModal(false);
             setPlanForm({ employeeId: '', targetAmount: '', month: selectedMonth });
-            setFormError('');
             notifySuccess('Plan muvaffaqiyatli yaratildi!');
             refetchPlans();
         } catch (error) {
             console.error('Plan yaratishda xatolik:', error);
             notifyError('Plan yaratishda xatolik yuz berdi');
-            setFormError('Plan yaratishda xatolik yuz berdi');
         }
     };
 
@@ -205,19 +203,18 @@ const SalespersonDashboard = () => {
 
     // Handle plan deletion
     const handleDeletePlan = async (planId) => {
-        if (window.confirm('Planni o\'chirishni tasdiqlaysizmi?')) {
-            try {
-                await deletePlan(planId).unwrap();
-                notifySuccess('Plan muvaffaqiyatli o\'chirildi!');
-                refetchPlans();
-            } catch (error) {
-                console.error('Plan o\'chirishda xatolik:', error);
-                notifyError('Plan o\'chirishda xatolik yuz berdi');
-                setFormError('Plan o\'chirishda xatolik yuz berdi');
-            }
-        } else {
-            notifyInfo('Plan o\'chirish bekor qilindi');
+        console.log("ok");
+        try {
+            const res = await deletePlan(planId).unwrap();
+            console.log(res);
+            notifySuccess('Plan muvaffaqiyatli o\'chirildi!');
+            refetchPlans();
+        } catch (error) {
+            console.error('Plan o\'chirishda xatolik:', error);
+            notifyError('Plan o\'chirishda xatolik yuz berdi');
+            setFormError('Plan o\'chirishda xatolik yuz berdi');
         }
+
     };
 
     // Open plan modal for editing
@@ -267,27 +264,6 @@ const SalespersonDashboard = () => {
         </span>
     );
 
-    // Trend component
-    const TrendIndicator = ({ trend }) => {
-        const getTrendClass = (trend) => {
-            if (trend > 0) return 'sdash-trend-positive';
-            if (trend < 0) return 'sdash-trend-negative';
-            return 'sdash-trend-neutral';
-        };
-
-        return (
-            <div className={`sdash-trend-wrapper ${getTrendClass(trend)}`}>
-                {trend > 0 ? (
-                    <TrendingUp className="sdash-trend-icon" />
-                ) : trend < 0 ? (
-                    <TrendingDown className="sdash-trend-icon" />
-                ) : (
-                    <div className="sdash-trend-neutral-icon" />
-                )}
-                <span className="sdash-trend-value">{Math.abs(trend)}%</span>
-            </div>
-        );
-    };
 
     // Format number with thousands separator
     const formatNumber = (value) => {
@@ -321,6 +297,12 @@ const SalespersonDashboard = () => {
             </div>
         );
     }
+    const department = {
+        saler_meneger: "Sotuv Menejir",
+        Sotuvchi: "Sotuvchi",
+        saler_export: "Sotuvchi Eksport"
+    }
+
 
     return (
         <div className="sdash-main-container">
@@ -386,9 +368,9 @@ const SalespersonDashboard = () => {
                     <thead className="sdash-table-head">
                         <tr>
                             <th className="sdash-header-cell">Sotuvchi</th>
+                            <th className="sdash-header-cell">Ish turi</th>
                             <th className="sdash-header-cell">Holat</th>
                             <th className="sdash-header-cell">Plan bajarish</th>
-                            <th className="sdash-header-cell">Trend</th>
                             <th className="sdash-header-cell">Amallar</th>
                         </tr>
                     </thead>
@@ -419,6 +401,9 @@ const SalespersonDashboard = () => {
                                         </div>
                                     </td>
                                     <td className="sdash-data-cell">
+                                        {department[employee.department]}
+                                    </td>
+                                    <td className="sdash-data-cell">
                                         <StatusBadge hasCurrentPlan={!!employee.currentPlan} />
                                     </td>
                                     <PerformanceCell
@@ -426,9 +411,9 @@ const SalespersonDashboard = () => {
                                         plan={employee.currentPlan?.targetAmount || 0}
                                         unit="M"
                                     />
-                                    <td className="sdash-data-cell">
+                                    {/* <td className="sdash-data-cell">
                                         <TrendIndicator trend={trend} />
-                                    </td>
+                                    </td> */}
                                     <td className="sdash-data-cell">
                                         <div className="sdash-action-group">
                                             {employee.currentPlan ? (

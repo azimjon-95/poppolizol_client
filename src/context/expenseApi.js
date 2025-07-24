@@ -38,6 +38,23 @@ export const expenseApi = api.injectEndpoints({
             }),
             providesTags: ['Expenses'],
         }),
+
+        // Fetch all transports
+        getTransports: builder.query({
+            query: () => '/transports',
+            transformResponse: (response) => response.innerData, // Extract innerData
+            providesTags: ['Transports'],
+        }),
+        // Process a payment
+        makePayment: builder.mutation({
+            query: ({ _id, amount, paymentMethod }) => ({
+                url: `/transports?_id=${_id}&amount=${amount}&paymentMethod=${paymentMethod}`,
+                method: 'GET', // Using GET as per your original setup
+            }),
+            transformResponse: (response) => response, // Keep full response for state/message
+            invalidatesTags: ['Transports'], // Invalidate to refetch transports
+        }),
+
     }),
 });
 
@@ -46,5 +63,7 @@ export const {
     useGetExpensesQuery,
     useUpdateExpenseMutation,
     useDeleteExpenseMutation,
-    useGetBalanceQuery
+    useGetBalanceQuery,
+    useGetTransportsQuery,
+    useMakePaymentMutation
 } = expenseApi;

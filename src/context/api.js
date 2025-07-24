@@ -2,8 +2,9 @@ import { createApi, fetchBaseQuery, retry } from "@reduxjs/toolkit/query/react";
 
 // Bazaviy query — token bilan avtomatik headerga qo‘shiladi
 const baseQuery = fetchBaseQuery({
-  baseUrl: "http://localhost:5050/api", // API bazaviy manzili
-  // baseUrl: "https://qarshi-med.vercel.app/api", // API bazaviy manzili
+  // baseUrl: "http://localhost:5050/api", // API bazaviy manzili
+  baseUrl: "https://poppolizol-api.vercel.app/api", // API bazaviy manzili
+  // baseUrl: "https://cs89w8t5-5050.euw.devtunnels.ms/api",
   prepareHeaders: (headers) => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -20,6 +21,6 @@ const baseQueryWithRetry = retry(baseQuery, { maxRetries: 2 });
 export const api = createApi({
   reducerPath: "splitApi",
   baseQuery: baseQueryWithRetry,
-  tagTypes: ['CustomerSales', "Workers", "Inventory", "Plans", "Incomes", 'Factory', "Firms", "FinishedProducts", "ProductionHistory", "Norma", 'Expenses'], // kerakli taglar
+  tagTypes: ['Debts', 'Balance', 'Transport', 'CustomerSales', "Workers", "Inventory", "Plans", "Incomes", 'Factory', "Firms", "FinishedProducts", "ProductionHistory", "Norma", 'Expenses'], // kerakli taglar
   endpoints: () => ({}), // endpointlar keyinchalik qo‘shiladi
 });

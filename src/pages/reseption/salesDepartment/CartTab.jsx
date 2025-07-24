@@ -7,27 +7,22 @@ import { Select } from 'antd';
 import {
     useCreateCartSaleMutation,
     useGetCompanysQuery,
+    useGetTransportQuery
 } from '../../../context/cartSaleApi';
 import { useGetSalesEmployeesQuery } from '../../../context/planSalesApi';
 import { useGetFactoriesQuery } from '../../../context/clinicApi';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import './style.css';
+import './style/cart.css';
 
 const { Option } = Select;
 
-// Utility function to format numbers with commas (e.g., 1,000,000)
-const formatNumber = (num) => {
-    if (!num && num !== 0) return '';
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-};
-
-// Utility function to format phone numbers (e.g., 90 123 45 67)
+// Utility functions
+const formatNumber = (num) => (num || num === 0 ? num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '');
 const formatPhone = (raw) => {
     const cleaned = raw.replace(/\D/g, '').slice(0, 9);
     return cleaned.replace(/(\d{2})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4');
 };
-
 const getWidthByLength = (length) => {
     if (length <= 4) return 50;
     if (length <= 5) return 60;
@@ -37,11 +32,14 @@ const getWidthByLength = (length) => {
 const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromCart, onCompleteSale }) => {
     const contentRef = useRef();
     const navigate = useNavigate();
+    const dropdownRef = useRef(null);
+    const inputRef = useRef(null);
     const { data: salesEmployees = { innerData: [] } } = useGetSalesEmployeesQuery();
     const { data: factories = { innerData: [] } } = useGetFactoriesQuery();
     const { data: customers = { innerData: [] } } = useGetCompanysQuery();
-    console.log(customers);
     const [createCartSale, { isLoading: isCreatingCartSale }] = useCreateCartSaleMutation();
+    const { data: transport = { innerData: [] } } = useGetTransportQuery();
+
     const initialNdsRate = factories?.innerData?.[0]?.nds || 12;
     const [ndsRate, setNdsRate] = useState(initialNdsRate);
     const [discountReason, setDiscountReason] = useState(
@@ -53,17 +51,46 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
     const [isNewCustomer, setIsNewCustomer] = useState(false);
     const [rawPhone, setRawPhone] = useState('');
     const [rawPaidAmount, setRawPaidAmount] = useState(0);
+    const [middlemanPayment, setMiddlemanPayment] = useState(0);
+    const [transportCost, setTransportCost] = useState(0);
+    const [isContractModalOpen, setIsContractModalOpen] = useState(false);
+    const [isTransportDropdownOpen, setIsTransportDropdownOpen] = useState(false);
 
     // Customer information state
     const [customerInfo, setCustomerInfo] = useState({
         name: '',
         type: 'individual',
         companyAddress: '',
+        transport: '',
+        transportCost: 0,
     });
 
     // Memoized formatted values
     const formattedPhone = useMemo(() => formatPhone(rawPhone), [rawPhone]);
     const formattedAmount = useMemo(() => formatNumber(rawPaidAmount), [rawPaidAmount]);
+    const formattedMiddlemanPayment = useMemo(() => formatNumber(middlemanPayment), [middlemanPayment]);
+    const formattedTransportCost = useMemo(() => formatNumber(transportCost), [transportCost]);
+    const customerTypeOptions = [
+        { value: 'internal', label: 'Ichki Bozor' },
+        { value: 'export', label: 'Eksport' },
+        { value: 'exchange', label: 'Birja' },
+    ];
+
+    // Handle outside clicks to close dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target) &&
+                inputRef.current &&
+                !inputRef.current.contains(event.target)
+            ) {
+                setIsTransportDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     // Check if workerId matches any sales employee
     useEffect(() => {
@@ -72,76 +99,87 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
             const matchedEmployee = salesEmployees.innerData.find(
                 (employee) => employee._id === workerId
             );
-            if (matchedEmployee) {
-                setIsEmployeeValid(true);
-                setSelectedEmployee(matchedEmployee);
-            } else {
-                setIsEmployeeValid(false);
-                setSelectedEmployee(null);
-            }
+            setSelectedEmployee(matchedEmployee || null);
+            setIsEmployeeValid(!!matchedEmployee);
         } else {
-            setIsEmployeeValid(false);
             setSelectedEmployee(null);
+            setIsEmployeeValid(false);
         }
     }, [salesEmployees]);
 
     // Handle employee selection
-    const handleEmployeeSelect = useCallback((value) => {
-        const selected = salesEmployees.innerData.find(
-            (employee) => employee._id === value
-        );
-        if (selected) {
-            setSelectedEmployee(selected);
-            setIsEmployeeValid(true);
-        }
-    }, [salesEmployees]);
+    const handleEmployeeSelect = useCallback(
+        (value) => {
+            const selected = salesEmployees.innerData.find((employee) => employee._id === value);
+            if (selected) {
+                setSelectedEmployee(selected);
+                setIsEmployeeValid(true);
+            }
+        },
+        [salesEmployees]
+    );
 
     // Handle customer selection
-    const handleCustomerSelect = useCallback((value) => {
-        if (value === 'new') {
-            setIsNewCustomer(true);
-            setSelectedCustomer(null);
-            setCustomerInfo({
-                name: '',
-                type: 'individual',
-                companyAddress: '',
-            });
-            setRawPhone('');
-        } else {
-            const selected = customers.innerData.find(
-                (customer) => customer._id === value
-            );
-            if (selected) {
-                setIsNewCustomer(false);
-                setSelectedCustomer(selected);
+    const handleCustomerSelect = useCallback(
+        (value) => {
+            if (value === 'new') {
+                setIsNewCustomer(true);
+                setSelectedCustomer(null);
                 setCustomerInfo({
-                    name: selected.name,
-                    type: selected.type,
-                    phone: selected.phone || '',
-                    companyName: selected.companyName || '',
-                    companyAddress: selected.companyAddress || '',
+                    name: '',
+                    type: 'individual',
+                    companyAddress: '',
+                    transport: '',
+                    transportCost: 0,
                 });
-                setRawPhone(selected.phone?.replace(/\D/g, '') || '');
+                setRawPhone('');
+                setMiddlemanPayment(0);
+                setTransportCost(0);
+            } else {
+                const selected = customers.innerData.find((customer) => customer._id === value);
+                if (selected) {
+                    setIsNewCustomer(false);
+                    setSelectedCustomer(selected);
+                    setCustomerInfo({
+                        name: selected.name,
+                        type: selected.type,
+                        phone: selected.phone || '',
+                        companyName: selected.companyName || '',
+                        companyAddress: selected.companyAddress || '',
+                        transport: '',
+                        transportCost: 0,
+                    });
+                    setRawPhone(selected.phone?.replace(/\D/g, '') || '');
+                    setMiddlemanPayment(0);
+                    setTransportCost(0);
+                }
             }
-        }
-    }, [customers]);
+        },
+        [customers]
+    );
 
     // Handle customer info change
     const handleCustomerInfoChange = useCallback((key, value) => {
         setCustomerInfo((prev) => ({ ...prev, [key]: value }));
     }, []);
 
+    // Handle transport selection
+    const handleTransportSelect = useCallback((transport) => {
+        setCustomerInfo((prev) => ({ ...prev, transport }));
+        setIsTransportDropdownOpen(false);
+    }, []);
+
     const reactToPrintFn = useReactToPrint({
         contentRef,
         pageStyle: `
-            @page {
-                size: 80mm auto;
-                margin: 0;
-            }
-            @media print {
-                body { margin: 0; }
-                * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
-            }`,
+      @page {
+        size: 80mm auto;
+        margin: 0;
+      }
+      @media print {
+        body { margin: 0; }
+        * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
+      }`,
         onPrintError: () => {
             toast.error('Chop etishda xatolik yuz berdi. Iltimos, qayta urining.', {
                 position: 'top-right',
@@ -151,35 +189,36 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
     });
 
     const [paymentInfo, setPaymentInfo] = useState({
-        totalAmount: 0,
         paidAmount: 0,
         discount: 0,
         paymentStatus: 'partial',
         paymentType: 'naqt',
+        customerType: 'internal',
     });
 
-    const [isContractModalOpen, setIsContractModalOpen] = useState(false);
     const [contractInfo, setContractInfo] = useState({
         customerType: 'individual',
         customerName: '',
         customerPhone: '',
         transport: '',
+        transportCost: 0,
         paymentAmount: 0,
         paymentDescription: '',
         discounts: {},
         paymentType: 'naqt',
+        middlemanPayment: 0,
     });
-
-    const [formInputs, setFormInputs] = useState([
-        { key: 'transport', value: '', label: 'Avtotransport', placeholder: 'yozing...', ariaLabel: 'Transport details' },
-    ]);
 
     const isFormValid = useMemo(() => {
         if (isNewCustomer) {
-            return customerInfo.name.trim() !== '' && formInputs.every(input => input.value.trim() !== '');
+            return (
+                customerInfo.name.trim() &&
+                customerInfo.transport.trim() &&
+                formattedPhone.trim()
+            );
         }
-        return selectedCustomer && formInputs.every(input => input.value.trim() !== '');
-    }, [customerInfo, formInputs, selectedCustomer, isNewCustomer]);
+        return selectedCustomer && customerInfo.transport.trim();
+    }, [customerInfo, formattedPhone, selectedCustomer, isNewCustomer]);
 
     const handleNdsChange = useCallback((e) => {
         const value = e.target.value.replace(/[^0-9]/g, '');
@@ -212,38 +251,33 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         [updateCartQuantity]
     );
 
-    const handleContractPriceChange = useCallback(
-        (productId, value) => {
-            const cleanedValue = value.replace(/[^0-9]/g, '');
-            const newPrice = Math.max(Number(cleanedValue) || 0, 0);
-            setContractInfo((prev) => ({
-                ...prev,
-                discounts: { ...prev.discounts, [productId]: newPrice },
-            }));
-        },
-        []
-    );
+    const handleContractPriceChange = useCallback((productId, value) => {
+        const cleanedValue = value.replace(/[^0-9]/g, '');
+        const newPrice = Math.max(Number(cleanedValue) || 0, 0);
+        setContractInfo((prev) => ({
+            ...prev,
+            discounts: { ...prev.discounts, [productId]: newPrice },
+        }));
+    }, []);
 
     const handleDiscountReasonChange = useCallback((e) => {
         setDiscountReason(e.target.value);
     }, []);
 
-    const handleInputChange = useCallback((key, value) => {
-        setFormInputs(prev =>
-            prev.map(input =>
-                input.key === key ? { ...input, value } : input
-            )
-        );
+    const handleMiddlemanPaymentChange = useCallback((e) => {
+        const raw = e.target.value.replace(/\D/g, '');
+        const numberValue = Number(raw) || 0;
+        setMiddlemanPayment(numberValue);
+        setContractInfo((prev) => ({ ...prev, middlemanPayment: numberValue }));
     }, []);
 
-    const calculateItemTotalNds = useCallback(
-        (item) => {
-            const price = contractInfo.discounts[item._id] ?? item.sellingPrice ?? 0;
-            const ndsAmount = price * (ndsRate / 100);
-            return (price + ndsAmount) * item.quantity;
-        },
-        [contractInfo.discounts, ndsRate]
-    );
+    const handleTransportCostChange = useCallback((e) => {
+        const raw = e.target.value.replace(/\D/g, '');
+        const numberValue = Number(raw) || 0;
+        setTransportCost(numberValue);
+        setCustomerInfo((prev) => ({ ...prev, transportCost: numberValue }));
+        setContractInfo((prev) => ({ ...prev, transportCost: numberValue }));
+    }, []);
 
     const calculateItemTotal = useCallback(
         (item) => {
@@ -256,40 +290,45 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
     const calculateItemNds = useCallback(
         (item) => {
             const price = contractInfo.discounts[item._id] ?? item.sellingPrice ?? 0;
-            return price * (ndsRate / 100) * item.quantity;
+            return (price * ndsRate) / (100 + ndsRate) * item.quantity;
         },
         [contractInfo.discounts, ndsRate]
     );
 
     const summaryData = useMemo(() => {
-        const subtotal = cart.reduce((sum, item) => sum + (contractInfo.discounts[item._id] ?? item.sellingPrice ?? 0) * item.quantity, 0);
+        const subtotal = cart.reduce(
+            (sum, item) => sum + (contractInfo.discounts[item._id] ?? item.sellingPrice ?? 0) * item.quantity,
+            0
+        );
         const totalNdsAmount = cart.reduce((sum, item) => sum + calculateItemNds(item), 0);
         const originalTotal = cart.reduce((sum, item) => sum + (item.sellingPrice ?? 0) * item.quantity, 0);
         const itemDiscountAmount = originalTotal - subtotal;
         const percentageDiscountAmount = (subtotal * (paymentInfo.discount || 0)) / 100;
-        const total = subtotal + totalNdsAmount - percentageDiscountAmount;
-        const debt = total - (rawPaidAmount || 0);
+        const totalAmount = subtotal - percentageDiscountAmount; // Total without NDS and transportCost
+        const totalWithNdsAndTransport = totalAmount + totalNdsAmount + transportCost; // Total for display
+        const debt = totalAmount - (rawPaidAmount || 0); // Debt without NDS and transportCost
         const totalDona = cart.reduce((sum, item) => (item.size === 'dona' ? sum + item.quantity : sum), 0);
         const totalKg = cart.reduce((sum, item) => (item.size === 'kg' ? sum + item.quantity : sum), 0);
 
         return {
             subtotal,
-            totalNdsAmount,
+            totalNdsAmount: Math.round(totalNdsAmount * 100) / 100,
             itemDiscountAmount,
             percentageDiscountAmount,
-            total,
+            totalAmount, // Total without NDS and transportCost for server
+            totalWithNdsAndTransport, // Total with NDS and transportCost for display
             debt,
             totalDona,
             totalKg,
         };
-    }, [cart, paymentInfo, contractInfo.discounts, ndsRate, calculateItemNds, rawPaidAmount]);
+    }, [cart, paymentInfo, contractInfo.discounts, ndsRate, calculateItemNds, rawPaidAmount, transportCost]);
 
     const getProductIcon = useCallback(
         (category) =>
-            category === 'Qop' ? (
-                <FileText className="sacod-icon-sm" />
+            category === 'Qop awl' ? (
+                <FileText className="card-icon-sm" />
             ) : (
-                <Factory className="sacod-icon-sm" />
+                <Factory className="card-icon-sm" />
             ),
         []
     );
@@ -301,7 +340,8 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
             customerPhone: formattedPhone,
             customerCompanyName: customerInfo.companyName,
             customerCompanyAddress: customerInfo.companyAddress,
-            transport: formInputs.find(input => input.key === 'transport').value,
+            transport: customerInfo.transport,
+            transportCost: transportCost,
             paymentAmount: rawPaidAmount,
             paymentDescription: paymentInfo.paymentDescription || '',
             discounts: cart.reduce(
@@ -312,21 +352,20 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                 {}
             ),
             paymentType: paymentInfo.paymentType,
+            middlemanPayment,
         });
         setIsContractModalOpen(true);
-    }, [customerInfo, cart, contractInfo.discounts, formInputs, rawPaidAmount, paymentInfo]);
+        setIsTransportDropdownOpen(false);
+    }, [customerInfo, cart, contractInfo.discounts, rawPaidAmount, paymentInfo, middlemanPayment, transportCost]);
 
     const completeContract = useCallback(async () => {
         if (!isEmployeeValid || !selectedEmployee) {
-            toast.error("Iltimos, sotuvchi tanlang!", {
-                position: 'top-right',
-                autoClose: 3000,
-            });
+            toast.error('Sotuvchi tanlanmagan!', { position: 'top-right', autoClose: 3000 });
             return;
         }
 
         if (!isNewCustomer && !selectedCustomer) {
-            toast.error("Iltimos, mijoz tanlang yoki yangi mijoz ma'lumotlarini kiriting!", {
+            toast.error('Mijoz tanlang yoki yangi mijoz ma\'lumotlarini kiriting!', {
                 position: 'top-right',
                 autoClose: 3000,
             });
@@ -334,16 +373,29 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         }
 
         if (isNewCustomer && !customerInfo.name.trim()) {
-            toast.error("Mijoz ismi kiritilishi shart!", {
+            toast.error('Mijoz ismi kiritilishi shart!', { position: 'top-right', autoClose: 3000 });
+            return;
+        }
+
+        if (!customerInfo.transport.trim()) {
+            toast.error('Avtotransport ma\'lumotlari kiritilishi shart!', {
                 position: 'top-right',
                 autoClose: 3000,
             });
             return;
         }
 
-        const total = summaryData.total;
+        const total = summaryData.totalAmount; // Use totalAmount without NDS and transportCost
         if (rawPaidAmount > total) {
             toast.error("To'lov summasi yakuniy summadan oshib ketdi!", {
+                position: 'top-right',
+                autoClose: 3000,
+            });
+            return;
+        }
+
+        if (middlemanPayment > total) {
+            toast.error("Urtakash Bonusi yakuniy summadan oshib ketdi!", {
                 position: 'top-right',
                 autoClose: 3000,
             });
@@ -358,7 +410,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
             productionDate: item.productionDate || new Date(),
         }));
 
-        const debt = total - (rawPaidAmount || 0);
+        const debt = summaryData.debt; // Debt without NDS and transportCost
         const newSale = {
             customer: {
                 name: customerInfo.name,
@@ -367,7 +419,9 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                 companyName: customerInfo.companyName,
                 companyAddress: customerInfo.companyAddress,
             },
-            transport: contractInfo.transport,
+            customerType: paymentInfo.customerType,
+            transport: customerInfo.transport,
+            transportCost: transportCost, // Send transportCost separately
             items: updatedCart.map((item) => ({
                 ...item,
                 pricePerUnit: contractInfo.discounts[item._id] ?? item.sellingPrice,
@@ -375,21 +429,25 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                 ndsAmount: calculateItemNds(item) / item.quantity,
             })),
             payment: {
-                totalAmount: total,
+                totalAmount: summaryData.totalAmount, // Total without NDS and transportCost
                 paidAmount: rawPaidAmount || 0,
                 debt,
-                ndsTotal: summaryData.totalNdsAmount,
+                ndsTotal: summaryData.totalNdsAmount, // NDS amount included separately
                 status: debt <= 0 ? 'paid' : 'partial',
                 paymentDescription: contractInfo.paymentDescription,
-                discountReason: (summaryData.itemDiscountAmount > 0 || paymentInfo.discount > 0) ? discountReason : '',
+                discountReason: summaryData.itemDiscountAmount > 0 || paymentInfo.discount > 0 ? discountReason : '',
                 paymentType: contractInfo.paymentType,
-                paymentHistory: rawPaidAmount > 0 ? [{
-                    amount: rawPaidAmount,
-                    date: new Date(),
-                    description: contractInfo.paymentDescription || 'Initial payment',
-                    paidBy: selectedEmployee ? `${selectedEmployee.firstName} ${selectedEmployee.lastName}` : '',
-                    paymentType: contractInfo.paymentType,
-                }] : [],
+                middlemanPayment,
+                transportCost, // Include transportCost separately
+                paymentHistory: rawPaidAmount > 0
+                    ? [{
+                        amount: rawPaidAmount,
+                        date: new Date(),
+                        description: contractInfo.paymentDescription || 'Initial payment',
+                        paidBy: selectedEmployee ? `${selectedEmployee.firstName} ${selectedEmployee.lastName}` : '',
+                        paymentType: contractInfo.paymentType,
+                    }]
+                    : [],
             },
             salesperson: selectedEmployee ? `${selectedEmployee.firstName} ${selectedEmployee.lastName}` : '',
             salerId: selectedEmployee?._id || '',
@@ -404,17 +462,13 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                 position: 'top-right',
                 autoClose: 3000,
             });
-            setCustomerInfo({
-                name: '',
-                type: 'individual',
-                companyAddress: '',
-            });
+            setCustomerInfo({ name: '', type: 'individual', companyAddress: '', transport: '', transportCost: 0 });
             setPaymentInfo({
-                totalAmount: 0,
                 paidAmount: 0,
                 discount: 0,
                 paymentStatus: 'partial',
                 paymentType: 'naqt',
+                customerType: 'internal',
             });
             setDiscountReason("Mijoz talabiga ko‘ra, uni yo‘qotmaslik uchun chegirma berildi");
             setIsContractModalOpen(false);
@@ -426,6 +480,8 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
             setIsNewCustomer(false);
             setRawPhone('');
             setRawPaidAmount(0);
+            setMiddlemanPayment(0);
+            setTransportCost(0);
             localStorage.removeItem("workerId");
             localStorage.removeItem("admin_fullname");
         } catch (error) {
@@ -433,12 +489,11 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                 position: 'top-right',
                 autoClose: 3000,
             });
-            console.error('Error saving sale:', error);
         }
     }, [
         contractInfo,
         cart,
-        summaryData.total,
+        summaryData,
         ndsRate,
         calculateItemNds,
         onCompleteSale,
@@ -453,6 +508,9 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         isNewCustomer,
         rawPaidAmount,
         formattedPhone,
+        createCartSale,
+        middlemanPayment,
+        transportCost,
     ]);
 
     const handlePhoneChange = useCallback((e) => {
@@ -468,39 +526,43 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         setPaymentInfo((prev) => ({ ...prev, paidAmount: numberValue }));
     }, []);
 
+    const toggleTransportDropdown = useCallback(() => {
+        setIsTransportDropdownOpen((prev) => !prev);
+    }, []);
+
     return (
-        <div className="sacod-sales-container">
+        <div className="card-sales-container">
             <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick draggable pauseOnHover />
 
-            <div className="sacod-content-section">
+            <div className="card-content-section">
                 {cart?.length === 0 ? (
-                    <div className="sacod-empty-state">
-                        <ShoppingCart className="sacod-empty-icon" />
+                    <div className="card-empty-state">
+                        <ShoppingCart className="card-empty-icon" />
                         <p>Savat bo'sh</p>
-                        <button onClick={() => navigate('/feedback')} className="qr-demo-btn">
+                        <button onClick={() => navigate('/feedback')} className="card-qr-demo-btn">
                             Fikr Bildirish Sahifasini Ko'rish
                         </button>
                     </div>
                 ) : (
-                    <div className="sacod-cart-content">
-                        <div className="sacod-cart-items">
+                    <div className="card-cart-content">
+                        <div className="card-cart-items">
                             {cart.map((item, index) => {
                                 const basePrice = contractInfo.discounts[item._id] ?? item.sellingPrice ?? 0;
                                 const value = formatNumber(basePrice);
                                 const inputWidth = getWidthByLength(value.replace(/\D/g, '').length);
 
                                 return (
-                                    <div key={`${item._id}-${index}`} className="sacod-cart-item">
-                                        <div className="sacod-cart-item-info">
-                                            <div className="sacod-cart-item-icon">{getProductIcon(item.category)}</div>
+                                    <div key={`${item._id}-${index}`} className="card-cart-item">
+                                        <div className="card-cart-item-info">
+                                            <div className="card-cart-item-icon">{getProductIcon(item.category)}</div>
                                             <div>
-                                                <h4 className="sacod-cart-item-name">{item.productName}</h4>
-                                                <div className="sacod-cart-item-price">
+                                                <h4 className="card-cart-item-name">{item.productName}</h4>
+                                                <div className="card-cart-item-price">
                                                     <input
                                                         type="text"
                                                         value={value}
                                                         onChange={(e) => handleContractPriceChange(item._id, e.target.value)}
-                                                        className="sacod-price-input"
+                                                        className="card-price-input"
                                                         style={{
                                                             width: `${inputWidth}px`,
                                                             textAlign: 'right',
@@ -513,39 +575,39 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="sacod-cart-item-controls">
-                                            <div className="sacod-quantity-box">
-                                                <div className="sacod-quantity-controls">
+                                        <div className="card-cart-item-controls">
+                                            <div className="card-quantity-box">
+                                                <div className="card-quantity-controls">
                                                     <button
                                                         onClick={() => updateCartQuantity(item._id, item.quantity - 1)}
-                                                        className="sacod-quantity-btn"
+                                                        className="card-quantity-btn"
                                                         aria-label="Decrease quantity"
                                                     >
-                                                        <Minus className="sacod-icon-xs" />
+                                                        <Minus className="card-icon-xs" />
                                                     </button>
                                                     <input
                                                         type="text"
                                                         value={item.quantity}
                                                         onChange={(e) => handleQuantityInput(item._id, e.target.value)}
-                                                        className="sacod-quantity-input"
+                                                        className="card-quantity-input"
                                                         style={{ width: '60px', border: '1px solid #d9d9d9' }}
                                                         aria-label={`Quantity for ${item.productName}`}
                                                         placeholder="0"
                                                     />
-                                                    <span className="sacod-quantity-unit">{item.size}</span>
+                                                    <span className="card-quantity-unit">{item.size}</span>
                                                     <button
                                                         onClick={() => updateCartQuantity(item._id, item.quantity + 1)}
-                                                        className="sacod-quantity-btn"
+                                                        className="card-quantity-btn"
                                                         aria-label="Increase quantity"
                                                     >
-                                                        <Plus className="sacod-icon-xs" />
+                                                        <Plus className="card-icon-xs" />
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div className="sacod-cart-item-total">{formatNumber(calculateItemTotal(item))} so'm</div>
+                                            <div className="card-cart-item-total">{formatNumber(calculateItemTotal(item))} so'm</div>
                                             <button
                                                 onClick={() => updateCartQuantity(item._id, 0)}
-                                                className="sacod-remove-btn"
+                                                className="card-remove-btn"
                                                 title="Mahsulotni o'chirish"
                                                 aria-label={`Remove ${item.productName} from cart`}
                                             >
@@ -556,93 +618,107 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                 );
                             })}
                         </div>
-                        <div className="sacod-cart-info">
-                            <div className="sacod-order-summary">
-                                <div className="sacod-summary-row">
-                                    <span>Jami summa (NDSsiz):</span>
+                        <div className="card-cart-info">
+                            <div className="card-order-summary">
+                                <div className="card-summary-row card-total">
+                                    <span>Jami summa:</span>
                                     <span>{formatNumber(summaryData.subtotal)} so'm</span>
                                 </div>
-                                <div className="sacod-summary-row">
+                                <div className="card-summary-row">
                                     <span>Jami NDS ({ndsRate}%):</span>
-                                    <span>{formatNumber(summaryData.totalNdsAmount)} so'm</span>
+                                    <span>{formatNumber(Math.floor(summaryData.totalNdsAmount))} so'm</span>
                                 </div>
                                 {summaryData.itemDiscountAmount > 0 && (
-                                    <div className="sacod-summary-row sacod-discount">
+                                    <div className="card-summary-row card-discount">
                                         <span>Mahsulot chegirmasi:</span>
                                         <span>-{formatNumber(summaryData.itemDiscountAmount)} so'm</span>
                                     </div>
                                 )}
                                 {paymentInfo.discount > 0 && (
-                                    <div className="sacod-summary-row sacod-discount">
+                                    <div className="card-summary-row card-discount">
                                         <span>Chegirma ({paymentInfo.discount}%):</span>
                                         <span>-{formatNumber(summaryData.percentageDiscountAmount)} so'm</span>
                                     </div>
                                 )}
                                 {(summaryData.itemDiscountAmount > 0 || paymentInfo.discount > 0) && (
-                                    <div className="sacod-summary-row-textarea">
+                                    <div className="card-summary-row-textarea">
                                         <span>Chegirma sababi:</span>
                                         <textarea
                                             value={discountReason}
                                             onChange={handleDiscountReasonChange}
-                                            className="sacod-textarea"
-                                            style={{ width: '100%', minHeight: '60px', resize: 'vertical', border: '1px solid #d9d9d9' }}
+                                            className="card-textarea"
+                                            style={{ borderRadius: '8px', padding: '5px', width: '100%', minHeight: '60px', resize: 'vertical', border: '1px solid #d9d9d9' }}
                                             aria-label="Discount reason"
                                             placeholder="Chegirma sababini kiriting..."
                                         />
                                     </div>
                                 )}
-                                <div className="sacod-summary-row sacod-total">
-                                    <span>Yakuniy summa (NDS bilan):</span>
-                                    <span>{formatNumber(summaryData.total)} so'm</span>
+                                <div className="card-summary-row">
+                                    <span>Mijoz turi:</span>
+                                    <Select
+                                        value={paymentInfo.customerType}
+                                        onChange={(value) => setPaymentInfo((prev) => ({ ...prev, customerType: value }))}
+                                        className="card-price-Select"
+                                        style={{ width: '200px' }}
+                                        aria-label="Customer type"
+                                        placeholder="Tanlang..."
+                                    >
+                                        {customerTypeOptions.map((option) => (
+                                            <Option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </Option>
+                                        ))}
+                                    </Select>
                                 </div>
-                                <div className="sacod-summary-row">
-                                    <span>To'langan:</span>
+                                <div className="card-summary-row">
+                                    <span>Urtakash Bonusi:</span>
                                     <span>
                                         <input
                                             type="text"
-                                            value={formattedAmount}
-                                            onChange={handleAmountChange}
-                                            className="sacod-price-input"
+                                            value={formattedMiddlemanPayment}
+                                            onChange={handleMiddlemanPaymentChange}
+                                            className="card-price-input"
                                             style={{ width: '170px', textAlign: 'right', border: '1px solid #d9d9d9' }}
-                                            aria-label="Paid amount"
+                                            aria-label="Middleman payment"
                                             placeholder="0"
                                         />
-                                        so'm</span>
+                                        so'm
+                                    </span>
                                 </div>
-                                <div className="sacod-summary-row">
+                                <div className="card-summary-row">
                                     <span>To'lov turi:</span>
                                     <Select
                                         value={paymentInfo.paymentType}
                                         onChange={(value) => setPaymentInfo((prev) => ({ ...prev, paymentType: value }))}
-                                        className="sacod-price-Select"
+                                        className="card-price-Select"
                                         aria-label="Payment type"
                                     >
                                         <Option value="naqt">Naqt</Option>
                                         <Option value="bank">Bank</Option>
                                     </Select>
                                 </div>
-                                <div className={`sacod-summary-row ${summaryData.debt > 0 ? 'sacod-debt' : 'sacod-paid'}`}>
+                                <div className={`card-summary-row ${summaryData.debt > 0 ? 'card-debt' : 'card-paid'}`}>
                                     <span>Qarz:</span>
                                     <span>{formatNumber(summaryData.debt)} so'm</span>
                                 </div>
-                                <div className="sacod-summary-row">
+                                <div className="card-summary-row">
                                     <span>NDS Foizi (%):</span>
                                     <input
                                         type="text"
                                         value={ndsRate}
                                         onChange={handleNdsChange}
-                                        className="sacod-price-input"
+                                        className="card-price-input"
                                         style={{ width: '200px', textAlign: 'right', border: '1px solid #d9d9d9' }}
                                         aria-label="NDS rate"
                                         placeholder="NDS foizini kiriting"
                                     />
                                 </div>
-                                <div className="sacod-summary-row">
+                                <div className="card-summary-row">
                                     <span>Mijoz tanlang:</span>
                                     <Select
                                         value={selectedCustomer?._id || (isNewCustomer ? 'new' : undefined)}
                                         onChange={handleCustomerSelect}
-                                        className="sacod-price-Select"
+                                        className="card-price-Select"
                                         style={{ width: '200px', margin: '10px 0' }}
                                         placeholder="Tanlang..."
                                         aria-label="Select customer"
@@ -657,12 +733,12 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                 </div>
                                 {isNewCustomer && (
                                     <>
-                                        <div className="sacod-summary-row">
+                                        <div className="card-summary-row">
                                             <span>Mijoz turi:</span>
                                             <Select
                                                 value={customerInfo.type}
                                                 onChange={(value) => handleCustomerInfoChange('type', value)}
-                                                className="sacod-price-Select"
+                                                className="card-price-Select"
                                                 style={{ width: '200px', marginLeft: '10px' }}
                                                 aria-label="Customer type"
                                             >
@@ -670,37 +746,37 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                                 <Option value="company">Yuridik shaxs</Option>
                                             </Select>
                                         </div>
-                                        <div className="sacod-summary-row">
-                                            <span>{customerInfo.type === 'company' ? "Kompaniya nomi" : "Mijoz ismi"}:</span>
+                                        <div className="card-summary-row">
+                                            <span>{customerInfo.type === 'company' ? 'Kompaniya nomi' : 'Mijoz ismi'}:</span>
                                             <input
                                                 type="text"
                                                 value={customerInfo.name}
                                                 onChange={(e) => handleCustomerInfoChange('name', e.target.value)}
-                                                className="sacod-price-input"
+                                                className="card-price-input"
                                                 style={{ width: '200px', marginLeft: '10px', border: '1px solid #d9d9d9' }}
                                                 aria-label="Customer name"
-                                                placeholder={customerInfo.type === 'company' ? "Nomini kiriting.." : "Ismni kiriting..."}
+                                                placeholder={customerInfo.type === 'company' ? 'Nomini kiriting..' : 'Ismni kiriting...'}
                                             />
                                         </div>
-                                        <div className="sacod-summary-row">
+                                        <div className="card-summary-row">
                                             <span>Telefon:</span>
                                             <input
                                                 type="text"
                                                 value={formattedPhone}
                                                 onChange={handlePhoneChange}
-                                                className="sacod-price-input"
+                                                className="card-price-input"
                                                 style={{ width: '200px', marginLeft: '10px', border: '1px solid #d9d9d9' }}
                                                 aria-label="Customer phone"
                                                 placeholder="90 123 45 67"
                                             />
                                         </div>
-                                        <div className="sacod-summary-row">
-                                            <span>{customerInfo.type === 'company' ? "Kompaniya manzili:" : "Mijoz manzili:"}</span>
+                                        <div className="card-summary-row">
+                                            <span>{customerInfo.type === 'company' ? 'Kompaniya manzili' : 'Mijoz manzili'}:</span>
                                             <input
                                                 type="text"
                                                 value={customerInfo.companyAddress}
                                                 onChange={(e) => handleCustomerInfoChange('companyAddress', e.target.value)}
-                                                className="sacod-price-input"
+                                                className="card-price-input"
                                                 style={{ width: '200px', marginLeft: '10px', border: '1px solid #d9d9d9' }}
                                                 aria-label="Company address"
                                                 placeholder="Manzilni kiriting..."
@@ -708,28 +784,71 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                         </div>
                                     </>
                                 )}
-                                {formInputs.map(input => (
-                                    <div key={input.key} className="sacod-summary-row">
-                                        <span>{input.label}:</span>
+                                <div className="card-summary-row">
+                                    <span>Mijoz To'lagan summa:</span>
+                                    <span>
                                         <input
                                             type="text"
-                                            value={input.value}
-                                            onChange={(e) => handleInputChange(input.key, e.target.value)}
-                                            className="sacod-price-input"
-                                            style={{ width: '200px', marginLeft: '10px', border: '1px solid #d9d9d9' }}
-                                            aria-label={input.ariaLabel}
-                                            placeholder={input.placeholder}
+                                            value={formattedAmount}
+                                            onChange={handleAmountChange}
+                                            className="card-price-input"
+                                            style={{ width: '170px', textAlign: 'right', border: '1px solid #d9d9d9' }}
+                                            aria-label="Paid amount"
+                                            placeholder="0"
                                         />
-                                    </div>
-                                ))}
-                                {!isEmployeeValid && salesEmployees?.innerData?.length > 0 && (
-                                    <div className="sacod-summary-row">
+                                        so'm
+                                    </span>
+                                </div>
+                                <div className="card-summary-row relative">
+                                    <span>Avtotransport:</span>
+                                    <input
+                                        ref={inputRef}
+                                        type="text"
+                                        value={customerInfo.transport}
+                                        onChange={(e) => handleCustomerInfoChange('transport', e.target.value)}
+                                        onClick={toggleTransportDropdown}
+                                        className="card-price-input"
+                                        style={{ width: '200px', marginLeft: '10px', border: '1px solid #d9d9d9' }}
+                                        aria-label="Transport details"
+                                        placeholder="50ZZ500Z Fura..."
+                                    />
+                                    {isTransportDropdownOpen && (
+                                        <div ref={dropdownRef} className="isTransportDropdownOpen">
+                                            {transport.innerData.map((item, index) => (
+                                                <button
+                                                    key={index}
+                                                    onClick={() => handleTransportSelect(item.transport)}
+                                                    className="card-transport-option"
+                                                >
+                                                    {item.transport}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="card-summary-row">
+                                    <span>Transport harajati:</span>
+                                    <span>
+                                        <input
+                                            type="text"
+                                            value={formattedTransportCost}
+                                            onChange={handleTransportCostChange}
+                                            className="card-price-input"
+                                            style={{ width: '170px', textAlign: 'right', border: '1px solid #d9d9d9' }}
+                                            aria-label="Transport cost"
+                                            placeholder="0"
+                                        />
+                                        so'm
+                                    </span>
+                                </div>
+                                {!isEmployeeValid && (
+                                    <div className="card-summary-row">
                                         <span>Sotuvchi tanlang:</span>
                                         <Select
                                             id="employeeSelect"
                                             onChange={handleEmployeeSelect}
                                             value={selectedEmployee?._id || undefined}
-                                            className="sacod-price-Select"
+                                            className="card-price-Select"
                                             style={{ width: '200px', margin: '10px 0' }}
                                             placeholder="Tanlang..."
                                             aria-label="Select salesperson"
@@ -745,11 +864,11 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                 {isEmployeeValid && (
                                     <button
                                         onClick={openContractModal}
-                                        className="sacod-complete-sale-btn"
+                                        className="card-complete-sale-btn"
                                         disabled={!isFormValid || cart?.length === 0}
                                         aria-label="Open contract modal"
                                     >
-                                        <FileText className="sacod-icon-sm" />
+                                        <FileText className="card-icon-sm" />
                                         Shartnoma tuzish
                                     </button>
                                 )}
@@ -760,11 +879,11 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
             </div>
 
             {isContractModalOpen && (
-                <div className="sacod-modal">
-                    <div ref={contentRef} className="doc-wrapper">
-                        <h2 className="doc-title">YUK XATLAMASI №565</h2>
-                        <p className="doc-date">1 Iyul 2025 yil</p>
-                        <div className="doc-info">
+                <div className="card-modal">
+                    <div ref={contentRef} className="card-doc-wrapper">
+                        <h2 className="card-doc-title">YUK XATLAMASI №565</h2>
+                        <p className="card-doc-date">1 Iyul 2025 yil</p>
+                        <div className="card-doc-info">
                             <p>
                                 <strong>Yuboruvchi:</strong> "SELEN BUNYODKOR" MCHJ
                             </p>
@@ -777,20 +896,8 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                             <p>
                                 <strong>Avtotransport:</strong> {contractInfo.transport}
                             </p>
-                            {contractInfo.customerPhone && (
-                                <p>
-                                    <strong>Telefon:</strong> {contractInfo.customerPhone}
-                                </p>
-                            )}
-                            {contractInfo.customerType === 'company' && (
-                                <>
-                                    <p>
-                                        <strong>Kompaniya manzili:</strong> {contractInfo.customerCompanyAddress}
-                                    </p>
-                                </>
-                            )}
                         </div>
-                        <table className="doc-table">
+                        <table className="card-doc-table">
                             <thead>
                                 <tr>
                                     <th>№</th>
@@ -804,8 +911,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                             <tbody>
                                 {cart.map((item, index) => {
                                     const basePrice = contractInfo.discounts[item._id] ?? item.sellingPrice ?? 0;
-                                    const ndsAmount = basePrice * (ndsRate / 100);
-                                    const priceWithNds = basePrice + ndsAmount;
                                     return (
                                         <tr key={`${item._id}-${index}`}>
                                             <td>{index + 1}</td>
@@ -813,31 +918,31 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                             <td>{item.quantity}</td>
                                             <td>{item.size}</td>
                                             <td>{formatNumber(basePrice)}</td>
-                                            <td>{formatNumber(calculateItemTotalNds(item))}</td>
+                                            <td>{formatNumber(calculateItemTotal(item))}</td>
                                         </tr>
                                     );
                                 })}
-                                <tr className="doc-total">
+                                <tr className="card-doc-total">
                                     <td colSpan="5">Jami:</td>
                                     <td>{formatNumber(summaryData.total)}</td>
                                 </tr>
                             </tbody>
                         </table>
                         {(summaryData.itemDiscountAmount > 0 || paymentInfo.discount > 0) && (
-                            <div className="doc-discount-reason">
+                            <div className="card-doc-discount-reason">
                                 <p><strong>Chegirma sababi:</strong></p>
                                 <p>{discountReason}</p>
                             </div>
                         )}
-                        <p className="doc-contact">
+                        <p className="card-doc-contact">
                             Biz bilan ishlaganingizdan minnatdormiz! Taklif va shikoyatlar uchun QR kodni skanerlang yoki quyidagi
                             raqamlarga qo'ng'iroq qiling: +998 94 184 10 00, +998 33 184 10 00
                         </p>
-                        <div className="doc-sign">
+                        <div className="card-doc-sign">
                             <div>
                                 <strong>Berdi:</strong> _____________________
                             </div>
-                            <div className="doc-qr">
+                            <div className="card-doc-qr">
                                 <QRCodeCanvas value={window.location.origin + '/feedback'} size={100} />
                             </div>
                             <div>
@@ -845,10 +950,10 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                             </div>
                         </div>
                     </div>
-                    <div className="print-section">
+                    <div className="card-print-section">
                         <button
                             onClick={completeContract}
-                            className="sacod-modal-btn sacod-modal-btn-confirm"
+                            className="card-modal-btn card-modal-btn-confirm"
                             aria-label="Confirm contract"
                             disabled={isCreatingCartSale}
                         >
@@ -856,7 +961,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                         </button>
                         <button
                             onClick={() => setIsContractModalOpen(false)}
-                            className="sacod-modal-btn sacod-modal-btn-cancel"
+                            className="card-modal-btn card-modal-btn-cancel"
                             aria-label="Cancel contract"
                         >
                             Bekor qilish
