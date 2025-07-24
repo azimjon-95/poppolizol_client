@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useGetMonthlyDashboardQuery } from '../../../context/dashboardApi';
 import { MdAdminPanelSettings } from "react-icons/md";
+import { useMediaQuery } from 'react-responsive';
 import { NumberFormat } from "../../../hook/NumberFormat";
 import { useSelector } from "react-redux";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -133,7 +134,7 @@ const Dashboard = () => {
         return <div className="error-message">Ma'lumotlarni yuklashda xatolik yuz berdi</div>;
     }
 
-
+    const isDesktop = useMediaQuery({ query: '(min-width: 769px)' });
     return (
         <div className="dashboard-container">
             {/* Asosiy statistika kartalar */}
@@ -240,10 +241,14 @@ const Dashboard = () => {
                         <LineChart data={dailyIncomeExpense}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
                             <XAxis dataKey="day" stroke="#94a3b8" />
-                            <YAxis
-                                tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`}
-                                stroke="#94a3b8"
-                            />
+                            {isDesktop && ( // Only render YAxis on non-mobile devices
+                                <YAxis
+                                    tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`}
+                                    stroke="#94a3b8"
+                                    tickCount={8}
+                                    tickSize={8}
+                                />
+                            )}
                             <Tooltip
                                 formatter={(value, name) => [formatCurrency(value), name === 'Kirim' ? 'Kirim' : 'Chiqim']}
                                 labelFormatter={(label) => `${label}-kun`}
@@ -343,7 +348,15 @@ const Dashboard = () => {
                         <LineChart data={dailySales}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
                             <XAxis dataKey="day" stroke="#94a3b8" />
-                            <YAxis tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`} stroke="#94a3b8" />
+                            {isDesktop && ( // Only render YAxis on non-mobile devices
+                                <YAxis
+                                    tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`}
+                                    stroke="#94a3b8"
+                                    tickCount={8}
+                                    tickSize={8}
+                                />
+                            )}
+                            {/* <YAxis tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`} stroke="#94a3b8" /> */}
                             <Tooltip
                                 formatter={(value, name) => [
                                     NumberFormat(Math.floor(value)) + " so'm",

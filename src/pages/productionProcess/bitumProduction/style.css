@@ -1239,13 +1239,70 @@
         padding: 1rem;
         margin: 0.5rem;
     }
+
+    .inventory-table-wrapper-glassmorphism {
+        overflow-x: auto;
+        overflow-y: auto;
+        height: calc(100vh - 145px);
+    }
 }
 
 @media (max-width: 480px) {
     .inventory-table-container-premium {
-        padding: 0.75rem;
-        margin: 0.5rem;
+        padding: 0rem !important;
+        margin: 0rem !important;
         border-radius: 15px;
+    }
+
+    .inventory-info-card-kraft,
+    .inventory-info-card-qop,
+    .inventory-info-card-price {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: .3rem 1.5rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
+
+    .inventory-info-content-kraft,
+    .inventory-info-content-qop,
+    .inventory-info-content-price {
+        display: flex;
+        flex-direction: column;
+        gap: 0rem;
+    }
+
+    :where(.css-dev-only-do-not-override-mc1tut).ant-tabs .ant-tabs-tab {
+        position: relative;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 0 !important;
+        font-size: 14px;
+        background: transparent;
+        border: 0;
+        outline: none;
+        cursor: pointer;
+        color: rgba(0, 0, 0, 0.88);
+    }
+
+    .inventory-production-wrapper-modern {
+        text-wrap: nowrap;
+    }
+
+    .inventory-production-text-dual {
+        text-wrap: nowrap !important;
+    }
+
+    .inventory-production-text-single {
+        text-wrap: nowrap !important;
+    }
+
+    .inventory-date-display-elegant {
+        text-wrap: nowrap !important;
     }
 
     .inventory-title-gradient {
@@ -1258,7 +1315,7 @@
     }
 
     .inventory-table-wrapper-glassmorphism {
-        padding: 0.75rem;
+        padding: 0rem;
     }
 
     .inventory-header-row-premium th {

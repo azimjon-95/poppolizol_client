@@ -24,6 +24,7 @@ const IncomeListModal = () => {
         const date = new Date();
         return `${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
     });
+    const role = localStorage.getItem("role")
     const [selectedFirm, setSelectedFirm] = useState('all'); // New state for firm filter
     const [payDebtIncome, { isLoading: isPayDebtLoading }] = usePayDebtIncomeMutation();
     const [paymentModal, setPaymentModal] = useState({ visible: false, incomeData: null });
@@ -190,7 +191,7 @@ const IncomeListModal = () => {
             key: 'price',
             render: (price, record) => (
                 <Tag className={`nns-price-tag nns-price-${record.currency}`}>
-                    {numberFormat(price)} {record.currency === 'sum' ? "so'm" : '$'}
+                    {numberFormat(Math.floor(price))} {record.currency === 'sum' ? "so'm" : '$'}
                 </Tag>
             )
         },
@@ -463,20 +464,25 @@ const IncomeListModal = () => {
                                                         Tulov tarixi
                                                     </Button>
                                                 )}
-                                                {debtAmount > 0 && (
-                                                    <Button
-                                                        type="primary"
-                                                        size="small"
-                                                        icon={<LuWallet />}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handlePaymentClick(income);
-                                                        }}
-                                                        className="nns-pay-button"
-                                                    >
-                                                        To'lov
-                                                    </Button>
-                                                )}
+                                                {
+                                                    role !== "director" && <>
+
+                                                        {debtAmount > 0 && (
+                                                            <Button
+                                                                type="primary"
+                                                                size="small"
+                                                                icon={<LuWallet />}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handlePaymentClick(income);
+                                                                }}
+                                                                className="nns-pay-button"
+                                                            >
+                                                                To'lov
+                                                            </Button>
+                                                        )}
+                                                    </>
+                                                }
                                             </div>
                                         </div>
                                     }

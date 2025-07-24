@@ -1215,7 +1215,96 @@
 
 @media (max-width: 480px) {
     .history-card {
-        padding: 16px;
+        padding: 0px !important;
+    }
+
+    .mki-summary-value {
+        font-weight: 600;
+        font-size: 11px;
+        color: #007bff;
+    }
+
+    .mki-summary-icon {
+        display: none;
+    }
+
+    .mki-summary-item {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        font-size: 13px;
+    }
+
+    .Select_mki-summary {
+        flex-direction: column;
+        margin-top: 0px;
+        gap: 6px;
+    }
+
+    .mki-summary-label {
+        text-wrap: nowrap;
+    }
+
+    :where(.css-dev-only-do-not-override-mc1tut).ant-tabs-top>.ant-tabs-nav,
+    :where(.css-dev-only-do-not-override-mc1tut).ant-tabs-bottom>.ant-tabs-nav,
+    :where(.css-dev-only-do-not-override-mc1tut).ant-tabs-top>div>.ant-tabs-nav,
+    :where(.css-dev-only-do-not-override-mc1tut).ant-tabs-bottom>div>.ant-tabs-nav {
+        margin: 0 0 4px 0 !important;
+    }
+
+    .mki-summary-section {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 0px 0px;
+        background-color: #ffffff00;
+        border-radius: 8px;
+    }
+
+    .ant-select {
+        width: 100% !important;
+    }
+
+    :where(.css-dev-only-do-not-override-mc1tut).ant-select-single {
+        font-size: 14px;
+        height: 32px;
+    }
+
+    .production-system-container {
+        padding: 0px 5px !important;
+    }
+
+    .history-header-section {
+        flex-direction: column;
+        gap: 0rem !important;
+        align-items: stretch;
+    }
+
+    .history-icon-wrapper {
+        display: none;
+    }
+
+    .history-title-container div {
+        width: 100%;
+    }
+
+    .history-title-container {
+        margin-bottom: 0;
+
+    }
+
+    .header-title {
+        font-size: 1rem;
+        font-weight: 700;
+        background: linear-gradient(to right, #2563eb, #7c3aed);
+        background-clip: text;
+        line-height: 30px;
+        color: transparent;
+        text-align: center;
+    }
+
+    .header-description {
+        display: none;
     }
 
     .modal-header {
@@ -1280,7 +1369,7 @@
 /* ================================== */
 
 .finished-products-wrapper {
-    margin-top: 20px;
+    margin-top: 5px;
     overflow-y: auto;
     height: calc(100vh - 235px);
 }
@@ -1467,6 +1556,131 @@
     font-size: 18px;
 }
 
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+    .finished-products-wrapper {
+        height: calc(100vh - 180px);
+        /* Slightly adjust height for mobile */
+        margin-top: 0px;
+        padding-bottom: 30px;
+    }
+
+    .product-quantity-block {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-direction: column;
+        gap: 0px;
+        margin-top: 0px;
+    }
+
+    .finished-products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        /* Two cards per row */
+        gap: 12px;
+        /* Smaller gap for mobile */
+        padding: 0 8px;
+        /* Add slight padding to prevent edge clipping */
+    }
+
+    .product-card-container {
+        padding: 12px;
+        padding-bottom: 4px;
+        gap: 0 !important;
+        border-radius: 12px;
+        /* Slightly smaller border radius */
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        /* Softer shadow for mobile */
+    }
+
+    .product-image,
+    .product-imagebn {
+        height: 120px;
+        /* Smaller image height */
+        border-radius: 8px;
+        margin-bottom: 4px;
+    }
+
+    .product-image img,
+    .product-imagebn img {
+        width: 100%;
+        height: 120px;
+        /* Match container height */
+        margin-left: 0;
+        /* Remove margin for centering */
+        transform: scale(1);
+        /* Remove scaling for better fit */
+        object-fit: cover;
+        /* Ensure image fits nicely */
+    }
+
+    .product-name {
+        font-size: 14px;
+        /* Smaller font size */
+        margin-bottom: 0px;
+    }
+
+    .product-category,
+    .product-cost,
+    .product-Cost {
+        font-size: 12px;
+        /* Smaller font size */
+        margin-bottom: 0px;
+    }
+
+    .product-quantity {
+        font-size: 16px;
+        /* Smaller quantity font */
+    }
+
+    .product-card_actins {
+        left: 10px;
+        top: 10px;
+    }
+
+    .product-card_actins button {
+        font-size: 16px;
+        /* Smaller button icons */
+        padding: 2px;
+    }
+
+    .return-info,
+    .defective-info,
+    .defective-infobox {
+        font-size: 12px;
+        /* Smaller text for return/defective info */
+    }
+
+    .return-info p,
+    .defective-info p,
+    .defective-infobox p {
+        font-size: 12px;
+    }
+
+    .return-info Button,
+    .defective-info Button,
+    .defective-infobox Button {
+        font-size: 12px;
+        /* Smaller button text */
+        padding: 0;
+    }
+
+    .empty-state-container {
+        padding: 40px 0;
+        /* Less padding for mobile */
+    }
+
+    .empty-text {
+        font-size: 16px;
+        /* Smaller empty state text */
+    }
+
+    .empty-icon {
+        width: 36px;
+        /* Smaller icon */
+        height: 36px;
+    }
+}
 
 
 

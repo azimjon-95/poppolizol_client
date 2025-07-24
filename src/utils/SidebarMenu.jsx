@@ -23,11 +23,7 @@ export const menuItems = {
       path: "/warehouse",
       label: "Ombor",
     },
-    {
-      icon: <BiCategoryAlt size={20} />,
-      path: "/norma",
-      label: "Normalar",
-    },
+
     {
       icon: <GiFactory size={20} />,
       path: "/production",

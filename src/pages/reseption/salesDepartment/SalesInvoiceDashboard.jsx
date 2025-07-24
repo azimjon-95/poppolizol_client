@@ -346,7 +346,7 @@ const SalesInvoiceDashboard = () => {
     const totalNds = filteredSalesData.reduce((sum, sale) => sum + (sale.payment.ndsTotal || 0), 0);
     const totalPaidAmount = filteredSalesData.reduce((sum, sale) => sum + (sale.payment.paidAmount || 0), 0);
 
-
+    console.log(filteredSalesData);
     return (
         <div className="invoice-dashboard">
             <ToastContainer
@@ -469,7 +469,11 @@ const SalesInvoiceDashboard = () => {
                                 <th>To'lov</th>
                                 <th>To'lov holat</th>
                                 <th>Yuborish</th>
-                                <th>Amallar</th>
+                                {
+                                    role !== "director" && <>
+                                        <th>Amallar</th>
+                                    </>
+                                }
                             </tr>
                         </thead>
                         <tbody>
@@ -541,14 +545,19 @@ const SalesInvoiceDashboard = () => {
                                                         </div>
                                                     </div>
                                                 </div>
-                                                {(sale.payment?.debt || 0) > 0 && (
-                                                    <button
-                                                        className="invoice-btn invoice-btn-primary"
-                                                        onClick={() => openPaymentModal(sale._id)}
-                                                    >
-                                                        To'lash
-                                                    </button>
-                                                )}
+                                                {
+                                                    role !== "director" && <>
+
+                                                        {(sale.payment?.debt || 0) > 0 && (
+                                                            <button
+                                                                className="invoice-btn invoice-btn-primary"
+                                                                onClick={() => openPaymentModal(sale._id)}
+                                                            >
+                                                                To'lash
+                                                            </button>
+                                                        )}
+                                                    </>
+                                                }
                                             </div>
                                         </div>
                                     </td>
@@ -571,6 +580,7 @@ const SalesInvoiceDashboard = () => {
                                             )}
                                         </span>
                                     </td>
+
                                     <td>
                                         <Button
                                             type="text"
@@ -580,18 +590,22 @@ const SalesInvoiceDashboard = () => {
                                         >
                                         </Button>
                                     </td>
-                                    <td>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <Popover
-                                                content={renderPopoverContent(sale._id)}
-                                                title="Amallar"
-                                                trigger="click"
-                                                placement="left"
-                                            >
-                                                <Button className="Popoverinrowbtn" type="text" icon={<MoreHorizontal size={19} />} />
-                                            </Popover>
-                                        </div>
-                                    </td>
+                                    {
+                                        role !== "director" && <>
+                                            <td>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <Popover
+                                                        content={renderPopoverContent(sale._id)}
+                                                        title="Amallar"
+                                                        trigger="click"
+                                                        placement="left"
+                                                    >
+                                                        <Button className="Popoverinrowbtn" type="text" icon={<MoreHorizontal size={19} />} />
+                                                    </Popover>
+                                                </div>
+                                            </td>
+                                        </>
+                                    }
                                 </tr>
                             ))}
                         </tbody>

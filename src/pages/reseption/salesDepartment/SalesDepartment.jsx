@@ -27,14 +27,14 @@ const SacodSalesModule = () => {
   const [sales, setSales] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [activeTab, setActiveTab] = useState("products");
+  const role = localStorage.getItem("role");
+  const [activeTab, setActiveTab] = useState(role === "director" ? "sales" : "products");
   const [paymentInfo, setPaymentInfo] = useState({
     totalAmount: 0,
     paidAmount: 0,
     discount: 0,
     paymentStatus: "partial",
   });
-  const role = localStorage.getItem("role");
   const [salesperson] = useState("Azimjon Mamutaliyev");
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isReturnInfoModalOpen, setIsReturnInfoModalOpen] = useState(false);
@@ -285,53 +285,53 @@ const SacodSalesModule = () => {
         draggable
         pauseOnHover
       />
-
-      <div className="sacod-navigation">
-        <div className="sacod-filter-controls">
-          <button
-            className={`sacod-nav-btn ${activeTab === "products" ? "sacod-nav-btn-active" : ""}`}
-            onClick={() => setActiveTab("products")}
-          >
-            <Package className="sacod-icon-sm" />
-            <span className="navsaler_bottom">Mahsulotlar</span>
-          </button>
-          <button
-            className={`sacod-nav-btn ${activeTab === "cart" ? "sacod-nav-btn-active" : ""}`}
-            onClick={() => setActiveTab("cart")}
-          >
-            <ShoppingCart className="sacod-icon-sm" />
-            <span className="navsaler_bottom">Savat</span>
-            <p style={{ fontSize: "17px" }}>({cart?.length})</p>
-          </button>
-          <button
-            className={`sacod-nav-btn ${activeTab === "sales" ? "sacod-nav-btn-active" : ""}`}
-            onClick={() => setActiveTab("sales")}
-          >
-            <FileText className="sacod-icon-sm" />
-            <span className="navsaler_bottom">Shartnomalar</span>
-            <p style={{ fontSize: "17px" }}>({filteredSalesLength})</p>
-          </button>
-          <button
-            className={`sacod-nav-btn ${activeTab === "salespeople" ? "sacod-nav-btn-active" : ""}`}
-            onClick={() => setActiveTab("salespeople")}
-          >
-            <User className="sacod-icon-sm" />
-            <span className="navsaler_bottom">Sotuvchilar</span>
-          </button>
+      {role !== "director" &&
+        <div className="sacod-navigation">
+          <div className="sacod-filter-controls">
+            <button
+              className={`sacod-nav-btn ${activeTab === "products" ? "sacod-nav-btn-active" : ""}`}
+              onClick={() => setActiveTab("products")}
+            >
+              <Package className="sacod-icon-sm" />
+              <span className="navsaler_bottom">Mahsulotlar</span>
+            </button>
+            <button
+              className={`sacod-nav-btn ${activeTab === "cart" ? "sacod-nav-btn-active" : ""}`}
+              onClick={() => setActiveTab("cart")}
+            >
+              <ShoppingCart className="sacod-icon-sm" />
+              <span className="navsaler_bottom">Savat</span>
+              <p style={{ fontSize: "17px" }}>({cart?.length})</p>
+            </button>
+            <button
+              className={`sacod-nav-btn ${activeTab === "sales" ? "sacod-nav-btn-active" : ""}`}
+              onClick={() => setActiveTab("sales")}
+            >
+              <FileText className="sacod-icon-sm" />
+              <span className="navsaler_bottom">Shartnomalar</span>
+              <p style={{ fontSize: "17px" }}>({filteredSalesLength})</p>
+            </button>
+            <button
+              className={`sacod-nav-btn ${activeTab === "salespeople" ? "sacod-nav-btn-active" : ""}`}
+              onClick={() => setActiveTab("salespeople")}
+            >
+              <User className="sacod-icon-sm" />
+              <span className="navsaler_bottom">Sotuvchilar</span>
+            </button>
+          </div>
+          {role === "saler_meneger" || role === "saler" ? (
+            <button
+              className="profile-btn about-log"
+              ref={searchPanelRef}
+              onClick={showLogoutModal}
+            >
+              <RiUser3Line />
+            </button>
+          ) : (
+            <></>
+          )}
         </div>
-        {role === "saler_meneger" || role === "saler" ? (
-          <button
-            className="profile-btn about-log"
-            ref={searchPanelRef}
-            onClick={showLogoutModal}
-          >
-            <RiUser3Line />
-          </button>
-        ) : (
-          <></>
-        )}
-      </div>
-
+      }
       {activeTab === "products" && (
         <div className={`sacod-products-grid ${role === "saler" || role === "saler_meneger" ? "sacod-products-gridMedia" : "sacod-products-gridDack"}`}>
           {finishedProducts?.map((product, inx) => (

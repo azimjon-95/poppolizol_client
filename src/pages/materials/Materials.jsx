@@ -33,6 +33,7 @@ const numberFormat = (number, decimals = 2) => {
 const WarehouseManagement = () => {
   const [materialForm] = Form.useForm();
   const [firmForm] = Form.useForm();
+  const role = localStorage.getItem("role")
 
   // API Hooks
   const { data: materials, refetch, isLoading: materialsLoading } = useGetAllMaterialsQuery();
@@ -179,44 +180,46 @@ const WarehouseManagement = () => {
         </Tag>
       ),
     },
-    {
-      title: "Harakatlar",
-      key: "actions",
-      className: "warehouse-table-cell-actions",
-      render: (_, record) => (
-        <Space className="warehouse-action-buttons">
-          <Button
-            type="primary"
-            ghost
-            icon={<EditOutlined />}
-            className="warehouse-edit-btn"
-            onClick={() => {
-              setEditingMaterial(record);
-              setIsEditModalOpen(true);
-              materialForm.setFieldsValue({
-                ...record,
-                price: record.avgPrice,
-              });
-            }}
-          />
-          <Popconfirm
-            title="Materialni o'chirish"
-            description="Haqiqatan ham bu materialni o'chirmoqchimisiz?"
-            okText="Ha"
-            cancelText="Yo'q"
-            onConfirm={() => handleDeleteMaterial(record._id)}
-            okButtonProps={{ className: "warehouse-confirm-btn" }}
-          >
+    ...[role !== "director" && (
+      {
+        title: "Harakatlar",
+        key: "actions",
+        className: "warehouse-table-cell-actions",
+        render: (_, record) => (
+          <Space className="warehouse-action-buttons">
             <Button
               type="primary"
-              danger
-              icon={<DeleteOutlined />}
-              className="warehouse-delete-btn"
+              ghost
+              icon={<EditOutlined />}
+              className="warehouse-edit-btn"
+              onClick={() => {
+                setEditingMaterial(record);
+                setIsEditModalOpen(true);
+                materialForm.setFieldsValue({
+                  ...record,
+                  price: record.avgPrice,
+                });
+              }}
             />
-          </Popconfirm>
-        </Space>
-      ),
-    },
+            <Popconfirm
+              title="Materialni o'chirish"
+              description="Haqiqatan ham bu materialni o'chirmoqchimisiz?"
+              okText="Ha"
+              cancelText="Yo'q"
+              onConfirm={() => handleDeleteMaterial(record._id)}
+              okButtonProps={{ className: "warehouse-confirm-btn" }}
+            >
+              <Button
+                type="primary"
+                danger
+                icon={<DeleteOutlined />}
+                className="warehouse-delete-btn"
+              />
+            </Popconfirm>
+          </Space>
+        ),
+      })
+    ].filter(Boolean),
   ];
 
   // Filter materials and incomes
@@ -239,8 +242,8 @@ const WarehouseManagement = () => {
         <div className="warehouse-container">
           <div className="warehouse-main-content">
             {/* Statistics Cards */}
-            <Row gutter={[24, 24]} className="warehouse-stats-row">
-              <Col xs={24} sm={12} lg={6}>
+            <Row gutter={[16, 16]} className="warehouse-stats-row">
+              <Col xs={12} sm={12} lg={6}>
                 <Card className="warehouse-stat-card warehouse-stat-card-primary">
                   <div className="warehouse-stat-content">
                     <div className="warehouse-stat-icon">
@@ -253,7 +256,7 @@ const WarehouseManagement = () => {
                   </div>
                 </Card>
               </Col>
-              <Col xs={24} sm={12} lg={6}>
+              <Col xs={12} sm={12} lg={6}>
                 <Card className="warehouse-stat-card warehouse-stat-card-success">
                   <div className="warehouse-stat-content">
                     <div className="warehouse-stat-icon">
@@ -266,7 +269,7 @@ const WarehouseManagement = () => {
                   </div>
                 </Card>
               </Col>
-              <Col xs={24} sm={12} lg={6}>
+              <Col xs={12} sm={12} lg={6}>
                 <Card className="warehouse-stat-card warehouse-stat-card-warning">
                   <div className="warehouse-stat-content">
                     <div className="warehouse-stat-icon">
@@ -279,7 +282,7 @@ const WarehouseManagement = () => {
                   </div>
                 </Card>
               </Col>
-              <Col xs={24} sm={12} lg={6}>
+              <Col xs={12} sm={12} lg={6}>
                 <Card className="warehouse-stat-card warehouse-stat-card-info">
                   <div className="warehouse-stat-content">
                     <div className="warehouse-stat-icon">
@@ -293,7 +296,6 @@ const WarehouseManagement = () => {
                 </Card>
               </Col>
             </Row>
-
             {/* Materials Table */}
             <Card className="warehouse-table-card">
               <div className="warehouse-table-header">
@@ -301,22 +303,27 @@ const WarehouseManagement = () => {
                   <BuildOutlined /> Ombordagi Materiallar
                 </Title>
                 <Space>
-                  <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    className="warehouse-add-btn"
-                    onClick={() => setIsIncomeModalOpen(true)}
-                  >
-                    Yangi material keldi
-                  </Button>
-                  <Button
-                    type="primary"
-                    icon={<ShopOutlined />}
-                    className="warehouse-add-btn"
-                    onClick={() => setIsFirmModalOpen(true)}
-                  >
-                    Firma qo'shish
-                  </Button>
+                  {role !== "director" &&
+
+                    <>
+                      <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        className="warehouse-add-btn"
+                        onClick={() => setIsIncomeModalOpen(true)}
+                      >
+                        Yangi material keldi
+                      </Button>
+                      <Button
+                        type="primary"
+                        icon={<ShopOutlined />}
+                        className="warehouse-add-btn"
+                        onClick={() => setIsFirmModalOpen(true)}
+                      >
+                        Firma qo'shish
+                      </Button>
+                    </>
+                  }
                   <Button
                     type="primary"
                     // icon={<Bar12 BarChartOutlined />}

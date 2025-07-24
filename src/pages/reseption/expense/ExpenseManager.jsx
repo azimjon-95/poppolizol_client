@@ -220,7 +220,7 @@ const ExpenseTracker = () => {
 
     const role = localStorage.getItem("role")
     if (isLoading) return <div>Loading...</div>;
-    console.log(role === "director");
+
     return (
         <div className="ruberoid-expense-tracker">
             <div className={`ruberoid-main-content${role === "director" ? "_director" : ""}`}>
