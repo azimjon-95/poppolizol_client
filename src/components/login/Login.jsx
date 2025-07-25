@@ -4,6 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import Loading from "./Loading";
 import axios from "../../api";
+import { rolePaths } from "../../routes/Routes";
 import {
   Eye,
   EyeOff,
@@ -79,21 +80,6 @@ const Login = () => {
       toast.success(successMessage || "Muvaffaqiyatli tizimga kirdingiz!");
       clearForm();
 
-      // Fallback for invalid roles
-      const rolePaths = {
-        "polizol ish boshqaruvchi": "/attendance",
-        "rubiroid ish boshqaruvchi": "/attendance",
-        "ochisleniya ish boshqaruvchi": "/attendance",
-
-        "direktor": "/dashboard",
-        "buxgalteriya": "/dashboard",
-        "menejir": "/dashboard",
-
-        "sotuvchi": "/saler",
-        "sotuvchi eksport": "/saler",
-        "sotuvchi menejir": "/saler"
-      };
-      console.log(rolePaths[role]);
       navigate(rolePaths[role] || "/login");
     } catch (error) {
       const errorMessage =

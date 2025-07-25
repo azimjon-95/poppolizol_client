@@ -2,21 +2,9 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import PrivateRoute from "./auth/PrivateRoute";
 import Layout from "./components/layout/Layout";
-import { routes } from "./routes/Routes";
+import { routes, rolePaths } from "./routes/Routes";
 import Login from "./components/login/Login";
 import QRFeedbackPage from "./pages/reseption/salesDepartment/QRFeedbackPage";
-
-const rolePaths = {
-  "polizol ish boshqaruvchi": "/attendance",
-  "rubiroid ish boshqaruvchi": "/attendance",
-  "ochisleniya ish boshqaruvchi": "/attendance",
-  "direktor": "/dashboard",
-  "buxgalteriya": "/dashboard",
-  "menejir": "/dashboard",
-  "sotuvchi": "/saler",
-  "sotuvchi eksport": "/saler",
-  "sotuvchi menejir": "/saler",
-};
 
 const App = () => {
   const authToken = localStorage.getItem("token");
