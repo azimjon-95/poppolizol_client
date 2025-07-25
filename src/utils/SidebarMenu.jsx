@@ -9,10 +9,10 @@ import { FaTruckMoving } from "react-icons/fa";
 import { CalendarOutlined } from "@ant-design/icons";
 
 export const menuItems = {
-  director: [
+  direktor: [
     {
       icon: <MdDashboard size={20} />,
-      path: "/director",
+      path: "/dashboard",
       label: "Boshqaruv paneli",
     },
     {

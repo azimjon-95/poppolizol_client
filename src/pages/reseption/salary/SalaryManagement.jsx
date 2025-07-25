@@ -113,7 +113,7 @@ const SalaryManagement = () => {
 
     const filtered = employees.filter((emp) => {
       const fullName =
-        `${emp.firstName} ${emp.middleName} ${emp.lastName}`.toLowerCase();
+        `${emp.firstName} ${emp.middleName} ${emp?.lastName}`.toLowerCase();
       const department = departmentNames[emp.department]?.toLowerCase() || "";
       const position = emp.position.toLowerCase();
       const search = searchQuery.toLowerCase();
@@ -373,8 +373,8 @@ const SalaryManagement = () => {
                   <tr key={employee._id}>
                     <td>
                       <div className="factory-employee-name">
-                        {employee.firstName} {employee.middleName}{" "}
-                        {employee.lastName}
+                        {employee?.firstName} {employee.middleName}{" "}
+                        {employee?.lastName}
                       </div>
                       <div className="factory-employee-position">
                         {employee.position}
@@ -393,8 +393,8 @@ const SalaryManagement = () => {
                     <td>
                       <span
                         className={`factory-amount-display ${employee.salaryPayment.totalPaid > 0
-                            ? "factory-amount-positive"
-                            : "factory-amount-zero"
+                          ? "factory-amount-positive"
+                          : "factory-amount-zero"
                           }`}
                       >
                         {formatCurrency(employee.salaryPayment.totalPaid)}
@@ -403,8 +403,8 @@ const SalaryManagement = () => {
                     <td>
                       <span
                         className={`factory-amount-display ${employee.salaryPayment.penaltyAmount > 0
-                            ? "factory-amount-negative"
-                            : "factory-amount-zero"
+                          ? "factory-amount-negative"
+                          : "factory-amount-zero"
                           }`}
                       >
                         {formatCurrency(employee.salaryPayment.penaltyAmount)}
@@ -413,8 +413,8 @@ const SalaryManagement = () => {
                     <td>
                       <span
                         className={`factory-amount-display ${employee.salaryPayment.advanceAmount > 0
-                            ? "factory-amount-positive"
-                            : "factory-amount-zero"
+                          ? "factory-amount-positive"
+                          : "factory-amount-zero"
                           }`}
                       >
                         {formatCurrency(employee.salaryPayment.advanceAmount)}
@@ -423,10 +423,10 @@ const SalaryManagement = () => {
                     <td>
                       <span
                         className={`factory-amount-display ${employee.salaryPayment.remainingAmount > 0
-                            ? "factory-amount-positive"
-                            : employee.salaryPayment.remainingAmount < 0
-                              ? "factory-amount-negative"
-                              : "factory-amount-zero"
+                          ? "factory-amount-positive"
+                          : employee.salaryPayment.remainingAmount < 0
+                            ? "factory-amount-negative"
+                            : "factory-amount-zero"
                           }`}
                       >
                         {formatCurrency(employee.salaryPayment.remainingAmount)}

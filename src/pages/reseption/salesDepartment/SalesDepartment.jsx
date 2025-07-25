@@ -28,7 +28,7 @@ const SacodSalesModule = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const role = localStorage.getItem("role");
-  const [activeTab, setActiveTab] = useState(role === "director" ? "sales" : "products");
+  const [activeTab, setActiveTab] = useState(role === "direktor" ? "sales" : "products");
   const [paymentInfo, setPaymentInfo] = useState({
     totalAmount: 0,
     paidAmount: 0,
@@ -285,7 +285,7 @@ const SacodSalesModule = () => {
         draggable
         pauseOnHover
       />
-      {role !== "director" &&
+      {role !== "direktor" &&
         <div className="sacod-navigation">
           <div className="sacod-filter-controls">
             <button
@@ -319,7 +319,7 @@ const SacodSalesModule = () => {
               <span className="navsaler_bottom">Sotuvchilar</span>
             </button>
           </div>
-          {role === "saler_meneger" || role === "saler" ? (
+          {role === "saler_meneger" || role === "sotuvchi" ? (
             <button
               className="profile-btn about-log"
               ref={searchPanelRef}
@@ -333,7 +333,7 @@ const SacodSalesModule = () => {
         </div>
       }
       {activeTab === "products" && (
-        <div className={`sacod-products-grid ${role === "saler" || role === "saler_meneger" ? "sacod-products-gridMedia" : "sacod-products-gridDack"}`}>
+        <div className={`sacod-products-grid ${role === "sotuvchi" || role === "saler_meneger" ? "sacod-products-gridMedia" : "sacod-products-gridDack"}`}>
           {finishedProducts?.map((product, inx) => (
             <div
               key={inx}

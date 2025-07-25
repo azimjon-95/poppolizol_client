@@ -31,7 +31,7 @@ function Salary() {
     productionMap[dateKey].loaded += record.loadedCount;
 
     record.workers.forEach((worker) => {
-      const fio = `${worker.employee.lastName} ${worker.employee.firstName}`;
+      const fio = `${worker.employee?.lastName} ${worker.employee?.firstName}`;
       const position = worker?.employee?.position || "N/A";
 
       if (!employeeMap[fio]) {
@@ -55,7 +55,7 @@ function Salary() {
     <Card className="salary-card" title="Ish haqi vedomosti">
       <div
         className="salary_header"
-        style={{ display: "flex", justifyContent: "space-between",textAlign:"right" }}
+        style={{ display: "flex", justifyContent: "space-between", textAlign: "right" }}
       >
         <div className="salary_header_left"></div>
         <div className="salary_header_right">

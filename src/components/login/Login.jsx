@@ -64,6 +64,7 @@ const Login = () => {
 
     try {
       const endpoint = authMode === true ? "/admin/login" : "/admin/pin";
+
       const res = await axios.post(endpoint, data);
       const { message: successMessage, innerData } = res.data;
       const doctorName = `${innerData?.employee?.firstName || ""} ${innerData?.employee?.lastName || ""
@@ -75,15 +76,25 @@ const Login = () => {
       localStorage.setItem("token", innerData?.token);
       localStorage.setItem("role", role);
 
-
       toast.success(successMessage || "Muvaffaqiyatli tizimga kirdingiz!");
       clearForm();
 
       // Fallback for invalid roles
-      const targetPath = ["director", "buxgalteriya", "admin", "saler_meneger", "saler"].includes(role)
-        ? `/${role}`
-        : "/login";
-      navigate(targetPath);
+      const rolePaths = {
+        "polizol ish boshqaruvchi": "/attendance",
+        "rubiroid ish boshqaruvchi": "/attendance",
+        "ochisleniya ish boshqaruvchi": "/attendance",
+
+        "direktor": "/dashboard",
+        "buxgalteriya": "/dashboard",
+        "menejir": "/dashboard",
+
+        "sotuvchi": "/saler",
+        "sotuvchi eksport": "/saler",
+        "sotuvchi menejir": "/saler"
+      };
+      console.log(rolePaths[role]);
+      navigate(rolePaths[role] || "/login");
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Tizimga kirishda xatolik yuz berdi!";

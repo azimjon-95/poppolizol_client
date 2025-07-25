@@ -109,7 +109,7 @@ const SalesInvoiceDashboard = () => {
 
     const filteredSalesData = useMemo(() => {
         return salesData.filter(sale => {
-            const matchesSalesperson = role === "saler"
+            const matchesSalesperson = role === "sotuvchi"
                 ? sale.salerId === workerId
                 : selectedSalesperson === 'all' || sale.salesperson === selectedSalesperson;
 
@@ -383,7 +383,7 @@ const SalesInvoiceDashboard = () => {
                                 ))}
                             </Select>
                         </div>
-                        {role !== "saler" && (
+                        {role !== "sotuvchi" && (
                             <div className="invoice-filter-group">
                                 <Select
                                     id="salesperson-filter"
@@ -470,7 +470,7 @@ const SalesInvoiceDashboard = () => {
                                 <th>To'lov holat</th>
                                 <th>Yuborish</th>
                                 {
-                                    role !== "director" && <>
+                                    role !== "direktor" && <>
                                         <th>Amallar</th>
                                     </>
                                 }
@@ -546,7 +546,7 @@ const SalesInvoiceDashboard = () => {
                                                     </div>
                                                 </div>
                                                 {
-                                                    role !== "director" && <>
+                                                    role !== "direktor" && <>
 
                                                         {(sale.payment?.debt || 0) > 0 && (
                                                             <button
@@ -591,7 +591,7 @@ const SalesInvoiceDashboard = () => {
                                         </Button>
                                     </td>
                                     {
-                                        role !== "director" && <>
+                                        role !== "direktor" && <>
                                             <td>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                     <Popover

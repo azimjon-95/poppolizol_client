@@ -418,7 +418,7 @@ const SalespersonDashboard = () => {
                                     </td> */}
                                     <td className="sdash-data-cell">
                                         <div className="sdash-action-group">
-                                            {employee.currentPlan && role !== "saler" ? (
+                                            {employee.currentPlan && role !== "sotuvchi" ? (
                                                 <>
                                                     <button
                                                         onClick={() => openEditPlanModal(employee.currentPlan)}
@@ -439,7 +439,7 @@ const SalespersonDashboard = () => {
                                                 </>
                                             ) : (
                                                 <>
-                                                    {role !== "saler" &&
+                                                    {role !== "sotuvchi" &&
                                                         <button button
                                                             onClick={() => openCreatePlanModal(employee._id)}
                                                             className="sdash-action-btn sdash-create-btn"

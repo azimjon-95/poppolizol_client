@@ -54,7 +54,7 @@ const DeliveryProduct = ({
                         <div key={index} className="invoice-delivery-item">
                             <label>
                                 {
-                                    role !== "director" && (
+                                    role !== "direktor" && (
                                         <input
                                             type="checkbox"
                                             checked={item.selected || false}
@@ -92,7 +92,7 @@ const DeliveryProduct = ({
                     );
                 })}
                 {
-                    role !== "director" && (
+                    role !== "direktor" && (
                         <button
                             className="invoice-btn invoice-btn-success"
                             onClick={() => processDelivery()}

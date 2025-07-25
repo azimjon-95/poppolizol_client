@@ -114,7 +114,7 @@ function Header() {
     }
   }, [selectedMonth, dispatch, defaultMonth]);
 
-  const isDirectorPath = location.pathname === '/director';
+  const isDirectorPath = location.pathname === '/dashboard';
 
   return (
     <header className="header">

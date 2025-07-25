@@ -465,7 +465,7 @@ const IncomeListModal = () => {
                                                     </Button>
                                                 )}
                                                 {
-                                                    role !== "director" && <>
+                                                    role !== "direktor" && <>
 
                                                         {debtAmount > 0 && (
                                                             <Button

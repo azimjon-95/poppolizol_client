@@ -18,10 +18,10 @@ function Layout() {
     }
   }, [role, navigate]);
 
-  const isDirectorPath = location.pathname === "/director" || "/expense";
+  const isDirectorPath = location.pathname === "/direktor" || "/expense";
   return (
     <div className="layout">
-      {role === "saler_meneger" || role === "saler" ? (
+      {role === "sotuvchi" ? (
         <></>
       ) : (
         <div className="layout_left">
@@ -30,10 +30,10 @@ function Layout() {
       )}
 
       <div className="layout_right">
-        {role === "saler_meneger" || role === "saler" ? <></> : <Header />}
+        {role === "sotuvchi" ? <></> : <Header />}
         <main
           style={{
-            background: ["director", "expense"].includes(isDirectorPath)
+            background: ["direktor", "expense"].includes(isDirectorPath)
               ? "#0f172a"
               : "#f1f5f9",
             padding: isDirectorPath ? "0px" : "15px",

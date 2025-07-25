@@ -223,8 +223,8 @@ const ExpenseTracker = () => {
 
     return (
         <div className="ruberoid-expense-tracker">
-            <div className={`ruberoid-main-content${role === "director" ? "_director" : ""}`}>
-                {role !== "director" &&
+            <div className={`ruberoid-main-content${role === "direktor" ? "_director" : ""}`}>
+                {role !== "direktor" &&
                     <div className="ruberoid-form-panel">
                         <div className="ruberoid-form-box">
                             <button

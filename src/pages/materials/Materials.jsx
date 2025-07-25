@@ -180,7 +180,7 @@ const WarehouseManagement = () => {
         </Tag>
       ),
     },
-    ...[role !== "director" && (
+    ...[role !== "direktor" && (
       {
         title: "Harakatlar",
         key: "actions",
@@ -303,7 +303,7 @@ const WarehouseManagement = () => {
                   <BuildOutlined /> Ombordagi Materiallar
                 </Title>
                 <Space>
-                  {role !== "director" &&
+                  {role !== "direktor" &&
 
                     <>
                       <Button

@@ -400,9 +400,9 @@ const ProductionSystem = () => {
         )}
       </Modal>
 
-      <Tabs defaultActiveKey={role === "director" ? "finished" : "production"} className="custom-tabs">
+      <Tabs defaultActiveKey={role === "direktor" ? "finished" : "production"} className="custom-tabs">
         {
-          role !== "director" &&
+          role !== "direktor" &&
           <TabPane
             tab={
               <span style={{ display: "flex", alignItems: "center" }}>
@@ -560,7 +560,7 @@ const ProductionSystem = () => {
           </TabPane>
         }
         {
-          role !== "director" &&
+          role !== "direktor" &&
           <TabPane
             tab={
               <span style={{ display: "flex", alignItems: "center" }}>
