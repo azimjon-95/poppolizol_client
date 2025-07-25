@@ -22,7 +22,6 @@ const InventoryTable = () => {
     const [expandedRows, setExpandedRows] = useState(new Set());
     //useGetInventoryQuery
     const { data, error, isLoading } = useGetInventoryQuery({});
-    console.log(data?.innerData, error, isLoading);
     // Sample data based on your schema
     const inventoryData = data?.innerData;
 

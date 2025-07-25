@@ -12,51 +12,57 @@ import Salary from "../pages/salary/Salary";
 
 export const routes = [
   {
+    path: "/buxgalteriya",
+    element: <Dashboard />,
+    role: ["buxgalteriya", "admin"],
+    private: true,
+  },
+  {
     path: "/director",
     element: <Dashboard />,
-    role: ["director", "accountant", "admin"],
+    role: ["director"],
     private: true,
   },
   {
     path: "/workers",
     element: <Workers />,
-    role: ["director", "accountant", "admin"],
+    role: ["director", "buxgalteriya", "admin"],
     private: true,
   },
   {
     path: "/expense",
     element: <ExpenseManager />,
-    role: ["director", "accountant", "admin"],
+    role: ["director", "buxgalteriya", "admin"],
     private: true,
   },
   {
     path: "/warehouse",
     element: <Materials />,
-    role: ["director", "accountant", "admin"],
+    role: ["director", "buxgalteriya", "admin"],
     private: true,
   },
   {
     path: "/norma",
     element: <Norma />,
-    role: ["director", "accountant", "admin"],
+    role: ["director", "buxgalteriya", "admin"],
     private: true,
   },
   {
     path: "/production",
     element: <ProductionSystem />,
-    role: ["director", "accountant", "admin"],
+    role: ["director", "buxgalteriya", "admin"],
     private: true,
   },
   {
     path: "/setting",
     element: <FactoryConfigPanel />,
-    role: ["director", "accountant", "admin"],
+    role: ["director", "buxgalteriya", "admin"],
     private: true,
   },
   {
     path: "/sales",
     element: <FactorySalesSystem />,
-    role: ["director", "accountant", "admin"],
+    role: ["director", "buxgalteriya", "admin"],
     private: true,
   },
   {
@@ -74,13 +80,121 @@ export const routes = [
   {
     path: "/attendance",
     element: <Atendance />,
-    role: ["director", "accountant", "admin"],
+    role: ["director", "buxgalteriya", "admin"],
     private: true,
   },
   {
-    path: "/Salary",
+    path: "/salary",
     element: <Salary />,
-    role: ["director", "accountant", "admin"],
+    role: ["director", "buxgalteriya", "admin"],
     private: true,
   },
 ];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React from "react";
+// import Dashboard from "../pages/admin/Dashboard/Dashboard";
+// import Workers from "../pages/admin/workers/Workers";
+// import ExpenseManager from "../pages/reseption/expense/ExpenseManager";
+// import Materials from "../pages/materials/Materials";
+// import Norma from "../pages/productNorma/ProductNormaMain";
+// import ProductionSystem from "../pages/productionProcess/ProductionSystem";
+// import FactoryConfigPanel from "../pages/admin/setting/Setting";
+// import FactorySalesSystem from "../pages/reseption/salesDepartment/SalesDepartment";
+// import Atendance from "../pages/attendance/Atendance";
+// import Salary from "../pages/salary/Salary";
+
+// export const routes = [
+//   {
+//     path: "/buxgalteriya",
+//     element: <Dashboard />,
+//     role: ["director", "buxgalteriya", "admin"],
+//     private: true,
+//   },
+//   {
+//     path: "/director",
+//     element: <Dashboard />,
+//     role: ["director", "buxgalteriya", "admin"],
+//     private: true,
+//   },
+//   {
+//     path: "/workers",
+//     element: <Workers />,
+//     role: ["director", "buxgalteriya", "admin"],
+//     private: true,
+//   },
+//   {
+//     path: "/expense",
+//     element: <ExpenseManager />,
+//     role: ["director", "buxgalteriya", "admin"],
+//     private: true,
+//   },
+//   {
+//     path: "/warehouse",
+//     element: <Materials />,
+//     role: ["director", "buxgalteriya", "admin"],
+//     private: true,
+//   },
+//   {
+//     path: "/norma",
+//     element: <Norma />,
+//     role: ["director", "buxgalteriya", "admin"],
+//     private: true,
+//   },
+//   {
+//     path: "/production",
+//     element: <ProductionSystem />,
+//     role: ["director", "buxgalteriya", "admin"],
+//     private: true,
+//   },
+//   {
+//     path: "/setting",
+//     element: <FactoryConfigPanel />,
+//     role: ["director", "buxgalteriya", "admin"],
+//     private: true,
+//   },
+//   {
+//     path: "/sales",
+//     element: <FactorySalesSystem />,
+//     role: ["director", "buxgalteriya", "admin"],
+//     private: true,
+//   },
+//   {
+//     path: "/saler_meneger",
+//     element: <FactorySalesSystem />,
+//     role: ["saler_meneger", "saler"],
+//     private: true,
+//   },
+//   {
+//     path: "/saler",
+//     element: <FactorySalesSystem />,
+//     role: ["saler_meneger", "saler"],
+//     private: true,
+//   },
+//   {
+//     path: "/attendance",
+//     element: <Atendance />,
+//     role: ["director", "buxgalteriya", "admin"],
+//     private: true,
+//   },
+//   {
+//     path: "/Salary",
+//     element: <Salary />,
+//     role: ["director", "buxgalteriya", "admin"],
+//     private: true,
+//   },
+// ];

@@ -4,7 +4,7 @@ import { LuPackagePlus, LuTruck } from 'react-icons/lu';
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { toast } from 'react-toastify';
 import { useGetFactoriesQuery } from "../../context/clinicApi";
-import { useGetWorkersQuery } from "../../context/workersApi";
+import { useGetOchisleniyaWorkersQuery } from "../../context/workersApi";
 import { useGetFirmsQuery, useCreateIncomeMutation } from "../../context/materialApi";
 
 const { Option } = Select;
@@ -33,9 +33,7 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
     const [createIncome, { isLoading: createIncomeLoading }] = useCreateIncomeMutation();
     const { data: factories } = useGetFactoriesQuery();
     const { data: firms, isLoading: firmsLoading } = useGetFirmsQuery();
-    const { data: workers } = useGetWorkersQuery();
     const firmsData = firms?.innerData || [];
-    const workersData = workers?.innerData || [];
     const [incomeForm] = Form.useForm();
     const [paidAmount, setPaidAmount] = useState(0);
     const [paymentType, setPaymentType] = useState("naqt");
@@ -43,6 +41,8 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
     const [selectedMaterials, setSelectedMaterials] = useState([]);
     const [selectedWorkers, setSelectedWorkers] = useState([]);
     const [transportCost, setTransportCost] = useState(0);
+    const { data: getOchisleniyaWorkers } = useGetOchisleniyaWorkersQuery();
+    const workersData = getOchisleniyaWorkers?.innerData?.employees || [];
 
     // Add a new material to the list
     const handleAddMaterialToIncome = () => {

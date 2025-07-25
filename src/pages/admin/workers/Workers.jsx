@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Ensure ToastContainer CSS is imported
 import * as XLSX from "xlsx";
 import {
   Users,
@@ -29,37 +30,47 @@ import {
 
 const RuberoidFactoryHR = () => {
   const [filteredEmployees, setFilteredEmployees] = useState([]);
-  const [selectedDepartment, setSelectedDepartment] = useState("all");
+  const [selectedUnit, setSelectedUnit] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const { searchQuery } = useSelector((state) => state.search);
-  const role = localStorage.getItem("role")
+  const role = localStorage.getItem("role");
+
   const {
     data: employees = { innerData: [] },
     isLoading,
     isError,
     error,
   } = useGetWorkersQuery();
+
   const [addWorker] = useAddWorkerMutation();
   const [updateWorker] = useUpdateWorkerMutation();
   const [deleteWorker] = useDeleteWorkerMutation();
 
-  const departments = useMemo(
+  const units = useMemo(
     () => ({
       all: "Barcha bo'limlar",
-      ishlab_chiqarish: "Ishlab chiqarish",
-      sifat_nazorati: "Sifat nazorati",
-      saler_meneger: "Sotuv menejer",
-      ombor: "Ombor",
+      direktor: "Direktor",
       buxgalteriya: "Buxgalteriya",
-      elektrik: "Elektrik xizmati",
-      transport: "Ichki transport",
-      xavfsizlik: "Qo'riqlash xizmati",
-      tozalash: "Tozalash xizmati",
-      oshxona: "Ovqatlanish",
-      Sotuvchi: "Sotuvchi",
-      saler_export: "Sotuvchi Ekspert",
-      director: "Direktor",
+      menejir: "Menejir",
+      ombor: "Ombor",
+      sifat_nazorati: "Sifat nazorati",
+      elektrik: "Elektrik",
+      transport: "Transport",
+      xavfsizlik: "Xavfsizlik",
+      tozalash: "Tozalash",
+      oshxona: "Oshxona",
+      sotuvchi: "Sotuvchi",
+      sotuvchi_eksport: "Sotuvchi Eksport",
+      sotuvchi_menejir: "Sotuvchi Menejir",
+      polizol: "Polizol",
+      polizol_ish_boshqar: "Polizol Ish Boshqaruvchi",
+      polizol_ish_boshqaruvchi: "Polizol Ish Boshqaruvchi",
+      rubiroid: "Rubiroid",
+      rubiroid_ish_boshqaruvchi: "Rubiroid Ish Boshqaruvchi",
+      ochisleniya: "Ochisleniya",
+      ochisleniya_ish_boshqaruvchi: "Ochisleniya Ish Boshqaruvchi",
+      boshqa: "Boshqa",
     }),
     []
   );
@@ -76,23 +87,25 @@ const RuberoidFactoryHR = () => {
 
   const roles = useMemo(
     () => ({
-      admin: "Administrator",
-      manager: "Menejer",
-      specialist: "Mutaxassis",
-      warehouse: "Omborchi",
-      accountant: "Buxgalter",
-      saler: "Sotuvchi",
-      director: "Direktor",
+      "ofis xodimi": "Ofis Xodimi",
+      "ishlab chiqarish": "Ishlab Chiqarish",
+      "boshqa ishchilar": "Boshqa Ishchilar",
     }),
     []
   );
 
   useEffect(() => {
     const employeeList = Array.isArray(employees?.innerData) ? employees.innerData : [];
-    let filtered = [...employeeList];
+    // Normalize unit values by replacing spaces with underscores
+    const normalizedEmployeeList = employeeList.map((emp) => ({
+      ...emp,
+      unit: emp.unit ? emp.unit.replace(/\s+/g, "_") : emp.unit,
+    }));
 
-    if (selectedDepartment !== "all") {
-      filtered = filtered.filter((emp) => emp.department === selectedDepartment);
+    let filtered = [...normalizedEmployeeList];
+
+    if (selectedUnit !== "all") {
+      filtered = filtered.filter((emp) => emp.unit === selectedUnit);
     }
 
     if (searchQuery) {
@@ -101,8 +114,8 @@ const RuberoidFactoryHR = () => {
         [
           emp.firstName || "",
           emp.lastName || "",
-          emp.department ? departments[emp.department] : "",
-          emp.position || "",
+          emp.unit ? units[emp.unit] : "",
+          emp.experience || "",
           emp.phone || "",
           emp.address || "",
         ].some((field) => field.toLowerCase().includes(lowerQuery))
@@ -114,7 +127,8 @@ const RuberoidFactoryHR = () => {
       const nextStr = JSON.stringify(filtered);
       return prevStr !== nextStr ? filtered : prev;
     });
-  }, [employees, selectedDepartment, searchQuery, departments]);
+  }, [employees, selectedUnit, searchQuery, units]);
+
 
   const handleAddEmployee = async (newEmployee) => {
     try {
@@ -126,6 +140,7 @@ const RuberoidFactoryHR = () => {
       setShowAddModal(false);
       toast.success("Ishchi muvaffaqiyatli qo'shildi!");
     } catch (err) {
+      console.error("Add employee error:", err); // Debug: Log error
       toast.error(
         `Ishchi qo'shishda xatolik: ${err.data?.message || err.message}`
       );
@@ -146,6 +161,10 @@ const RuberoidFactoryHR = () => {
   };
 
   const handleDeleteEmployee = (id) => {
+    if (!id) {
+      toast.error("Xatolik: Ishchi ID topilmadi");
+      return;
+    }
     toast(
       ({ closeToast }) => (
         <div className="confirm-toast">
@@ -203,8 +222,7 @@ const RuberoidFactoryHR = () => {
       Ism: emp.firstName || "",
       Familya: emp.lastName || "",
       "Otasining ismi": emp.middleName || "",
-      "Bo'lim": departments[emp.department] || "",
-      Lavozim: emp.position || "",
+      "Bo'lim": units[emp.unit] || "",
       "Ish staji": emp.experience || "",
       "Pasport seriyasi": emp.passportSeries || "",
       Telefon: emp.phone || "",
@@ -223,7 +241,6 @@ const RuberoidFactoryHR = () => {
       { wch: 5 },
       { wch: 15 },
       { wch: 15 },
-      { wch: 20 },
       { wch: 20 },
       { wch: 25 },
       { wch: 12 },
@@ -306,8 +323,10 @@ const RuberoidFactoryHR = () => {
     );
   }
 
+
   return (
     <div className="ruberoid-factory-hr-container">
+      <ToastContainer /> {/* Add ToastContainer for react-toastify */}
       <div className="hr-dashboard-header">
         <div className="header-content-wrapper">
           <div className="factory-brand-section">
@@ -337,25 +356,25 @@ const RuberoidFactoryHR = () => {
               </div>
             </div>
             <div className="controls-panel-section">
-              {
-                role !== "director" && (
-                  <button
-                    onClick={() => setShowAddModal(true)}
-                    className="add-employee-btn"
-                  >
-                    <UserPlus className="btn-icon" />
-                    Yangi ishchi qo'shish
-                  </button>
-                )
-              }
+              {role !== "direktor" && (
+                <button
+                  onClick={() => {
+                    setShowAddModal(true);
+                  }}
+                  className="add-employee-btn"
+                >
+                  <UserPlus className="btn-icon" />
+                  Yangi ishchi qo'shish
+                </button>
+              )}
               <div className="department-filter-wrapper">
                 <Filter className="filter-dropdown-icon" />
                 <select
-                  value={selectedDepartment}
-                  onChange={(e) => setSelectedDepartment(e.target.value)}
+                  value={selectedUnit}
+                  onChange={(e) => setSelectedUnit(e.target.value)}
                   className="department-filter-select"
                 >
-                  {Object.entries(departments).map(([key, value]) => (
+                  {Object.entries(units).map(([key, value]) => (
                     <option key={key} value={key}>
                       {value}
                     </option>
@@ -389,78 +408,75 @@ const RuberoidFactoryHR = () => {
                 <th>Manzil</th>
                 <th>Miqdor</th>
                 <th>Login ma'lumotlari</th>
-                {
-                  role !== "director" && (
-                    <th>Amallar</th>
-                  )
-                }
+                {role !== "direktor" && <th>Amallar</th>}
               </tr>
             </thead>
             <tbody className="table-body-section">
               {filteredEmployees.length > 0 ? (
-                filteredEmployees.map((employee, inx) => (
-                  <tr key={inx} className="employee-table-row">
-                    <td>
-                      <span className="employee-name-cell">
-                        {capitalizeFirstLetter(employee?.firstName || "")}{" "}
-                        {capitalizeFirstLetter(employee?.lastName || "")}{" "}
-                        {capitalizeFirstLetter(employee?.middleName || "")}
-                        {employee.isOfficeWorker && (
-                          <span className="office-worker-badge">
-                            <Shield className="badge-icon" />
-                          </span>
-                        )}
-                      </span>
-                    </td>
-                    <td>{departments[employee.department] || "-"}</td>
-                    <td>
-                      {employee.position === "Required" ? "-" : employee.position || "-"}
-                    </td>
-                    <td>
-                      <span className="experience-badge">
-                        <Clock className="experience-icon" />
-                        {employee.experience || 0}
-                      </span>
-                    </td>
-                    <td className="passport-series-cell">
-                      {employee.passportSeries || "-"}
-                    </td>
-                    <td className="phone-cell">
-                      <Phone className="phone-icon" />
-                      {PhoneNumberFormat(employee.phone || "")}
-                    </td>
-                    <td className="address-cell">
-                      <MapPin className="address-icon" />
-                      {capitalizeFirstLetter(employee.address || "")}
-                    </td>
-                    <td className="salary-amount-cell">
-                      {formatSalary(employee.salary, employee.paymentType)}
-                    </td>
-                    <td className="login-credentials-cell">
-                      {employee.isOfficeWorker ? (
-                        <div className="credentials-info">
-                          <div className="login-display">
-                            <Key className="credentials-icon" />
-                            {employee.login || "Tayinlanmagan"}
-                          </div>
-                          {employee.role && (
-                            <span className="role-badge">
-                              {roles[employee.role] || "Tayinlanmagan"}
+                filteredEmployees.map((employee, inx) => {
+
+                  return (
+                    <tr key={inx} className="employee-table-row">
+                      <td>
+                        <span className="employee-name-cell">
+                          {capitalizeFirstLetter(employee?.firstName || "")}{" "}
+                          {capitalizeFirstLetter(employee?.lastName || "")}{" "}
+                          {capitalizeFirstLetter(employee?.middleName || "")}
+                          {employee.isOfficeWorker && (
+                            <span className="office-worker-badge">
+                              <Shield className="badge-icon" />
                             </span>
                           )}
-                        </div>
-                      ) : (
-                        <span className="no-credentials-text">
-                          Login talab qilinmaydi
                         </span>
-                      )}
-                    </td>
-                    {
-                      role !== "director" && (
+                      </td>
+                      <td>{roles[employee.role] || "-"}</td>
+                      <td>{units[employee.unit] || "-"}</td>
+                      <td>
+                        <span className="experience-badge">
+                          <Clock className="experience-icon" />
+                          {employee.experience || 0}
+                        </span>
+                      </td>
+                      <td className="passport-series-cell">
+                        {employee.passportSeries || "-"}
+                      </td>
+                      <td className="phone-cell">
+                        <Phone className="phone-icon" />
+                        {PhoneNumberFormat(employee.phone || "")}
+                      </td>
+                      <td className="address-cell">
+                        <MapPin className="address-icon" />
+                        {capitalizeFirstLetter(employee.address || "")}
+                      </td>
+                      <td className="salary-amount-cell">
+                        {employee.salary === 0 ? employee.paymentType : formatSalary(employee.salary, employee.paymentType)}
+                      </td>
+                      <td className="login-credentials-cell">
+                        {employee.isOfficeWorker ? (
+                          <div className="credentials-info">
+                            <div className="login-display">
+                              <Key className="credentials-icon" />
+                              {employee.login || "Tayinlanmagan"}
+                            </div>
+                            {employee.role && (
+                              <span className="role-badge">
+                                {roles[employee.role] || "Tayinlanmagan"}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="no-credentials-text">
+                            Login talab qilinmaydi
+                          </span>
+                        )}
+                      </td>
+                      {role !== "direktor" && (
                         <td className="actions-cell">
                           <div className="action-buttons-group">
                             <button
-                              onClick={() => setEditingEmployee(employee)}
+                              onClick={() => {
+                                setEditingEmployee(employee);
+                              }}
                               className="edit-action-btn"
                               title="Tahrirlash"
                             >
@@ -475,13 +491,13 @@ const RuberoidFactoryHR = () => {
                             </button>
                           </div>
                         </td>
-                      )
-                    }
-                  </tr>
-                ))
+                      )}
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
-                  <td colSpan="10" className="no-data">
+                  <td colSpan={role !== "direktor" ? 9 : 8} className="no-data">
                     Ma'lumot topilmadi
                   </td>
                 </tr>
@@ -495,7 +511,6 @@ const RuberoidFactoryHR = () => {
         <EmployeeModal
           roles={roles}
           paymentTypes={paymentTypes}
-          departments={departments}
           showAddModal={showAddModal}
           setShowAddModal={setShowAddModal}
           editingEmployee={editingEmployee}

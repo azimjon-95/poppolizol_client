@@ -211,7 +211,7 @@ const Bn5ProcessDialog = ({ refetch, material, gasPrice, electricityPrice }) => 
         toast.success('Qadoqlash birligi qo‘shildi!');
     };
 
-    console.log(inputValues);
+
 
     return (
         <>

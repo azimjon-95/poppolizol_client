@@ -114,7 +114,6 @@ const ProductionHistoryTable = () => {
         );
     }
 
-    console.log(productionHistory);
     return (
         <>
             <div className="mvb-history-list">

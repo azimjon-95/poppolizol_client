@@ -346,7 +346,7 @@ const SalesInvoiceDashboard = () => {
     const totalNds = filteredSalesData.reduce((sum, sale) => sum + (sale.payment.ndsTotal || 0), 0);
     const totalPaidAmount = filteredSalesData.reduce((sum, sale) => sum + (sale.payment.paidAmount || 0), 0);
 
-    console.log(filteredSalesData);
+
     return (
         <div className="invoice-dashboard">
             <ToastContainer

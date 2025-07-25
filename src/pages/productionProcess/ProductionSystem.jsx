@@ -123,7 +123,6 @@ const ProductionSystem = () => {
       setIsDefective(false);
       form.resetFields();
     } catch (error) {
-      console.log(error);
       toast.error(error.data?.innerData || error.data?.message || "Ishlab chiqarishda xatolik yuz berdi");
     }
   };

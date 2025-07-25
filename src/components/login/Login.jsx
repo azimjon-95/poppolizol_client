@@ -16,7 +16,6 @@ import {
 import "./login.css";
 
 const Login = () => {
-  // Initialize authMode from localStorage, default to true if not set
   const [authMode, setAuthMode] = useState(() => {
     const savedAuthMode = localStorage.getItem("authMode");
     return savedAuthMode !== null ? JSON.parse(savedAuthMode) : true;
@@ -30,7 +29,6 @@ const Login = () => {
     pin: "",
   });
 
-  // Save authMode to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("authMode", JSON.stringify(authMode));
   }, [authMode]);
@@ -71,15 +69,21 @@ const Login = () => {
       const doctorName = `${innerData?.employee?.firstName || ""} ${innerData?.employee?.lastName || ""
         }`.trim();
 
+      const role = innerData?.employee?.unit?.toLowerCase() || "unknown";
       localStorage.setItem("workerId", innerData?.employee?._id);
       localStorage.setItem("admin_fullname", doctorName);
       localStorage.setItem("token", innerData?.token);
-      localStorage.setItem("role", innerData?.employee?.role);
+      localStorage.setItem("role", role);
+
 
       toast.success(successMessage || "Muvaffaqiyatli tizimga kirdingiz!");
       clearForm();
 
-      navigate(`/${innerData?.employee?.role}`);
+      // Fallback for invalid roles
+      const targetPath = ["director", "buxgalteriya", "admin", "saler_meneger", "saler"].includes(role)
+        ? `/${role}`
+        : "/login";
+      navigate(targetPath);
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Tizimga kirishda xatolik yuz berdi!";
@@ -248,3 +252,7 @@ const Login = () => {
 };
 
 export default Login;
+
+
+
+

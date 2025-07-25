@@ -1,3 +1,5 @@
+
+
 import { MdDashboard } from "react-icons/md";
 import { FaWarehouse, FaUsers, FaMoneyBillWave } from "react-icons/fa";
 import { BiCategoryAlt } from "react-icons/bi";
@@ -46,10 +48,10 @@ export const menuItems = {
       label: "Maoshlar",
     },
   ],
-  accountant: [
+  buxgalteriya: [
     {
       icon: <MdDashboard size={20} />,
-      path: "/director",
+      path: "/buxgalteriya",
       label: "Boshqaruv paneli",
     },
     {

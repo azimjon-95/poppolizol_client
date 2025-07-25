@@ -10,6 +10,7 @@ import {
     useDeletePlanMutation,
 } from '../../../../context/planSalesApi';
 import { PhoneNumberFormat } from '../../../../hook/NumberFormat';
+import { capitalizeFirstLetter } from '../../../../hook/CapitalizeFirstLitter';
 import './style.css';
 
 // Notifikatsiya funksiyalari
@@ -206,10 +207,8 @@ const SalespersonDashboard = () => {
 
     // Handle plan deletion
     const handleDeletePlan = async (planId) => {
-        console.log("ok");
         try {
             const res = await deletePlan(planId).unwrap();
-            console.log(res);
             notifySuccess('Plan muvaffaqiyatli o\'chirildi!');
             refetchPlans();
         } catch (error) {
@@ -398,13 +397,13 @@ const SalespersonDashboard = () => {
                                                 </div>
                                                 <div className="sdash-employee-contact">
                                                     <MapPin className="sdash-icon-xs" />
-                                                    {employee.position || 'N/A'}
+                                                    {"Sotuvchi" || 'N/A'}
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="sdash-data-cell">
-                                        {department[employee.department]}
+                                        {capitalizeFirstLetter(employee.unit)}
                                     </td>
                                     <td className="sdash-data-cell">
                                         <StatusBadge hasCurrentPlan={!!employee.currentPlan} />

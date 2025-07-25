@@ -84,7 +84,7 @@ const CompanyInfoPage = ({ onShowFeedback }) => {
 const FeedbackForm = ({ onSubmit, onBack }) => {
     //useGetFactoriesQuery
     const { data } = useGetFactoriesQuery();
-    console.log(data?.innerData);
+
     const [feedback, setFeedback] = useState({
         name: '',
         phone: '',

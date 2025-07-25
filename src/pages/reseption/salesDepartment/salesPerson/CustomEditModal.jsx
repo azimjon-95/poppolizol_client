@@ -135,7 +135,7 @@ const CustomModal = React.memo(({
         }
     }, [editSaleData, modalState.activeSaleId, updateCartSale, refetch, onClose]);
 
-    console.log(editSaleData);
+
     if (!isOpen) return null;
 
     return (

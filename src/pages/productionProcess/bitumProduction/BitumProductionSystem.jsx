@@ -21,7 +21,7 @@ const BitumProductionSystem = () => {
 
   const { data } = useGetFactoriesQuery();
   const factories = data?.innerData[0] || [];
-  console.log(factories);
+
 
   const [currentBn3Production, setCurrentBn3Production] = useState({
     id: null,
@@ -199,7 +199,6 @@ const BitumProductionSystem = () => {
     </div>
   );
 
-  console.log(material);
   return (
     <div className="bitum-system-container">
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />

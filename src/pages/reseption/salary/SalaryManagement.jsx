@@ -94,7 +94,7 @@ const SalaryManagement = () => {
     sifat_muammosi: "Sifat muammosi",
     boshqa: "Boshqa",
   };
-  console.log(employeesData);
+
 
   // Update employees when data is fetched
   useEffect(() => {
@@ -392,46 +392,42 @@ const SalaryManagement = () => {
                     </td>
                     <td>
                       <span
-                        className={`factory-amount-display ${
-                          employee.salaryPayment.totalPaid > 0
+                        className={`factory-amount-display ${employee.salaryPayment.totalPaid > 0
                             ? "factory-amount-positive"
                             : "factory-amount-zero"
-                        }`}
+                          }`}
                       >
                         {formatCurrency(employee.salaryPayment.totalPaid)}
                       </span>
                     </td>
                     <td>
                       <span
-                        className={`factory-amount-display ${
-                          employee.salaryPayment.penaltyAmount > 0
+                        className={`factory-amount-display ${employee.salaryPayment.penaltyAmount > 0
                             ? "factory-amount-negative"
                             : "factory-amount-zero"
-                        }`}
+                          }`}
                       >
                         {formatCurrency(employee.salaryPayment.penaltyAmount)}
                       </span>
                     </td>
                     <td>
                       <span
-                        className={`factory-amount-display ${
-                          employee.salaryPayment.advanceAmount > 0
+                        className={`factory-amount-display ${employee.salaryPayment.advanceAmount > 0
                             ? "factory-amount-positive"
                             : "factory-amount-zero"
-                        }`}
+                          }`}
                       >
                         {formatCurrency(employee.salaryPayment.advanceAmount)}
                       </span>
                     </td>
                     <td>
                       <span
-                        className={`factory-amount-display ${
-                          employee.salaryPayment.remainingAmount > 0
+                        className={`factory-amount-display ${employee.salaryPayment.remainingAmount > 0
                             ? "factory-amount-positive"
                             : employee.salaryPayment.remainingAmount < 0
-                            ? "factory-amount-negative"
-                            : "factory-amount-zero"
-                        }`}
+                              ? "factory-amount-negative"
+                              : "factory-amount-zero"
+                          }`}
                       >
                         {formatCurrency(employee.salaryPayment.remainingAmount)}
                       </span>
