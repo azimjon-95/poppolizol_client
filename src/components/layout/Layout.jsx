@@ -47,8 +47,8 @@ function Layout() {
           className="main-content"
           style={{
             background: isDirectorPath ? "#0f172a" : "#f1f5f9",
-            padding: isDirectorPath || isLocationRole ? 0 : 15,
-            height: isLocationRole ? "100vh" : "auto", // Set height to 100vh for LOCATION_ROLES
+            padding: isDirectorPath || isLocationRole ? 0 : 0,
+            height: isLocationRole ? "100vh" : "calc(100vh - 50px)", // Set height to 100vh for LOCATION_ROLES
           }}
         >
           <Outlet />
