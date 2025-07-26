@@ -36,11 +36,17 @@ export const workersApi = api.injectEndpoints({
             }),
         }),
 
-        // router.get("/admin/ochisleniya", adminController.ochisleniyaEmployees);
         getOchisleniyaWorkers: builder.query({
             query: () => '/ochisleniya',
             providesTags: ['Workers'],
         }),
+
+
+        getProductionEmployees: builder.query({
+            query: () => '/productionEmployees',
+            providesTags: ['Workers'],
+        }),
+
     }),
 });
 
@@ -50,5 +56,6 @@ export const {
     useUpdateWorkerMutation,
     useDeleteWorkerMutation,
     useGetByIdWorkerMutation,
-    useGetOchisleniyaWorkersQuery
+    useGetOchisleniyaWorkersQuery,
+    useGetProductionEmployeesQuery
 } = workersApi;

@@ -74,15 +74,10 @@ export const routes = [
     private: true,
   },
   {
-    path: "/saler_meneger",
-    element: <FactorySalesSystem />,
-    role: ["saler_meneger", "sotuvchi"],
-    private: true,
-  },
-  {
     path: "/saler",
     element: <FactorySalesSystem />,
-    role: ["direktor", "buxgalteriya", "sotuvchi",
+    role: [
+      "sotuvchi",
       "sotuvchi eksport",
       "sotuvchi menejir",],
     private: true,
@@ -90,7 +85,13 @@ export const routes = [
   {
     path: "/attendance",
     element: <Atendance />,
-    role: ["direktor", "buxgalteriya", "menejir"],
+    role: [
+      "direktor",
+      "buxgalteriya",
+      "polizol ish boshqaruvchi",
+      "rubiroid ish boshqaruvchi",
+      "ochisleniya ish boshqaruvchi",
+    ],
     private: true,
   },
   {

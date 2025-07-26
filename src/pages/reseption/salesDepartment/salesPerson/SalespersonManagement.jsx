@@ -68,17 +68,38 @@ const SalespersonDashboard = () => {
         targetAmount: '',
         month: selectedMonth,
     });
-    const [formError, setFormError] = useState('');
     const role = localStorage.getItem("role");
     const workersId = localStorage.getItem("workerId");
 
     // API hooks
-    const { data: salesEmployees = [], isLoading: employeesLoading, error: employeesError } = useGetSalesEmployeesQuery();
-    const { data: allPlans = [], isLoading: plansLoading, error: plansError, refetch: refetchPlans } = useGetAllPlansQuery();
+    const {
+        data: employeesData = { innerData: [] },
+        isLoading: employeesLoading,
+        error: employeesError,
+    } = useGetSalesEmployeesQuery();
+    const {
+        data: plansData = { innerData: [] },
+        isLoading: plansLoading,
+        error: plansError,
+        refetch: refetchPlans,
+    } = useGetAllPlansQuery();
     const [createPlan] = useCreatePlanMutation();
     const [updatePlan] = useUpdatePlanMutation();
     const [deletePlan] = useDeletePlanMutation();
 
+    // Safely filter employees based on role
+    const salesEmployees = employeesData?.innerData?.length
+        ? role === "sotuvchi"
+            ? employeesData?.innerData.filter((employee) => employee?._id === workersId) ?? []
+            : employeesData?.innerData
+        : [];
+
+    // Safely filter plans based on role
+    const allPlans = plansData?.innerData?.length
+        ? role === "sotuvchi"
+            ? plansData?.innerData.filter((plan) => plan?.employeeId?._id === workersId) ?? []
+            : plansData?.innerData
+        : [];
 
     // Generate month options for the last 12 months and next 3 months
     const generateMonthOptions = () => {
@@ -110,8 +131,8 @@ const SalespersonDashboard = () => {
     const combineEmployeeData = () => {
         if (!salesEmployees || !allPlans) return [];
 
-        return salesEmployees?.innerData?.map((employee) => {
-            const employeePlans = allPlans?.innerData?.filter((plan) => {
+        return salesEmployees?.map((employee) => {
+            const employeePlans = allPlans?.filter((plan) => {
                 const employeeId = plan.employeeId?._id || plan.employeeId;
                 return employeeId === employee._id;
             });
@@ -182,7 +203,6 @@ const SalespersonDashboard = () => {
         e.preventDefault();
         if (!planForm.employeeId || !planForm.targetAmount || isNaN(planForm.targetAmount) || planForm.targetAmount <= 0) {
             notifyError('Iltimos, barcha maydonlarni to\'g\'ri to\'ldiring');
-            setFormError('Iltimos, barcha maydonlarni to\'g\'ri to\'ldiring');
             return;
         }
 
@@ -195,13 +215,12 @@ const SalespersonDashboard = () => {
             setShowPlanModal(false);
             setEditingPlan(null);
             setPlanForm({ employeeId: '', targetAmount: '', month: selectedMonth });
-            setFormError('');
+
             notifySuccess('Plan muvaffaqiyatli yangilandi!');
             refetchPlans();
         } catch (error) {
             console.error('Plan yangilashda xatolik:', error);
             notifyError('Plan yangilashda xatolik yuz berdi');
-            setFormError('Plan yangilashda xatolik yuz berdi');
         }
     };
 
@@ -214,7 +233,6 @@ const SalespersonDashboard = () => {
         } catch (error) {
             console.error('Plan o\'chirishda xatolik:', error);
             notifyError('Plan o\'chirishda xatolik yuz berdi');
-            setFormError('Plan o\'chirishda xatolik yuz berdi');
         }
 
     };
@@ -242,14 +260,14 @@ const SalespersonDashboard = () => {
     };
 
     // Calculate performance metrics
-    const calculatePerformance = (current, previous) => {
-        if (!current) return { percentage: 0, trend: 0 };
+    // const calculatePerformance = (current, previous) => {
+    //     if (!current) return { percentage: 0, trend: 0 };
 
-        const percentage = current.targetAmount > 0 ? Math.round((current.achievedAmount / current.targetAmount) * 100) : 0;
-        const trend = previous && previous.achievedAmount > 0 ? Math.round(((current.achievedAmount - previous.achievedAmount) / previous.achievedAmount) * 100) : 0;
+    //     const percentage = current.targetAmount > 0 ? Math.round((current.achievedAmount / current.targetAmount) * 100) : 0;
+    //     const trend = previous && previous.achievedAmount > 0 ? Math.round(((current.achievedAmount - previous.achievedAmount) / previous.achievedAmount) * 100) : 0;
 
-        return { percentage, trend };
-    };
+    //     return { percentage, trend };
+    // };
 
     // Status badge component
     const StatusBadge = ({ hasCurrentPlan }) => (
@@ -299,11 +317,6 @@ const SalespersonDashboard = () => {
             </div>
         );
     }
-    const department = {
-        saler_meneger: "Sotuv Menejir",
-        Sotuvchi: "Sotuvchi",
-        saler_export: "Sotuvchi Eksport"
-    }
 
 
     return (
@@ -349,12 +362,12 @@ const SalespersonDashboard = () => {
                             <div className="sdash-stat-text">Faol planlar</div>
                         </div>
                         <div className="sdash-stat-card">
-                            <div className="sdash-stat-number">{allPlans?.innerData?.filter((plan) => plan.month === selectedMonth).length}</div>
+                            <div className="sdash-stat-number">{allPlans?.filter((plan) => plan.month === selectedMonth).length}</div>
                             <div className="sdash-stat-text">Joriy oy planlari</div>
                         </div>
                         <div className="sdash-stat-card">
                             <div className="sdash-stat-number">
-                                {allPlans?.innerData?.filter((plan) => plan.month === selectedMonth)
+                                {allPlans?.filter((plan) => plan.month === selectedMonth)
                                     .reduce((sum, plan) => sum + (plan.achievedAmount || 0), 0)
                                     .toLocaleString()}
                             </div>
@@ -378,7 +391,7 @@ const SalespersonDashboard = () => {
                     </thead>
                     <tbody className="sdash-table-body">
                         {filteredEmployees?.map((employee) => {
-                            const { percentage, trend } = calculatePerformance(employee.currentPlan, employee.previousPlan);
+                            // const { percentage, trend } = calculatePerformance(employee.currentPlan, employee.previousPlan);
 
                             return (
                                 <tr key={employee._id} className="sdash-data-row">
@@ -413,9 +426,6 @@ const SalespersonDashboard = () => {
                                         plan={employee.currentPlan?.targetAmount || 0}
                                         unit="M"
                                     />
-                                    {/* <td className="sdash-data-cell">
-                                        <TrendIndicator trend={trend} />
-                                    </td> */}
                                     <td className="sdash-data-cell">
                                         <div className="sdash-action-group">
                                             {employee.currentPlan && role !== "sotuvchi" ? (
@@ -502,7 +512,7 @@ const SalespersonDashboard = () => {
                                             aria-label="Sotuvchini tanlash"
                                         >
                                             <option value="">Sotuvchini tanlang</option>
-                                            {salesEmployees?.innerData?.map((employee) => (
+                                            {salesEmployees?.map((employee) => (
                                                 <option key={employee._id} value={employee._id}>
                                                     {employee.firstName} {employee.lastName}
                                                 </option>

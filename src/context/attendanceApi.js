@@ -30,6 +30,27 @@ export const attendanceApi = api.injectEndpoints({
       }),
       transformResponse: (response) => response.innerData,
     }),
+
+    // ✅ Davomatni yangilash
+    updateAttendance: builder.mutation({
+      query: (data) => ({
+        url: "/attendance",
+        method: "PUT",
+        body: data,
+      }),
+      transformResponse: (response) => response.innerData,
+    }),
+
+    // ✅ Davomatni o'chirish
+    deleteAttendance: builder.mutation({
+      query: (data) => ({
+        url: "/attendance",
+        method: "DELETE",
+        body: data,
+      }),
+      transformResponse: (response) => response.innerData,
+    })
+
   }),
 });
 
@@ -37,4 +58,6 @@ export const {
   useGetEmployeeHistoryQuery,
   useGetAllAttendanceQuery,
   useMarkAttendanceMutation,
+  useUpdateAttendanceMutation,
+  useDeleteAttendanceMutation
 } = attendanceApi;

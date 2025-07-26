@@ -1,44 +1,55 @@
 import React, { useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-
 import "./Layout.css";
-import { menuItems } from "../../utils/SidebarMenu";
 import Sidebar from "../sidebar/Sidebar";
 import Header from "../header/Header";
 
+const NON_SIDEBAR_ROLES = [
+  "sotuvchi",
+  "polizol ish boshqaruvchi",
+  "ochisleniya ish boshqaruvchi",
+  "rubiroid ish boshqaruvchi",
+];
+const LOCATION_ROLES = [
+  "polizol ish boshqaruvchi",
+  "ochisleniya ish boshqaruvchi",
+  "rubiroid ish boshqaruvchi",
+];
+
+const DIRECTOR_PATHS = ["/direktor", "/expense"];
+
 function Layout() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const role = localStorage.getItem("role");
-  const location = useLocation();
 
   useEffect(() => {
-    // if (!role || !menuItems[role]) {
     if (!role) {
       navigate("/login");
     }
   }, [role, navigate]);
 
-  const isDirectorPath = location.pathname === "/direktor" || "/expense";
+  const showSidebar = role && !NON_SIDEBAR_ROLES.includes(role);
+  const isDirectorPath = DIRECTOR_PATHS.includes(pathname);
+  const isLocationRole = role && LOCATION_ROLES.includes(role);
+
   return (
     <div className="layout">
-      {role === "sotuvchi" ? (
-        <></>
-      ) : (
+      {showSidebar && (
         <div className="layout_left">
           <Sidebar />
         </div>
       )}
 
       <div className="layout_right">
-        {role === "sotuvchi" ? <></> : <Header />}
+        {showSidebar && <Header />}
         <main
-          style={{
-            background: ["direktor", "expense"].includes(isDirectorPath)
-              ? "#0f172a"
-              : "#f1f5f9",
-            padding: isDirectorPath ? "0px" : "15px",
-          }}
           className="main-content"
+          style={{
+            background: isDirectorPath ? "#0f172a" : "#f1f5f9",
+            padding: isDirectorPath || isLocationRole ? 0 : 15,
+            height: isLocationRole ? "100vh" : "auto", // Set height to 100vh for LOCATION_ROLES
+          }}
         >
           <Outlet />
         </main>

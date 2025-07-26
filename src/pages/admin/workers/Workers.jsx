@@ -71,6 +71,7 @@ const RuberoidFactoryHR = () => {
       ochisleniya: "Ochisleniya",
       ochisleniya_ish_boshqaruvchi: "Ochisleniya Ish Boshqaruvchi",
       boshqa: "Boshqa",
+      avto_kara: "Avto kara",
     }),
     []
   );

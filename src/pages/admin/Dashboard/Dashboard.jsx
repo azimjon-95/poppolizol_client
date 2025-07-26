@@ -275,7 +275,7 @@ const Dashboard = () => {
                                 />
                             )}
                             <Tooltip
-                                formatter={(value, name) => [formatCurrency(value), name === 'income' ? 'Kirim' : 'Chiqim']}
+                                formatter={(value, name) => [formatCurrency(value), name === 'Kirim' ? 'Kirim' : 'Chiqim']}
                                 labelFormatter={(label) => `${label}-kun`}
                                 contentStyle={{
                                     backgroundColor: '#1e293b',
