@@ -21,6 +21,7 @@ import "./style.css";
 import BitumProductionSystem from "./bitumProduction/BitumProductionSystem";
 import InventoryTable from "./bitumProduction/InventoryTable";
 import ProductionHistoryTable from "./productionHistory/ProductionHistoryTable";
+import CustomModal from "./mod/CustomModal";
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -37,6 +38,8 @@ const ProductionSystem = () => {
   const [selectedDefectiveProduct, setSelectedDefectiveProduct] = useState(null);
   const [isDefective, setIsDefective] = useState(false);
   const [filterValue, setFilterValue] = useState("all"); // New state for filter selection
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const [form] = Form.useForm();
 
   // RTK Query hooks
@@ -128,34 +131,49 @@ const ProductionSystem = () => {
   };
 
   // Handle delete product
+  // const handleDelete = (productId) => {
+  //   console.log("ok");
+  //   Modal.confirm({
+  //     title: "O'chirishni tasdiqlang",
+  //     content: (
+  //       <div>
+  //         <p>Ushbu mahsulotni o'chirishni xohlaysizmi?</p>
+  //         <p style={{ color: "#d32f2f", fontWeight: "bold" }}>
+  //           Diqqat: Bu amalni qaytarib bo'lmaydi!
+  //         </p>
+  //       </div>
+  //     ),
+  //     okText: "Ha, o'chirish",
+  //     okType: "danger",
+  //     cancelText: "Bekor qilish",
+  //     onOk: async () => {
+  //       try {
+  //         await deleteFinished(productId).unwrap();
+  //         toast.success("Mahsulot muvaffaqiyatli o'chirildi");
+  //       } catch (error) {
+  //         toast.error(error?.data?.message || "Mahsulotni o'chirishda xatolik yuz berdi");
+  //       }
+  //     },
+  //     onCancel: () => {
+  //       // No action needed on cancel
+  //     },
+  //   });
+  // };
   const handleDelete = (productId) => {
-    Modal.confirm({
-      title: "Mahsulotni o'chirishni xohlaysizmi?",
-      content: "Bu amalni qaytarib bo'lmaydi.",
-      okText: "O'chirish",
-      cancelText: "Bekor qilish",
-      onOk: async () => {
-        try {
-          await deleteFinished(productId).unwrap();
-          toast.success("Mahsulot muvaffaqiyatli o'chirildi");
-        } catch (error) {
-          toast.error(error.data?.message || "Mahsulotni o'chirishda xatolik yuz berdi");
-        }
-      },
-    });
+    setDeletingId(productId);
+    setModalOpen(true);
   };
-
-  // Handle update product
-  const handleUpdate = (product) => {
-    setSelectedProduct(product);
-    form.setFieldsValue({
-      quantity: product.quantity,
-      productionCost: product.productionCost,
-      isDefective: product.isDefective,
-      defectiveReason: product.defectiveInfo?.defectiveReason || "",
-      defectiveDescription: product.defectiveInfo?.defectiveDescription || "",
-    });
-    setIsModalOpen(true);
+  const confirmDelete = async () => {
+    try {
+      // deleteFinished funksiyangizni shu yerga joylashtiring
+      await deleteFinished(deletingId).unwrap();
+      toast.success("Mahsulot muvaffaqiyatli o‘chirildi");
+    } catch (err) {
+      toast.error("Xatolik yuz berdi");
+    } finally {
+      setModalOpen(false);
+      setDeletingId(null);
+    }
   };
 
   // Handle defective info modal
@@ -279,6 +297,13 @@ const ProductionSystem = () => {
         pauseOnFocusLoss
         draggable
         pauseOnHover
+      />
+
+
+      <CustomModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onConfirm={confirmDelete}
       />
 
       {/* Update Modal */}
@@ -638,23 +663,24 @@ const ProductionSystem = () => {
               ) : filteredProducts?.length > 0 ? (
                 filteredProducts.map((product, inx) => (
                   <div key={inx} className="product-card-container">
-                    {/* <div className="product-card_actins">
-                      <button
+                    <div className="product-card_actins">
+                      {/*  <button
                         onClick={() => handleUpdate(product)}
                         disabled={deleteLoading || updateLoading}
                         title="Tahrirlash"
                         className="edit-button"
                       >
                         ✏️
-                      </button>
+                      </button> */}
                       <button
                         onClick={() => handleDelete(product._id)}
                         disabled={deleteLoading || updateLoading}
                         title="O'chirish"
+                        className="delete-button"
                       >
-                        <RiDeleteBinLine />
+                        <RiDeleteBinLine size={20} />
                       </button>
-                    </div> */}
+                    </div>
                     {product.category === "Stakan" || product.category === "Qop" ? (
                       <div className="product-imagebn">
                         <img src={betumImg} alt="Bitum" />
@@ -805,3 +831,5 @@ const ProductionSystem = () => {
 };
 
 export default ProductionSystem;
+
+

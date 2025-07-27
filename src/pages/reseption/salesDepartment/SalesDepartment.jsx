@@ -263,14 +263,17 @@ const SacodSalesModule = () => {
   };
 
   const showReturnInfo = (returnInfo) => {
+    console.log(returnInfo);
     setSelectedReturnInfo(returnInfo);
     setIsReturnInfoModalOpen(true);
   };
 
   const showDefectiveInfo = (defectiveInfo) => {
+
     setSelectedDefectiveInfo(defectiveInfo);
     setIsDefectiveInfoModalOpen(true);
   };
+
 
   return (
     <div className="sacod-sales-container">
@@ -612,20 +615,43 @@ const SacodSalesModule = () => {
               Qaytarish Ma'lumotlari
             </h2>
             <div className="sacod-form-section">
-              <div className="sacod-form-row">
-                <label>Qaytarish Sanasi:</label>
-                <p>
-                  {selectedReturnInfo?.returnDate
-                    ? new Date(
-                      selectedReturnInfo.returnDate
-                    ).toLocaleDateString("uz-UZ")
-                    : "N/A"}
-                </p>
-              </div>
-              <div className="sacod-form-row">
-                <label>Qaytarish Sababi:</label>
-                <p>{selectedReturnInfo?.returnReason || "N/A"}</p>
-              </div>
+              {selectedReturnInfo?.length > 0 ? (
+                selectedReturnInfo.map((returnInfo, index) => (
+                  <div key={returnInfo._id || index} className="sacod-return-item">
+                    <div className="sacod-form-row">
+                      <label>Firma Nomi:</label>
+                      <p>{returnInfo.companyName || "N/A"}</p>
+                    </div>
+                    <div className="sacod-form-row">
+                      <label>Qaytarish Sanasi:</label>
+                      <p>
+                        {returnInfo.returnDate
+                          ? new Date(returnInfo.returnDate).toLocaleDateString("uz-UZ")
+                          : "N/A"}
+                      </p>
+                    </div>
+
+                    <div className="sacod-form-row">
+                      <label>Qaytarilgan Miqdor:</label>
+                      <p>{returnInfo.returnedQuantity || "N/A"}</p>
+                    </div>
+                    <div className="sacod-form-row">
+                      <label>Qaytarilgan Summa:</label>
+                      <p>{returnInfo.refundedAmount || "N/A"}</p>
+                    </div>
+                    <div className="sacod-form-row">
+                      <label>Qaytarish Sababi:</label>
+                      <p>{returnInfo.returnReason || "N/A"}</p>
+                    </div>
+                    {/* <div className="sacod-form-row">
+                      <label>Qaytarish Tavsifi:</label>
+                      <p>{returnInfo.returnDescription || "N/A"}</p>
+                    </div> */}
+                  </div>
+                ))
+              ) : (
+                <p>Ma'lumotlar topilmadi</p>
+              )}
             </div>
 
             <div className="sacod-modal-actions">
@@ -658,6 +684,7 @@ const SacodSalesModule = () => {
                     : "N/A"}
                 </p>
               </div>
+
               <div className="sacod-form-row">
                 <label>Brak Sababi:</label>
                 <p>{selectedDefectiveInfo?.defectiveReason || "N/A"}</p>

@@ -59,6 +59,7 @@ function AddProductNorma({ setModalState }) {
     values.cost = cost;
     values.category = productCategory;
     values.description = "";
+    console.log(values);
 
     try {
       const res = await createProductNorma(values).unwrap();

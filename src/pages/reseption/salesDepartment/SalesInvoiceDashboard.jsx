@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import {
     Package, Truck, User, Calendar, Clock, CheckCircle2, XCircle,
     Receipt, RotateCcw, Edit, Trash2, RefreshCw, MoreHorizontal, Truck as DeliveryIcon
@@ -6,7 +6,6 @@ import {
 import { NumberFormat } from '../../../hook/NumberFormat';
 import {
     useGetFilteredSalesQuery,
-    useUpdateCartSaleMutation,
     useDeleteCartSaleMutation,
     useGetCompanysQuery,
 } from '../../../context/cartSaleApi';
@@ -46,15 +45,16 @@ const customerTypeOption = {
     'export': "Eksport",
     'exchange': "Birja",
 }
+
 const SalesInvoiceDashboard = () => {
     const dispatch = useDispatch();
-    const [updateCartSale] = useUpdateCartSaleMutation();
     const [deleteCartSale] = useDeleteCartSaleMutation();
     const [paymentAmount, setPaymentAmount] = useState('');
     const [paymentType, setPaymentType] = useState('naqt');
     const [paymentDescription, setPaymentDescription] = useState('');
     const [returnReason, setReturnReason] = useState('');
     const [refundAmount, setRefundAmount] = useState('');
+    const [customerName, setCustomerName] = useState('');
     const [deliveryItems, setDeliveryItems] = useState([]);
     const [modalState, setModalState] = useState({
         isPaymentModalOpen: false,
@@ -176,6 +176,8 @@ const SalesInvoiceDashboard = () => {
             toast.error("Sotuv topilmadi!");
             return;
         }
+
+        setCustomerName(sale?.customerId?.name)
         setReturnItems(sale.items.map(item => ({
             ...item,
             returnQuantity: 0,
@@ -637,6 +639,7 @@ const SalesInvoiceDashboard = () => {
             <ReturnProduct
                 modalState={modalState}
                 closeModal={closeModal}
+                customerName={customerName}
                 returnItems={returnItems}
                 handleReturnItemChange={handleReturnItemChange}
                 Modal={Modal}
