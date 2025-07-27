@@ -7,7 +7,16 @@ import {
 import { BsCheck2Circle } from "react-icons/bs";
 import { useGetProductionEmployeesQuery } from "../../context/workersApi";
 import { capitalizeFirstLetter } from "../../hook/CapitalizeFirstLitter";
-import { Button, Card, Select, Table, Spin, Tabs, Input, Popconfirm } from "antd";
+import {
+  Button,
+  Card,
+  Select,
+  Table,
+  Spin,
+  Tabs,
+  Input,
+  Popconfirm,
+} from "antd";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import dayjs from "dayjs";
@@ -52,10 +61,15 @@ function Attendance() {
   const [markedToday, setMarkedToday] = useState({});
   const [filterUnit, setFilterUnit] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDate, setSelectedDate] = useState(dayjs().format("YYYY-MM-DD"));
-  const [markAttendance, { isLoading: isMarkLoading }] = useMarkAttendanceMutation();
-  const [deleteAttendance, { isLoading: isDeleteLoading }] = useDeleteAttendanceMutation();
-  const { data: workers, isLoading: isWorkersLoading } = useGetProductionEmployeesQuery();
+  const [selectedDate, setSelectedDate] = useState(
+    dayjs().format("YYYY-MM-DD")
+  );
+  const [markAttendance, { isLoading: isMarkLoading }] =
+    useMarkAttendanceMutation();
+  const [deleteAttendance, { isLoading: isDeleteLoading }] =
+    useDeleteAttendanceMutation();
+  const { data: workers, isLoading: isWorkersLoading } =
+    useGetProductionEmployeesQuery();
   const role = localStorage.getItem("role");
   const isLocationRole = role && LOCATION_ROLES.includes(role);
   const navigate = useNavigate(); // Hook for navigation
@@ -87,31 +101,25 @@ function Attendance() {
     setAttendanceData({});
   }, [filterUnit, selectedDate]);
 
-  const handleChange = useCallback(
-    (employeeId, field, value) => {
-      setAttendanceData((prev) => {
-        // If value is undefined or empty, remove the employee's data
-        if (!value) {
-          const { [employeeId]: _, ...rest } = prev;
-          return rest;
-        }
-        // Otherwise, update the employee's data
-        return {
-          ...prev,
-          [employeeId]: { ...prev[employeeId], [field]: value },
-        };
-      });
-    },
-    []
-  );
+  const handleChange = useCallback((employeeId, field, value) => {
+    setAttendanceData((prev) => {
+      // If value is undefined or empty, remove the employee's data
+      if (!value) {
+        const { [employeeId]: _, ...rest } = prev;
+        return rest;
+      }
+      // Otherwise, update the employee's data
+      return {
+        ...prev,
+        [employeeId]: { ...prev[employeeId], [field]: value },
+      };
+    });
+  }, []);
 
-  const handleDateChange = useCallback(
-    (e) => {
-      const formattedDate = e.target.value || dayjs().format("YYYY-MM-DD");
-      setSelectedDate(formattedDate);
-    },
-    []
-  );
+  const handleDateChange = useCallback((e) => {
+    const formattedDate = e.target.value || dayjs().format("YYYY-MM-DD");
+    setSelectedDate(formattedDate);
+  }, []);
 
   const handleSave = useCallback(
     async (employeeId) => {
@@ -135,7 +143,9 @@ function Attendance() {
         setMarkedToday((prev) => ({ ...prev, [employeeId]: true }));
       } catch (err) {
         console.error(err);
-        toast.error(err?.data?.message || "Xatolik yuz berdi", { autoClose: 3000 });
+        toast.error(err?.data?.message || "Xatolik yuz berdi", {
+          autoClose: 3000,
+        });
       }
     },
     [attendanceData, filterUnit, markAttendance, selectedDate]
@@ -168,7 +178,9 @@ function Attendance() {
         });
       } catch (err) {
         console.error(err);
-        toast.error(err?.data?.message || "O‘chirishda xatolik yuz berdi", { autoClose: 3000 });
+        toast.error(err?.data?.message || "O‘chirishda xatolik yuz berdi", {
+          autoClose: 3000,
+        });
       }
     },
     [attendanceData, deleteAttendance, filterUnit]
@@ -177,7 +189,9 @@ function Attendance() {
   const filteredWorkers = useMemo(() => {
     if (!workers?.innerData) return [];
     return workers.innerData
-      .filter((w) => filterUnit === "all" || w.unit?.toLowerCase() === filterUnit)
+      .filter(
+        (w) => filterUnit === "all" || w.unit?.toLowerCase() === filterUnit
+      )
       .filter((w) => {
         if (!searchTerm.trim()) return true;
         const fio = [w.firstName, w.lastName, w.middleName]
@@ -209,16 +223,20 @@ function Attendance() {
           const options = isTransport
             ? PERCENTAGE_OPTIONS.transport
             : isOchisleniya
-              ? PERCENTAGE_OPTIONS.ochisleniya
-              : PERCENTAGE_OPTIONS.default;
+            ? PERCENTAGE_OPTIONS.ochisleniya
+            : PERCENTAGE_OPTIONS.default;
 
           return (
             <Select
               placeholder="Foiz tanlang"
               style={{ width: 120 }}
               value={attendanceData[record._id]?.percentage}
-              onChange={(value) => handleChange(record._id, "percentage", value)}
-              disabled={(!isTransport && markedToday[record._id]) || isDeleteLoading}
+              onChange={(value) =>
+                handleChange(record._id, "percentage", value)
+              }
+              disabled={
+                (!isTransport && markedToday[record._id]) || isDeleteLoading
+              }
               allowClear
             >
               {options.map((opt) => (
@@ -234,26 +252,35 @@ function Attendance() {
         title: "Saqlash",
         render: (_, record) => (
           <div style={{ display: "flex", gap: 8 }}>
-            {
-              (record.unit !== "transport" && markedToday[record._id]) || isDeleteLoading ?
-                <BsCheck2Circle style={{ color: "green", fontSize: "25px" }} />
-                :
-                <Button
-                  type="primary"
-                  onClick={() => handleSave(record._id)}
-                  loading={isMarkLoading}
-                  disabled={(record.unit !== "transport" && markedToday[record._id]) || isDeleteLoading}
-                >
-                  Saqlash
-                </Button>
-            }
+            {(record.unit !== "transport" && markedToday[record._id]) ||
+            isDeleteLoading ? (
+              <BsCheck2Circle style={{ color: "green", fontSize: "25px" }} />
+            ) : (
+              <Button
+                type="primary"
+                onClick={() => handleSave(record._id)}
+                loading={isMarkLoading}
+                disabled={
+                  (record.unit !== "transport" && markedToday[record._id]) ||
+                  isDeleteLoading
+                }
+              >
+                Saqlash
+              </Button>
+            )}
           </div>
         ),
       },
-
-
     ],
-    [attendanceData, handleChange, handleSave, handleDelete, isMarkLoading, isDeleteLoading, markedToday]
+    [
+      attendanceData,
+      handleChange,
+      handleSave,
+      handleDelete,
+      isMarkLoading,
+      isDeleteLoading,
+      markedToday,
+    ]
   );
   if (!isLocationRole) {
     baseColumns.push({
@@ -279,8 +306,7 @@ function Attendance() {
             </Popconfirm>
           ) : (
             <i style={{ fontSize: "13px", color: "grey" }}>Mavjud emas</i>
-          )
-          }
+          )}
         </div>
       ),
     });
@@ -292,7 +318,8 @@ function Attendance() {
       render: (_, record) => {
         const isTransport = record.unit === "transport";
         const defaultDepartment =
-          filterUnit !== "all" && DEPARTMENT_OPTIONS.some((opt) => opt.value === filterUnit)
+          filterUnit !== "all" &&
+          DEPARTMENT_OPTIONS.some((opt) => opt.value === filterUnit)
             ? filterUnit
             : attendanceData[record._id]?.department;
 
@@ -302,7 +329,9 @@ function Attendance() {
             style={{ width: 190 }}
             value={defaultDepartment}
             onChange={(value) => handleChange(record._id, "department", value)}
-            disabled={(!isTransport && markedToday[record._id]) || isDeleteLoading}
+            disabled={
+              (!isTransport && markedToday[record._id]) || isDeleteLoading
+            }
             allowClear
           >
             {DEPARTMENT_OPTIONS.map((opt) => (
@@ -320,31 +349,41 @@ function Attendance() {
   const columns = useMemo(
     () =>
       filterUnit === "all"
-        ? [...baseColumns.slice(0, 2), departmentColumn, ...baseColumns.slice(2)]
+        ? [
+            ...baseColumns.slice(0, 2),
+            departmentColumn,
+            ...baseColumns.slice(2),
+          ]
         : baseColumns,
     [baseColumns, departmentColumn, filterUnit]
   );
-
-
 
   const handleLogout = () => {
     localStorage.clear(); // Clear all localStorage data
     toast.success("Tizimdan chiqildi", { autoClose: 2000 }); // Show success message
     navigate("/login"); // Redirect to login page (adjust the path as needed)
   };
-  if (isWorkersLoading) return <div style={{
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100vh"
-
-  }}> <Spin size="large" /></div>
-
+  if (isWorkersLoading)
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        {" "}
+        <Spin size="large" />
+      </div>
+    );
 
   return (
-    <div style={{
-      padding: "0rem 1rem ",
-    }}>
+    <div
+      style={{
+        padding: "0rem 1rem ",
+      }}
+    >
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -356,20 +395,29 @@ function Attendance() {
         draggable
         pauseOnHover
       />
-      <Tabs defaultActiveKey="1" tabBarExtraContent={isLocationRole &&
-
-        <Button type="primary" onClick={handleLogout}>
-          Tizimdan chiqish
-        </Button>
-      }>
+      <Tabs
+        defaultActiveKey="1"
+        tabBarExtraContent={
+          isLocationRole && (
+            <Button type="primary" onClick={handleLogout}>
+              Tizimdan chiqish
+            </Button>
+          )
+        }
+      >
         <TabPane tab="Davomat" key="1">
           <Card
             title={
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <span>Bugungi davomat</span>
                 <div style={{ display: "flex", gap: 8 }}>
-                  {
-                    !isLocationRole &&
+                  {!isLocationRole && (
                     <input
                       type="date"
                       value={selectedDate}
@@ -388,7 +436,7 @@ function Attendance() {
                       onFocus={(e) => (e.target.style.borderColor = "#40a9ff")}
                       onBlur={(e) => (e.target.style.borderColor = "#d9d9d9")}
                     />
-                  }
+                  )}
                   <Search
                     placeholder="Qidiruv"
                     style={{ width: 200 }}
@@ -397,7 +445,11 @@ function Attendance() {
                     allowClear
                     enterButton
                   />
-                  <Select style={{ width: 150 }} value={filterUnit} onChange={setFilterUnit}>
+                  <Select
+                    style={{ width: 150 }}
+                    value={filterUnit}
+                    onChange={setFilterUnit}
+                  >
                     <Option value="all">Barchasi</Option>
                     {DEPARTMENT_OPTIONS.map((opt) => (
                       <Option key={opt.value} value={opt.value}>
