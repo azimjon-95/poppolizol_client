@@ -1,8 +1,6 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { QRCodeCanvas } from 'qrcode.react';
 import { ShoppingCart, Minus, Plus, FileText, Factory } from 'lucide-react';
-import { useReactToPrint } from 'react-to-print';
 import { Select } from 'antd';
 import {
     useCreateCartSaleMutation,
@@ -30,7 +28,6 @@ const getWidthByLength = (length) => {
 };
 
 const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromCart, onCompleteSale }) => {
-    const contentRef = useRef();
     const navigate = useNavigate();
     const dropdownRef = useRef(null);
     const inputRef = useRef(null);
@@ -169,24 +166,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         setIsTransportDropdownOpen(false);
     }, []);
 
-    const reactToPrintFn = useReactToPrint({
-        contentRef,
-        pageStyle: `
-      @page {
-        size: 80mm auto;
-        margin: 0;
-      }
-      @media print {
-        body { margin: 0; }
-        * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
-      }`,
-        onPrintError: () => {
-            toast.error('Chop etishda xatolik yuz berdi. Iltimos, qayta urining.', {
-                position: 'top-right',
-                autoClose: 3000,
-            });
-        },
-    });
 
     const [paymentInfo, setPaymentInfo] = useState({
         paidAmount: 0,
@@ -497,7 +476,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         ndsRate,
         calculateItemNds,
         onCompleteSale,
-        reactToPrintFn,
         setCart,
         setActiveTab,
         discountReason,
@@ -671,7 +649,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                     </Select>
                                 </div>
                                 <div className="card-summary-row">
-                                    <span>Urtakash Bonusi:</span>
+                                    <span>Broker xizmati:</span>
                                     <span>
                                         <input
                                             type="text"
@@ -685,18 +663,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                         so'm
                                     </span>
                                 </div>
-                                <div className="card-summary-row">
-                                    <span>To'lov turi:</span>
-                                    <Select
-                                        value={paymentInfo.paymentType}
-                                        onChange={(value) => setPaymentInfo((prev) => ({ ...prev, paymentType: value }))}
-                                        className="card-price-Select"
-                                        aria-label="Payment type"
-                                    >
-                                        <Option value="naqt">Naqt</Option>
-                                        <Option value="bank">Bank</Option>
-                                    </Select>
-                                </div>
+
                                 <div className={`card-summary-row ${summaryData.debt > 0 ? 'card-debt' : 'card-paid'}`}>
                                     <span>Qarz:</span>
                                     <span>{formatNumber(summaryData.debt)} so'm</span>
@@ -784,21 +751,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                         </div>
                                     </>
                                 )}
-                                <div className="card-summary-row">
-                                    <span>Mijoz To'lagan summa:</span>
-                                    <span>
-                                        <input
-                                            type="text"
-                                            value={formattedAmount}
-                                            onChange={handleAmountChange}
-                                            className="card-price-input"
-                                            style={{ width: '170px', textAlign: 'right', border: '1px solid #d9d9d9' }}
-                                            aria-label="Paid amount"
-                                            placeholder="0"
-                                        />
-                                        so'm
-                                    </span>
-                                </div>
+
                                 <div className="card-summary-row relative">
                                     <span>Avtotransport:</span>
                                     <input
@@ -880,76 +833,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
 
             {isContractModalOpen && (
                 <div className="card-modal">
-                    <div ref={contentRef} className="card-doc-wrapper">
-                        <h2 className="card-doc-title">YUK XATLAMASI №565</h2>
-                        <p className="card-doc-date">1 Iyul 2025 yil</p>
-                        <div className="card-doc-info">
-                            <p>
-                                <strong>Yuboruvchi:</strong> "SELEN BUNYODKOR" MCHJ
-                            </p>
-                            <p>
-                                <strong>Manzil:</strong> Namangan viloyati, Pop tumani, Gilkor MFY, Istiqbol
-                            </p>
-                            <p>
-                                <strong>Mijoz:</strong> {contractInfo.customerName}
-                            </p>
-                            <p>
-                                <strong>Avtotransport:</strong> {contractInfo.transport}
-                            </p>
-                        </div>
-                        <table className="card-doc-table">
-                            <thead>
-                                <tr>
-                                    <th>№</th>
-                                    <th>Mahsulot nomi</th>
-                                    <th>Miqdori</th>
-                                    <th>O‘lchov</th>
-                                    <th>Narxi</th>
-                                    <th>Qiymat</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {cart.map((item, index) => {
-                                    const basePrice = contractInfo.discounts[item._id] ?? item.sellingPrice ?? 0;
-                                    return (
-                                        <tr key={`${item._id}-${index}`}>
-                                            <td>{index + 1}</td>
-                                            <td>{item.productName}</td>
-                                            <td>{item.quantity}</td>
-                                            <td>{item.size}</td>
-                                            <td>{formatNumber(basePrice)}</td>
-                                            <td>{formatNumber(calculateItemTotal(item))}</td>
-                                        </tr>
-                                    );
-                                })}
-                                <tr className="card-doc-total">
-                                    <td colSpan="5">Jami:</td>
-                                    <td>{formatNumber(summaryData.total)}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        {(summaryData.itemDiscountAmount > 0 || paymentInfo.discount > 0) && (
-                            <div className="card-doc-discount-reason">
-                                <p><strong>Chegirma sababi:</strong></p>
-                                <p>{discountReason}</p>
-                            </div>
-                        )}
-                        <p className="card-doc-contact">
-                            Biz bilan ishlaganingizdan minnatdormiz! Taklif va shikoyatlar uchun QR kodni skanerlang yoki quyidagi
-                            raqamlarga qo'ng'iroq qiling: +998 94 184 10 00, +998 33 184 10 00
-                        </p>
-                        <div className="card-doc-sign">
-                            <div>
-                                <strong>Berdi:</strong> _____________________
-                            </div>
-                            <div className="card-doc-qr">
-                                <QRCodeCanvas value={window.location.origin + '/feedback'} size={100} />
-                            </div>
-                            <div>
-                                <strong>Oldim:</strong> _____________________
-                            </div>
-                        </div>
-                    </div>
                     <div className="card-print-section">
                         <button
                             onClick={completeContract}
@@ -974,3 +857,4 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
 };
 
 export default CartTab;
+

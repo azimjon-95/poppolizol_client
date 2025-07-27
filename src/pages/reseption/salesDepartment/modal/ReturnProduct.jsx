@@ -13,6 +13,7 @@ const ReturnProduct = ({
     modalState,
     closeModal,
     returnItems,
+    customerName,
     handleReturnItemChange,
     Modal,
     setReturnReason,
@@ -57,10 +58,11 @@ const ReturnProduct = ({
             totalRefund: refund,
             reason: returnReason,
             paymentType: paymentType,
+            customerName
         };
 
         try {
-            const updatedSale = await returnProducts({ id: modalState.activeSaleId, body: returnData }).unwrap();
+            await returnProducts({ id: modalState.activeSaleId, body: returnData }).unwrap();
             toast.success("Qaytarish muvaffaqiyatli amalga oshirildi!");
             closeModal();
         } catch (error) {
