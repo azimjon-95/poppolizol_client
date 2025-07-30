@@ -4,10 +4,11 @@ import 'react-toastify/dist/ReactToastify.css';
 import { GiTakeMyMoney } from 'react-icons/gi';
 import { BsBank } from 'react-icons/bs';
 import { GrMoney } from 'react-icons/gr';
-import { TrendingUp, TrendingDown, CreditCard, Banknote, Calendar, Plus, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, CreditCard, Banknote, Calendar, Award, Plus, Minus } from 'lucide-react';
 import { useCreateExpenseMutation, useGetExpensesQuery, useDeleteExpenseMutation, useGetBalanceQuery } from '../../../context/expenseApi';
 import TransportTable from './TransportTable';
 import DebtComponent from './DebtComponent';
+import SalesTable from './SalesTable';
 import './style/style.css';
 
 const ExpenseTracker = () => {
@@ -31,20 +32,75 @@ const ExpenseTracker = () => {
 
     const categories = {
         kirim: [
-            'Mahsulot sotuvlari', 'Investitsiya', 'Bank krediti', 'Subsidiyalar', 'Qayta sotilgan chiqindilar',
-            'Ijara daromadi', 'Qo‘shimcha xizmatlar', 'Homiylik / Grantlar', 'Avans / Oldindan to‘lov',
-            'Valyuta tushumi', 'Stok (zaxira) mahsulot savdosi', 'Yordamchi korxona daromadi',
-            'Muddatli to‘lovlar', 'Eski uskuna sotilishi', 'Loyihalardan tushum', 'Boshqa'
+            'Mahsulot sotuvlari',
+            'Investitsiya',
+            'Bank krediti',
+            'Subsidiyalar',
+            'Qayta sotilgan chiqindilar',
+            'Ijara daromadi',
+            'Qo‘shimcha xizmatlar',
+            'Homiylik / Grantlar',
+            'Avans / Oldindan to‘lov',
+            'Valyuta tushumi',
+            'Stok (zaxira) mahsulot savdosi',
+            'Yordamchi korxona daromadi',
+            'Muddatli to‘lovlar',
+            'Eski uskuna sotilishi',
+            'Loyihalardan tushum',
+            'Boshqa'
         ],
         chiqim: [
-            'Xomashyo xaridi', 'Ishchilar maoshi', 'Bonuslar va mukofotlar', 'Elektr energiyasi', 'Gaz ta’minoti',
-            'Suv ta’minoti', 'Transport xarajatlari', 'Uskuna ta’miri', 'Texnik xizmat', 'Ishlab chiqarish sarfi',
-            'Qadoqlash materiallari', 'Kiyim-bosh va himoya vositalari', 'Ofis xarajatlari', 'Marketing va reklama',
-            'Soliqlar va yig‘imlar', 'Ijara haqi', 'Xavfsizlik / Qo‘riqlash', 'Chiqindilar utilizatsiyasi',
-            'Moliyaviy xizmatlar (bank, auditor)', 'Internet va aloqa', 'IT xizmatlar (dasturiy ta’minot)',
-            'Ishlab chiqarish vositalari xaridi', 'Litsenziya va ruxsatnomalar', 'Kadrlar o‘qitish / trening',
-            'Komandirovka xarajatlari', 'Ofis mebellari va texnikasi', 'Suv / kanalizatsiya tizimi xizmatlari',
-            'Sud va yuridik xarajatlar', 'Sertifikatlash / sifat nazorati', 'Boshqa'
+            // Umumiy xarajatlar
+            'Ish haqi xarajatlari',
+            'Bonuslar va mukofotlar',
+            'Soliqlar va majburiy to‘lov',
+            'Yer solig‘i',
+            'Foyda solig‘i',
+            'Muj solig‘i',
+            'Sof foyda',
+
+            // Kommunal xizmatlar
+            'Elektr energiyasi',
+            'Gaz ta’minoti',
+            'Suv ta’minoti',
+            'Suv / kanalizatsiya tizimi xizmatlari',
+
+            // Operatsion xarajatlar
+            'Transport xarajatlari',
+            'Uskuna ta’miri',
+            'Texnik xizmat',
+            'Ofis xarajatlari',
+            'Ofis mebellari va texnikasi',
+            'Ishlab chiqarish vositalari xaridi',
+
+            // Moliyaviy va yuridik xarajatlar
+            'Moliyaviy xizmatlar (bank, auditor)',
+            'Bank xizmatlari',
+            'Buxgalteriya xizmati',
+            'Sud va yuridik xarajatlar',
+
+            // Marketing va sifat nazorati
+            'Reklama xarajatlari',
+            'Sertifikatlash / sifat nazorati',
+
+            // IT va aloqa
+            'Internet va aloqa',
+            'IT xizmatlar (dasturiy ta’minot)',
+
+            // Kadrlar va rivojlanish
+            'Kadrlar o‘qitish / trening',
+            'Komandirovka xarajatlari',
+
+            // Boshqa xarajatlar
+            'Chiqindilar utilizatsiyasi',
+            'Litsenziya va ruxsatnomalar',
+            'Oziq ovqat xarajatlari',
+            'Avto KAPA xarajati',
+            'Avto Qora xarajati',
+            'Eksport xarajatlari',
+            'USTA va Qurilish ishlari',
+            'Ish/chik.xarajatlari',
+            'Boshqa xarajatlar (Prochi)'
         ]
     };
 
@@ -84,43 +140,6 @@ const ExpenseTracker = () => {
         }
     };
 
-    // const handleDelete = async (relatedId) => {
-    //     try {
-    //         await deleteExpense(relatedId).unwrap();
-    //         toast.success('Transaksiya o‘chirildi');
-    //         refetch();
-    //         setShowPopover(null);
-    //     } catch (error) {
-    //         toast.error(error.data?.message || 'O‘chirishda xatolik yuz berdi!');
-    //         setShowPopover(null);
-    //     }
-    // };
-
-    // const togglePopover = (transactionId) => {
-    //     setShowPopover(showPopover === transactionId ? null : transactionId);
-    // };
-
-    // const popoverContent = (transactionId) => (
-    //     <div className="ruberoid-popover-content">
-    //         <p className="ruberoid-popover-text">Transaksiyani o'chirishni tasdiqlaysizmi?</p>
-    //         <div className="ruberoid-popover-buttons">
-    //             <button onClick={() => handleDelete(transactionId)} className="ruberoid-popover-btn ruberoid-confirm-btn">
-    //                 Tasdiqlash
-    //             </button>
-    //             <button onClick={() => setShowPopover(null)} className="ruberoid-popover-btn ruberoid-cancel-btn">
-    //                 Bekor qilish
-    //             </button>
-    //         </div>
-    //     </div>
-    // );
-
-    // const totalIncome = transactions.innerData
-    //     .filter(t => t.type === 'kirim')
-    //     .reduce((sum, t) => sum + t.amount, 0);
-
-    // const totalExpense = transactions.innerData
-    //     .filter(t => t.type === 'chiqim')
-    //     .reduce((sum, t) => sum + t.amount, 0);
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -222,191 +241,211 @@ const ExpenseTracker = () => {
     if (isLoading) return <div>Loading...</div>;
 
     return (
-        <div className="ruberoid-expense-tracker">
-            <div className={`ruberoid-main-content${role === "direktor" ? "_director" : ""}`}>
-                {role !== "direktor" &&
-                    <div className="ruberoid-form-panel">
-                        <div className="ruberoid-form-box">
-                            <button
-                                className={activeTab === 'Expenses' ? 'ruberoid-active-tab' : ''}
-                                onClick={() => setActiveTab('Expenses')}
-                            >
-                                Xarajatlar
-                            </button>
-                            <button
-                                className={activeTab === 'Transport' ? 'ruberoid-active-tab' : ''}
-                                onClick={() => setActiveTab('Transport')}
-                            >
-                                Transport
-                            </button>
-                            <button
-                                className={activeTab === 'Debts' ? 'ruberoid-active-tab' : ''}
-                                onClick={() => setActiveTab('Debts')}
-                            >
-                                Qarzlar
-                            </button>
-                        </div>
+        <>
 
-                        <div className="ruberoid-balance-cards">
-                            <div className="ruberoid-balance-container">
-                                <div className="ruberoid-balance-card ruberoid-income-card">
-                                    <TrendingUp className="ruberoid-card-icon" />
-                                    <div>
-                                        <p className="ruberoid-card-label">Kirim</p>
-                                        <p className="ruberoid-card-amount">
-                                            <GiTakeMyMoney /> {transactions.innerData
-                                                .filter(t => t.type === 'kirim' && t.paymentMethod === 'naqt')
-                                                .reduce((sum, t) => sum + t - amount, 0)
-                                                .toLocaleString()} so'm
-                                        </p>
-                                        <p className="ruberoid-card-amount">
-                                            <BsBank /> {transactions.innerData
-                                                .filter(t => t.type === 'kirim' && t.paymentMethod === 'bank')
-                                                .reduce((sum, t) => sum + t.amount, 0)
-                                                .toLocaleString()} so'm
-                                        </p>
+            {activeTab === "reports"
+                ?
+                <SalesTable setActiveTab={setActiveTab} />
+                :
+                <div className="ruberoid-expense-tracker">
+
+                    <div className={`ruberoid-main-content${role === "direktor" ? "_director" : ""}`}>
+                        {role !== "direktor" &&
+                            <div className="ruberoid-form-panel">
+                                <div className="ruberoid-form-box">
+                                    <button
+                                        className={activeTab === 'Expenses' ? 'ruberoid-active-tab' : ''}
+                                        onClick={() => setActiveTab('Expenses')}
+                                    >
+                                        Xarajatlar
+                                    </button>
+                                    <button
+                                        className={activeTab === 'Transport' ? 'ruberoid-active-tab' : ''}
+                                        onClick={() => setActiveTab('Transport')}
+                                    >
+                                        Transport
+                                    </button>
+                                    <button
+                                        className={activeTab === 'Debts' ? 'ruberoid-active-tab' : ''}
+                                        onClick={() => setActiveTab('Debts')}
+                                    >
+                                        Qarzlar
+                                    </button>
+                                    <button
+                                        className={activeTab === 'reports' ? 'ruberoid-active-tab' : ''}
+                                        onClick={() => setActiveTab('reports')}
+                                    >
+                                        Ishlab chiqarish hisoboti
+                                    </button>
+                                </div>
+
+                                <div className="ruberoid-balance-cards">
+                                    <div className="ruberoid-balance-container">
+                                        <div className="ruberoid-balance-card ruberoid-income-card">
+                                            <TrendingUp className="ruberoid-card-icon" />
+                                            <div>
+                                                <p className="ruberoid-card-label">Kirim</p>
+                                                <p className="ruberoid-card-amount">
+                                                    <GiTakeMyMoney /> {transactions.innerData
+                                                        .filter(t => t.type === 'kirim' && t.paymentMethod === 'naqt')
+                                                        .reduce((sum, t) => sum + t - amount, 0)
+                                                        .toLocaleString()} so'm
+                                                </p>
+                                                <p className="ruberoid-card-amount">
+                                                    <BsBank /> {transactions.innerData
+                                                        .filter(t => t.type === 'kirim' && t.paymentMethod === 'bank')
+                                                        .reduce((sum, t) => sum + t.amount, 0)
+                                                        .toLocaleString()} so'm
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="ruberoid-balance-card ruberoid-total-card">
+                                            <GrMoney className="ruberoid-card-icon" />
+                                            <div>
+                                                <p className="ruberoid-card-label">Balans</p>
+                                                <p className={`ruberoid-card-amount ${balance.innerData.naqt >= 0 ? 'ruberoid-positive' : 'ruberoid-negative'}`}>
+                                                    <GiTakeMyMoney /> {balance.innerData.naqt.toLocaleString()} so'm
+                                                </p>
+                                                <p className={`ruberoid-card-amount ${balance.innerData.bank >= 0 ? 'ruberoid-positive' : 'ruberoid-negative'}`}>
+                                                    <BsBank /> {balance.innerData.bank.toLocaleString()} so'm
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="ruberoid-balance-card ruberoid-expense-card">
+                                            <TrendingDown className="ruberoid-card-icon" />
+                                            <div>
+                                                <p className="ruberoid-card-label">Chiqim</p>
+                                                <p className="ruberoid-card-amount">
+                                                    <GiTakeMyMoney /> {transactions.innerData
+                                                        .filter(t => t.type === 'chiqim' && t.paymentMethod === 'naqt')
+                                                        .reduce((sum, t) => sum + t.amount, 0)
+                                                        .toLocaleString()} so'm
+                                                </p>
+                                                <p className="ruberoid-card-amount">
+                                                    <BsBank /> {transactions.innerData
+                                                        .filter(t => t.type === 'chiqim' && t.paymentMethod === 'bank')
+                                                        .reduce((sum, t) => sum + t.amount, 0)
+                                                        .toLocaleString()} so'm
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="ruberoid-balance-card ruberoid-total-card">
-                                    <GrMoney className="ruberoid-card-icon" />
-                                    <div>
-                                        <p className="ruberoid-card-label">Balans</p>
-                                        <p className={`ruberoid-card-amount ${balance.innerData.naqt >= 0 ? 'ruberoid-positive' : 'ruberoid-negative'}`}>
-                                            <GiTakeMyMoney /> {balance.innerData.naqt.toLocaleString()} so'm
-                                        </p>
-                                        <p className={`ruberoid-card-amount ${balance.innerData.bank >= 0 ? 'ruberoid-positive' : 'ruberoid-negative'}`}>
-                                            <BsBank /> {balance.innerData.bank.toLocaleString()} so'm
-                                        </p>
-                                    </div>
+                                {renderTabContent()}
+                            </div>
+                        }
+                        <div className="ruberoid-table-panel">
+                            <div className="ruberoid-date-filters">
+                                <div className="ruberoid-date-group">
+                                    <label className="ruberoid-date-label">
+                                        <Calendar className="ruberoid-date-icon" />
+                                        Boshlanish sanasi
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        className="ruberoid-date-input"
+                                    />
                                 </div>
-
-                                <div className="ruberoid-balance-card ruberoid-expense-card">
-                                    <TrendingDown className="ruberoid-card-icon" />
-                                    <div>
-                                        <p className="ruberoid-card-label">Chiqim</p>
-                                        <p className="ruberoid-card-amount">
-                                            <GiTakeMyMoney /> {transactions.innerData
-                                                .filter(t => t.type === 'chiqim' && t.paymentMethod === 'naqt')
-                                                .reduce((sum, t) => sum + t.amount, 0)
-                                                .toLocaleString()} so'm
-                                        </p>
-                                        <p className="ruberoid-card-amount">
-                                            <BsBank /> {transactions.innerData
-                                                .filter(t => t.type === 'chiqim' && t.paymentMethod === 'bank')
-                                                .reduce((sum, t) => sum + t.amount, 0)
-                                                .toLocaleString()} so'm
-                                        </p>
-                                    </div>
+                                <div className="ruberoid-date-group">
+                                    <label className="ruberoid-date-label">
+                                        <Calendar className="ruberoid-date-icon" />
+                                        Tugash sanasi
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={endDate}
+                                        onChange={(e) => setEndDate(e.target.value)}
+                                        className="ruberoid-date-input"
+                                    />
                                 </div>
                             </div>
-                        </div>
 
-                        {renderTabContent()}
-                    </div>
-                }
-                <div className="ruberoid-table-panel">
-                    <div className="ruberoid-date-filters">
-                        <div className="ruberoid-date-group">
-                            <label className="ruberoid-date-label">
-                                <Calendar className="ruberoid-date-icon" />
-                                Boshlanish sanasi
-                            </label>
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                className="ruberoid-date-input"
-                            />
-                        </div>
-                        <div className="ruberoid-date-group">
-                            <label className="ruberoid-date-label">
-                                <Calendar className="ruberoid-date-icon" />
-                                Tugash sanasi
-                            </label>
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                className="ruberoid-date-input"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="ruberoid-table-container">
-                        <table className="ruberoid-transactions-table">
-                            <thead>
-                                <tr>
-                                    <th>Tur</th>
-                                    <th>Sana</th>
-                                    <th>Kategoriya</th>
-                                    <th>To'lov</th>
-                                    <th>Summa</th>
-                                    <th>Tavsif</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {transactions.innerData.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="6" className="ruberoid-no-data">
-                                            Ma'lumotlar topilmadi
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    transactions.innerData.map((transaction, index) => (
-                                        <tr key={index} className="ruberoid-transaction-row">
-                                            <td>
-                                                <div className="ruberoid-type-indicator">
-                                                    {transaction.type === 'kirim' ? (
-                                                        <TrendingUp className="ruberoid-income-icon" />
-                                                    ) : (
-                                                        <TrendingDown className="ruberoid-expense-icon" />
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                {new Date(transaction.date).toLocaleString('uz-UZ', {
-                                                    year: 'numeric',
-                                                    month: '2-digit',
-                                                    day: '2-digit',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit',
-                                                    hour12: false,
-                                                }).replace(',', '').replace(/\//g, '.')}
-                                            </td>
-                                            <td>{transaction.category}</td>
-                                            <td>
-                                                <span className="ruberoid-payment-badge">
-                                                    {paymentMethods[transaction.paymentMethod]}
-                                                </span>
-                                            </td>
-                                            <td className={transaction.type === 'kirim' ? 'ruberoid-income-amount' : 'ruberoid-expense-amount'}>
-                                                {transaction.amount.toLocaleString()} so'm
-                                            </td>
-                                            <td className="ruberoid-description">{transaction.description}</td>
+                            <div className="ruberoid-table-container">
+                                <table className="ruberoid-transactions-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tur</th>
+                                            <th>Sana</th>
+                                            <th>Kategoriya</th>
+                                            <th>To'lov</th>
+                                            <th>Summa</th>
+                                            <th>Tavsif</th>
                                         </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                                    </thead>
+                                    <tbody>
+                                        {transactions.innerData.length === 0 ? (
+                                            <tr>
+                                                <td colSpan="6" className="ruberoid-no-data">
+                                                    Ma'lumotlar topilmadi
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            transactions.innerData.map((transaction, index) => (
+                                                <tr key={index} className="ruberoid-transaction-row">
+                                                    <td>
+                                                        <div className="ruberoid-type-indicator">
+                                                            {transaction.category === 'Sof foyda' ? (
+                                                                <Award className="ruberoid-profit-icon" />
+                                                            ) : transaction.type === 'kirim' ? (
+                                                                <TrendingUp className="ruberoid-income-icon" />
+                                                            ) : (
+                                                                <TrendingDown className="ruberoid-expense-icon" />
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        {new Date(transaction.date).toLocaleString('uz-UZ', {
+                                                            year: 'numeric',
+                                                            month: '2-digit',
+                                                            day: '2-digit',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit',
+                                                            hour12: false,
+                                                        }).replace(',', '').replace(/\//g, '.')}
+                                                    </td>
+                                                    <td>{transaction.category}</td>
+                                                    <td>
+                                                        <span className="ruberoid-payment-badge">
+                                                            {paymentMethods[transaction.paymentMethod]}
+                                                        </span>
+                                                    </td>
+                                                    <td className={transaction.type === 'kirim' ? 'ruberoid-income-amount' : 'ruberoid-expense-amount'}>
+                                                        {transaction.amount.toLocaleString()} so'm
+                                                    </td>
+                                                    <td className="ruberoid-description">{transaction.description}</td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="dark"
-            />
-        </div>
+                    <ToastContainer
+                        position="top-right"
+                        autoClose={3000}
+                        hideProgressBar={false}
+                        newestOnTop={false}
+                        closeOnClick
+                        rtl={false}
+                        pauseOnFocusLoss
+                        draggable
+                        pauseOnHover
+                        theme="dark"
+                    />
+                </div>
+            }
+        </>
     );
 };
 
 export default ExpenseTracker;
+
+
+

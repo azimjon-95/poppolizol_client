@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Factory, Clock, Zap, Flame, Coins, Package, Settings, Save, List, Plus, Trash2, Edit3, Phone, Percent, MessageSquare } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import './style.css';
 import {
@@ -29,6 +30,7 @@ const FactoryConfigPanel = () => {
     const [activeTab, setActiveTab] = useState('list');
     const [formData, setFormData] = useState(initialFormData);
     const [editingId, setEditingId] = useState(null);
+    const navigate = useNavigate();
 
     // RTK Query hooks
     const { data: factories = [], isLoading, error } = useGetFactoriesQuery();
@@ -188,6 +190,13 @@ const FactoryConfigPanel = () => {
                         >
                             <List className="zavod-tab-ikonka" />
                             Ro'yxat Ko'rish
+                        </button>
+                        <button
+                            className={`zavod-tab-tugma ${activeTab === 'register' ? 'zavod-aktiv-tab' : ''}`}
+                            onClick={() => navigate('/catigory')}
+                        >
+                            <Plus className="zavod-tab-ikonka" />
+                            Maxsulotlar turi
                         </button>
                     </div>
                 </div>

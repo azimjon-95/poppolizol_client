@@ -11,11 +11,10 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import SalespersonManagement from "./salesPerson/SalespersonManagement";
 import CartTab from "./CartTab";
-import { clearSearchQuery } from "../../../context/actions/authSearch";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button, message } from "antd";
 import { RiUser3Line } from "react-icons/ri";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { useGetFinishedProductsQuery } from "../../../context/productionApi";
 import { useGetFilteredSalesQuery } from "../../../context/cartSaleApi";
 import "./style.css";
@@ -596,9 +595,11 @@ const SacodSalesModule = () => {
                 Bekor qilish
               </button>
               <button
-                onClick={completeContract}
+                // onClick={completeContract}
                 className="sacod-modal-btn sacod-modal-btn-confirm"
-                disabled={!contractInfo.customerName || cart?.length === 0}
+                disabled={!contractInfo.customerName || cart?.length === 0 || isCreatingCartSale}
+                onClick={completeContract}
+                aria-label="Confirm contract"
               >
                 Shartnomani tasdiqlash
               </button>
