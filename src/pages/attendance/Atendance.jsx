@@ -16,6 +16,7 @@ import {
   Tabs,
   Input,
   Popconfirm,
+  Checkbox,
 } from "antd";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -138,6 +139,7 @@ function Attendance() {
           date: selectedDate,
           percentage: record.percentage,
           department: record.department ?? filterUnit,
+          cleaning: record.cleaning,
         }).unwrap();
         toast.success("Davomat saqlandi", { autoClose: 3000 });
         setMarkedToday((prev) => ({ ...prev, [employeeId]: true }));
@@ -245,6 +247,19 @@ function Attendance() {
                 </Option>
               ))}
             </Select>
+          );
+        },
+      },
+      {
+        title: "Shanbalik",
+        render: (_, record) => {
+          return (
+            <Checkbox
+              // checked={attendanceData[record._id] || false}
+              onChange={(e) =>
+                handleChange(record._id, "cleaning", e.target.checked)
+              }
+            />
           );
         },
       },

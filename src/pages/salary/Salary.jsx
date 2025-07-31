@@ -27,23 +27,25 @@ function Salary() {
   let RuberoidData = data?.filter((record) => record.department === "ruberoid");
 
   return (
-    <Tabs>
-      <Tabs.TabPane tab="Polizol" key="1">
-        <PolizolSalary data={PolizolData} />
-      </Tabs.TabPane>
+    <div style={{ padding: "0 15px" }}>
+      <Tabs>
+        <Tabs.TabPane tab="Polizol" key="1">
+          <PolizolSalary data={PolizolData} />
+        </Tabs.TabPane>
 
-      <Tabs.TabPane tab="Ochisleniya" key="2">
-        <OchisleniyaSalary data={OchisleniyaData} />
-      </Tabs.TabPane>
+        <Tabs.TabPane tab="Ochisleniya" key="2">
+          <OchisleniyaSalary data={OchisleniyaData} />
+        </Tabs.TabPane>
 
-      <Tabs.TabPane tab="Ruberoid" key="3">
-        <RuberoidSalary data={RuberoidData} />
-      </Tabs.TabPane>
+        <Tabs.TabPane tab="Ruberoid" key="3">
+          <RuberoidSalary data={RuberoidData} />
+        </Tabs.TabPane>
 
-      <Tabs.TabPane tab="Bitum-3M" key="4">
-        <WorkerPaymentsTable data={dataBTM3} />
-      </Tabs.TabPane>
-    </Tabs>
+        <Tabs.TabPane tab="Bitum-3M" key="4">
+          <WorkerPaymentsTable data={dataBTM3} />
+        </Tabs.TabPane>
+      </Tabs>
+    </div>
   );
 }
 

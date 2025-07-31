@@ -51,40 +51,6 @@ function Salary({ data }) {
 
   return (
     <div className="salary-card">
-      <div
-        className="salary_header"
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          textAlign: "right",
-        }}
-      >
-        <div className="salary_header_left"></div>
-        <div className="salary_header_right">
-          <p>
-            BT-3 qozonga:{" "}
-            <b>
-              {totalProduced} kg - {(totalProduced * 25)?.toLocaleString()} so'm
-            </b>{" "}
-          </p>
-          <p>
-            BT-5 olindi:{" "}
-            <b>
-              {totalLoaded} kg - {(totalLoaded * 70)?.toLocaleString()} so'm{" "}
-            </b>{" "}
-          </p>
-          <p>
-            BT-5 sotuv uchun:{" "}
-            <b>
-              {totalbtm5forSale} kg -{" "}
-              {(totalbtm5forSale * 150)?.toLocaleString()} so'm{" "}
-            </b>{" "}
-          </p>
-          <p>
-            Jami hisoblandi: <b>{totalSum.toLocaleString()} so'm</b>{" "}
-          </p>
-        </div>
-      </div>
       <table border={1}>
         <thead>
           <tr>
@@ -129,17 +95,75 @@ function Salary({ data }) {
                 <td>{idx + 1}</td>
                 <td>{fio}</td>
                 <td>{empObj.position}</td>
-                {daysOfMonth.map((day) => (
+                {/* {daysOfMonth.map((day) => (
                   <td key={`amount-${fio}-${day}`}>
                     {empObj.days[day] ? empObj.days[day].toLocaleString() : ""}
                   </td>
-                ))}
+                ))} */}
+                {daysOfMonth.map((day) => {
+                  // Osha kun uchun recordni topamiz
+                  const record = data?.find(
+                    (rec) =>
+                      dayjs(rec.date)
+                        .tz("Asia/Tashkent")
+                        .format("YYYY-MM-DD") === day
+                  );
+
+                  // Agar recordda type: "cleaning" bo‘lsa, orange rang
+                  const isCleaning = record?.type === "cleaning";
+
+                  return (
+                    <td
+                      key={`amount-${fio}-${day}`}
+                      style={isCleaning ? { background: "orange" } : {}}
+                    >
+                      {empObj.days[day]
+                        ? empObj.days[day].toLocaleString()
+                        : ""}
+                    </td>
+                  );
+                })}
                 <td>{total ? total.toLocaleString() : ""}</td>
               </tr>
             );
           })}
         </tbody>
       </table>
+      <div
+        className="salary_header"
+        style={{
+          marginBottom: "20px",
+          display: "flex",
+          justifyContent: "space-between",
+          textAlign: "right",
+        }}
+      >
+        <div className="salary_header_left"></div>
+        <div className="salary_header_right">
+          <p>
+            BT-3 qozonga:{" "}
+            <b>
+              {totalProduced} kg - {(totalProduced * 25)?.toLocaleString()} so'm
+            </b>{" "}
+          </p>
+          <p>
+            BT-5 olindi:{" "}
+            <b>
+              {totalLoaded} kg - {(totalLoaded * 70)?.toLocaleString()} so'm{" "}
+            </b>{" "}
+          </p>
+          <p>
+            BT-5 sotuv uchun:{" "}
+            <b>
+              {totalbtm5forSale} kg -{" "}
+              {(totalbtm5forSale * 150)?.toLocaleString()} so'm{" "}
+            </b>{" "}
+          </p>
+          <p>
+            Jami hisoblandi: <b>{totalSum.toLocaleString()} so'm</b>{" "}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
