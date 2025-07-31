@@ -7,6 +7,7 @@ import { NumberFormat } from "../../hook/NumberFormat";
 import AddProductNorma from "./AddProductNorma";
 import "./ProductNorma.css";
 import { toast } from "react-toastify";
+import { capitalizeFirstLetter } from "../../hook/CapitalizeFirstLitter";
 
 const { Option } = Select;
 
@@ -35,7 +36,10 @@ const ProductNorma = () => {
   const columns = useMemo(
     () => [
       { title: "Nomi", dataIndex: "productName", key: "productName" },
-      { title: "Kategoriya", dataIndex: "category", key: "category" },
+      {
+        title: "Kategoriya", dataIndex: "category", key: "category",
+        render: (category) => capitalizeFirstLetter(category)
+      },
       {
         title: "Qo'shilgan sana",
         dataIndex: "createdAt",
@@ -212,6 +216,12 @@ const ProductNorma = () => {
           key="polizol"
         >
           {modalState.isViewOpen && renderTable("polizol")}
+        </Tabs.TabPane>
+        <Tabs.TabPane
+          tab={<span onClick={() => setModalState((prev) => ({ ...prev, isViewOpen: true }))}>Folygoizol</span>}
+          key="folygoizol"
+        >
+          {modalState.isViewOpen && renderTable("folygoizol")}
         </Tabs.TabPane>
       </Tabs>
 
