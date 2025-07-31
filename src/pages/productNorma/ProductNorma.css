@@ -2,6 +2,12 @@
   padding: 10px;
 }
 
+.hdr-materials-nav {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
 .product_norma {
   svg {
     font-size: 19px;
