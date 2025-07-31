@@ -17,6 +17,7 @@ export const expenseApi = api.injectEndpoints({
             }),
             providesTags: ['Expenses'],
         }),
+
         updateExpense: builder.mutation({
             query: ({ id, ...updates }) => ({
                 url: `/expense/${id}`,
@@ -55,6 +56,14 @@ export const expenseApi = api.injectEndpoints({
             invalidatesTags: ['Transports'], // Invalidate to refetch transports
         }),
 
+        //router.get("/getreports", ExpenseController.getReports);   const { startDate, endDate } = req.query;
+        getReports: builder.query({
+            query: ({ startDate, endDate }) => ({
+                url: `/getreports?startDate=${startDate}&endDate=${endDate}`,
+            }),
+            providesTags: ['Expenses'],
+        }),
+
     }),
 });
 
@@ -65,5 +74,6 @@ export const {
     useDeleteExpenseMutation,
     useGetBalanceQuery,
     useGetTransportsQuery,
+    useGetReportsQuery,
     useMakePaymentMutation
 } = expenseApi;

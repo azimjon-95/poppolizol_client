@@ -239,7 +239,7 @@ const BitumProductionSystem = () => {
                 </p>
               ))
             ) : (
-              <p>No ready products available</p>
+              <p>Hozircha tayyor mahsulotlar yo‘q</p>
             )}
           </div>
         </div>

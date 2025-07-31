@@ -8,6 +8,7 @@ import ProductionSystem from "../pages/productionProcess/ProductionSystem";
 import FactoryConfigPanel from "../pages/admin/setting/Setting";
 import FactorySalesSystem from "../pages/reseption/salesDepartment/SalesDepartment";
 import Atendance from "../pages/attendance/Atendance";
+import CatigoryManagement from "../pages/admin/setting/CategoryManagement";
 import Salary from "../pages/salary/Salary";
 
 export const rolePaths = {
@@ -71,6 +72,12 @@ export const routes = [
     path: "/sales",
     element: <FactorySalesSystem />,
     role: ["direktor", "buxgalteriya", "menejir"],
+    private: true,
+  },
+  {
+    path: "/catigory",
+    element: <CatigoryManagement />,
+    role: ["direktor", "buxgalteriya"],
     private: true,
   },
   {

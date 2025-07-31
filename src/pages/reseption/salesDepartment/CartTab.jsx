@@ -64,7 +64,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
 
     // Memoized formatted values
     const formattedPhone = useMemo(() => formatPhone(rawPhone), [rawPhone]);
-    const formattedAmount = useMemo(() => formatNumber(rawPaidAmount), [rawPaidAmount]);
     const formattedMiddlemanPayment = useMemo(() => formatNumber(middlemanPayment), [middlemanPayment]);
     const formattedTransportCost = useMemo(() => formatNumber(transportCost), [transportCost]);
     const customerTypeOptions = [
@@ -129,9 +128,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                     transport: '',
                     transportCost: 0,
                 });
-                setRawPhone('');
-                setMiddlemanPayment(0);
-                setTransportCost(0);
             } else {
                 const selected = customers.innerData.find((customer) => customer._id === value);
                 if (selected) {
@@ -147,8 +143,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                         transportCost: 0,
                     });
                     setRawPhone(selected.phone?.replace(/\D/g, '') || '');
-                    setMiddlemanPayment(0);
-                    setTransportCost(0);
                 }
             }
         },
@@ -312,30 +306,30 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         []
     );
 
-    const openContractModal = useCallback(() => {
-        setContractInfo({
-            customerType: customerInfo.type,
-            customerName: customerInfo.name,
-            customerPhone: formattedPhone,
-            customerCompanyName: customerInfo.companyName,
-            customerCompanyAddress: customerInfo.companyAddress,
-            transport: customerInfo.transport,
-            transportCost: transportCost,
-            paymentAmount: rawPaidAmount,
-            paymentDescription: paymentInfo.paymentDescription || '',
-            discounts: cart.reduce(
-                (acc, item) => ({
-                    ...acc,
-                    [item._id]: contractInfo.discounts[item._id] ?? item.sellingPrice ?? 0,
-                }),
-                {}
-            ),
-            paymentType: paymentInfo.paymentType,
-            middlemanPayment,
-        });
-        setIsContractModalOpen(true);
-        setIsTransportDropdownOpen(false);
-    }, [customerInfo, cart, contractInfo.discounts, rawPaidAmount, paymentInfo, middlemanPayment, transportCost]);
+    // const openContractModal = useCallback(() => {
+    //     setContractInfo({
+    //         customerType: customerInfo.type,
+    //         customerName: customerInfo.name,
+    //         customerPhone: formattedPhone,
+    //         customerCompanyName: customerInfo.companyName,
+    //         customerCompanyAddress: customerInfo.companyAddress,
+    //         transport: customerInfo.transport,
+    //         transportCost: transportCost,
+    //         paymentAmount: rawPaidAmount,
+    //         paymentDescription: paymentInfo.paymentDescription || '',
+    //         discounts: cart.reduce(
+    //             (acc, item) => ({
+    //                 ...acc,
+    //                 [item._id]: contractInfo.discounts[item._id] ?? item.sellingPrice ?? 0,
+    //             }),
+    //             {}
+    //         ),
+    //         paymentType: paymentInfo.paymentType,
+    //         middlemanPayment,
+    //     });
+    //     setIsContractModalOpen(true);
+    //     setIsTransportDropdownOpen(false);
+    // }, [customerInfo, cart, contractInfo.discounts, rawPaidAmount, paymentInfo, middlemanPayment, transportCost]);
 
     const completeContract = useCallback(async () => {
         if (!isEmployeeValid || !selectedEmployee) {
@@ -497,12 +491,12 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         setCustomerInfo((prev) => ({ ...prev, phone: formatPhone(raw) }));
     }, []);
 
-    const handleAmountChange = useCallback((e) => {
-        const raw = e.target.value.replace(/\D/g, '');
-        const numberValue = Number(raw) || 0;
-        setRawPaidAmount(numberValue);
-        setPaymentInfo((prev) => ({ ...prev, paidAmount: numberValue }));
-    }, []);
+    // const handleAmountChange = useCallback((e) => {
+    //     const raw = e.target.value.replace(/\D/g, '');
+    //     const numberValue = Number(raw) || 0;
+    //     setRawPaidAmount(numberValue);
+    //     setPaymentInfo((prev) => ({ ...prev, paidAmount: numberValue }));
+    // }, []);
 
     const toggleTransportDropdown = useCallback(() => {
         setIsTransportDropdownOpen((prev) => !prev);
@@ -816,10 +810,10 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                 )}
                                 {isEmployeeValid && (
                                     <button
-                                        onClick={openContractModal}
-                                        className="card-complete-sale-btn"
-                                        disabled={!isFormValid || cart?.length === 0}
-                                        aria-label="Open contract modal"
+                                        onClick={completeContract}
+                                        className="card-modal-btn card-modal-btn-confirm"
+                                        aria-label="Confirm contract"
+                                        disabled={!isFormValid || isCreatingCartSale}
                                     >
                                         <FileText className="card-icon-sm" />
                                         Shartnoma tuzish
@@ -831,27 +825,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                 )}
             </div>
 
-            {isContractModalOpen && (
-                <div className="card-modal">
-                    <div className="card-print-section">
-                        <button
-                            onClick={completeContract}
-                            className="card-modal-btn card-modal-btn-confirm"
-                            aria-label="Confirm contract"
-                            disabled={isCreatingCartSale}
-                        >
-                            Shartnomani tasdiqlash
-                        </button>
-                        <button
-                            onClick={() => setIsContractModalOpen(false)}
-                            className="card-modal-btn card-modal-btn-cancel"
-                            aria-label="Cancel contract"
-                        >
-                            Bekor qilish
-                        </button>
-                    </div>
-                </div>
-            )}
+
         </div>
     );
 };

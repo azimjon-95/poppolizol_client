@@ -8,17 +8,17 @@
 /* Header */
 .hgj-header {
     text-align: center;
-    margin-bottom: 40px;
-    padding: 40px 0;
+    margin-bottom: 30px;
+    padding: 30px 0;
     background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
+    backdrop-filter: blur(8px);
+    border-radius: 15px;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
 }
 
 .hgj-title {
-    font-size: 3rem;
+    font-size: 2.4rem;
     font-weight: 800;
     background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
     background-size: 200% 200%;
@@ -26,12 +26,12 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
     animation: gradient 3s ease infinite;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .hgj-subtitle {
     color: rgba(255, 255, 255, 0.8);
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: 300;
 }
 
@@ -53,41 +53,40 @@
 .hgj-tab-navigation {
     display: flex;
     justify-content: space-between;
-    /* gap: 20px; */
-    margin-bottom: 5px;
+    margin-bottom: 4px;
+    margin: 15px 0 10px 0;
 }
 
 .hgj-tab {
-    gap: 2px;
     width: 100%;
-    padding: 4px 20px;
+    padding: 3px 15px;
     background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
     color: rgba(56, 56, 56, 0.8);
     font-weight: 600;
-    font-size: .8rem;
+    font-size: 0.7rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(8px);
 }
 
 .hgj-tab:hover {
     background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 .hgj-tab-active {
     background: linear-gradient(135deg, #667eea, #764ba2);
     border-color: rgba(255, 255, 255, 0.4);
     color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(102, 126, 234, 0.4);
 }
 
 .hgj-tab-icon {
-    font-size: 1.2rem;
+    font-size: 1rem;
     display: flex;
     align-items: center;
 }
@@ -99,28 +98,28 @@
 }
 
 .hgj-content::-webkit-scrollbar {
-    width: 3px;
+    width: 2px;
 }
 
 .hgj-content::-webkit-scrollbar-track {
     background: #f1f1f1;
-    border-radius: 10px;
+    border-radius: 8px;
 }
 
 .hgj-content::-webkit-scrollbar-thumb {
     background: #888;
-    border-radius: 10px;
+    border-radius: 8px;
 }
 
 /* Form Sections */
 .hgj-form-section {
-    animation: fadeInUp 0.6s ease;
+    animation: fadeInUp 0.5s ease;
 }
 
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(20px);
     }
 
     to {
@@ -131,26 +130,26 @@
 
 .hgj-form-header {
     text-align: center;
-    margin-bottom: 10px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1.5px solid #f0f0f0;
 }
 
 .hgj-section-title {
-    font-size: 2rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: #2d3748;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .hgj-section-desc {
     color: #718096;
-    font-size: 1rem;
+    font-size: 0.8rem;
 }
 
 .hgj-form-box {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     width: 100%;
 }
 
@@ -162,8 +161,8 @@
 .hgj-form-grid {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    margin-bottom: 10px;
+    gap: 12px;
+    margin-bottom: 8px;
     width: 100%;
 }
 
@@ -180,24 +179,24 @@
 .hgj-label {
     font-weight: 600;
     color: #2d3748;
-    margin-bottom: 8px;
-    font-size: 0.95rem;
+    margin-bottom: 6px;
+    font-size: 0.8rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
 }
 
 /* Input Styles */
 .hgj-input,
 .hgj-select,
 .hgj-textarea {
-    padding: 10px 20px;
-    border: 2px solid #e2e8f0;
-    border-radius: 9px;
-    font-size: 1rem;
+    padding: 8px 15px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 7px;
+    font-size: 0.8rem;
     font-family: inherit;
     background: white;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1.5px 8px rgba(0, 0, 0, 0.05);
 }
 
 .hgj-input:focus,
@@ -205,31 +204,31 @@
 .hgj-textarea:focus {
     outline: none;
     border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1), 0 5px 20px rgba(0, 0, 0, 0.1);
-    transform: translateY(-1px);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1), 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-0.8px);
 }
 
 .hgj-textarea {
     resize: vertical;
-    min-height: 80px;
+    min-height: 60px;
 }
 
 /* Radio Group */
 .hgj-radio-group {
     display: flex;
-    gap: 20px;
-    margin-top: 10px;
+    gap: 15px;
+    margin-top: 8px;
 }
 
 .hgj-radio-item {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     cursor: pointer;
-    padding: 8px 10px;
-    border: 2px solid #e2e8f0;
-    border-radius: 9px;
+    padding: 6px 8px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 7px;
     background: white;
     transition: all 0.3s ease;
     flex: 1;
@@ -245,9 +244,9 @@
 }
 
 .hgj-radio-custom {
-    width: 20px;
-    height: 20px;
-    border: 2px solid #cbd5e0;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid #cbd5e0;
     border-radius: 50%;
     position: relative;
     transition: all 0.3s ease;
@@ -260,33 +259,33 @@
 
 .hgj-radio-item input[type="radio"]:checked+.hgj-radio-custom::after {
     content: '';
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     background: white;
     border-radius: 50%;
     position: absolute;
-    top: 4px;
-    left: 4px;
+    top: 3px;
+    left: 3px;
 }
 
 .hgj-debt-id-container {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
 
 .hgj-debt-id-container.copied {
-    animation: copyAnimation 0.6s ease;
+    animation: copyAnimation 0.5s ease;
 }
 
 .hgj-copy-button {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 4px;
-    font-size: 16px;
+    padding: 3px;
+    font-size: 14px;
     color: #666;
     transition: color 0.2s, transform 0.2s;
 }
@@ -309,6 +308,10 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
+}
+
+.hgj-debt-counterparty {
+    font-size: 15px !important;
 }
 
 @keyframes copyAnimation {
@@ -335,48 +338,28 @@
     color: #4a5568;
 }
 
-.hgj-debt-id-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.hgj-copy-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    font-size: 16px;
-    color: #666;
-    transition: color 0.2s;
-}
-
-.hgj-copy-button:hover {
-    color: #333;
-}
-
 /* Buttons */
 .hgj-button {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 10px;
+    gap: 8px;
+    padding: 8px;
     border: none;
-    border-radius: 15px;
-    font-size: 1.1rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
     font-weight: 600;
     width: 100%;
     cursor: pointer;
     transition: all 0.3s ease;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.4px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 .hgj-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
 }
 
 .hgj-button:disabled {
@@ -396,15 +379,15 @@
 }
 
 .hgj-button-icon {
-    font-size: 1.2rem;
+    font-size: 1rem;
 }
 
 /* Spinner */
 .hgj-spinner {
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top: 2px solid white;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    border-top: 1.5px solid white;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -421,21 +404,21 @@
 
 /* Debt List */
 .hgj-debt-list {
-    animation: fadeInUp 0.6s ease;
+    animation: fadeInUp 0.5s ease;
 }
 
 .hgj-debt-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 7px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 5px;
 }
 
 .hgj-debt-card {
     background: white;
-    border-radius: 20px;
-    padding: 3px 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    border-left: 5px solid;
+    border-radius: 15px;
+    padding: 2px 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -447,7 +430,7 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
+    height: 2px;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
     animation: shimmer 2s infinite;
 }
@@ -463,8 +446,8 @@
 }
 
 .hgj-debt-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
 }
 
 .hgj-debt-lend {
@@ -476,63 +459,63 @@
 }
 
 .hgj-debt-summary {
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 
 .hgj-summary-grid {
     display: flex;
-    gap: 10px;
+    gap: 8px;
 }
 
 .hgj-summary-card {
-    padding: 6px 12px;
-    border-radius: 8px;
+    padding: 5px 10px;
+    border-radius: 6px;
     display: flex;
     width: 100%;
     flex-direction: column;
     align-items: flex-start;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1.5px 6px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease;
 }
 
 .hgj-summary-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-3px);
 }
 
 .hgj-summary-lend {
     background-color: #e6f3ff;
-    border-left: 4px solid #1e90ff;
+    border-left: 3px solid #1e90ff;
 }
 
 .hgj-summary-borrow {
     background-color: #fff2e6;
-    border-left: 4px solid #ff8c00;
+    border-left: 3px solid #ff8c00;
 }
 
 .hgj-summary-null {
     background-color: #f0f0f0;
-    border-left: 4px solid #808080;
+    border-left: 3px solid #808080;
 }
 
 .hgj-summary-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 6px;
+    margin-bottom: 6px;
 }
 
 .hgj-summary-icon {
-    font-size: 20px;
+    font-size: 16px;
 }
 
 .hgj-summary-type {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 500;
     color: #333;
 }
 
 .hgj-summary-amount {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 600;
     color: #000;
 }
@@ -541,37 +524,35 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 5px;
+    margin-top: 4px;
 }
 
 .hgj-debt-type {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     font-weight: 600;
     color: #4a5568;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
 }
 
 .hgj-debt-method {
-    font-size: 1rem;
+    font-size: 0.8rem;
 }
 
 .hgj-debt-info h3 {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: #2d3748;
-    /* margin-bottom: 8px; */
 }
 
 .hgj-debt-amount {
-    font-size: 1.3rem;
+    font-size: .9rem;
     font-weight: 800;
     color: #667eea;
-    /* margin-bottom: 10px; */
 }
 
 .hgj-debt-id {
-    font-size: 0.85rem;
+    font-size: 0.7rem;
     color: #a0aec0;
     font-family: 'Courier New', monospace;
 }
@@ -579,19 +560,19 @@
 /* Empty State */
 .hgj-empty-state {
     text-align: center;
-    padding: 60px 20px;
+    padding: 45px 15px;
     color: #718096;
 }
 
 .hgj-empty-icon {
-    font-size: 4rem;
-    margin-bottom: 20px;
+    font-size: 3rem;
+    margin-bottom: 15px;
     opacity: 0.6;
 }
 
 .hgj-empty-state h3 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
     color: #4a5568;
 }
 
@@ -600,19 +581,19 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 200px;
-    font-size: 1.2rem;
+    height: 150px;
+    font-size: 1rem;
     color: white;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     .hgj-container {
-        padding: 15px;
+        padding: 12px;
     }
 
     .hgj-title {
-        font-size: 2.2rem;
+        font-size: 1.8rem;
     }
 
     .hgj-tab-navigation {
@@ -622,17 +603,17 @@
 
     .hgj-tab {
         width: 100%;
-        max-width: 300px;
+        max-width: 240px;
         justify-content: center;
     }
 
     .hgj-content {
-        padding: 25px;
+        padding: 20px;
     }
 
     .hgj-form-grid {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 15px;
     }
 
     .hgj-radio-group {
@@ -646,23 +627,23 @@
 
 @media (max-width: 480px) {
     .hgj-header {
-        padding: 30px 20px;
+        padding: 24px 15px;
     }
 
     .hgj-title {
-        font-size: 1.8rem;
+        font-size: 1.4rem;
     }
 
     .hgj-subtitle {
-        font-size: 1rem;
+        font-size: 0.8rem;
     }
 
     .hgj-content {
-        padding: 20px;
+        padding: 15px;
     }
 
     .hgj-button {
-        padding: 15px 25px;
-        font-size: 1rem;
+        padding: 12px 20px;
+        font-size: 0.8rem;
     }
 }

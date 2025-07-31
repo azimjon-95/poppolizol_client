@@ -1,181 +1,212 @@
+/* expense tracker container */
 .ruberoid-expense-tracker {
     min-height: 100vh;
     background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
-    padding: 10px;
+    padding: 8px;
+    /* reduced from 10px */
 }
 
-.ruberoid-form-panelheader {
-    color: white;
-    border-radius: 16px;
+/* profit icon for 'Sof foyda' */
+.ruberoid-profit-icon {
+    color: #ffa500;
+    font-size: 16px;
+    /* reduced from 20px */
+}
+
+/* form box for tabs */
+.ruberoid-form-box {
+    display: flex;
     margin-bottom: 12px;
-    display: flex;
+    /* reduced from 15px */
 }
 
-.uberoid-form-box {
-    width: 100%;
-    display: flex;
-    margin-bottom: 15px;
-}
-
-.uberoid-form-box>button {
-    width: 50%;
-    padding: 8px 16px;
+.ruberoid-form-box>button {
+    flex: 1;
+    padding: 6px 12px;
+    /* reduced from 8px 16px */
     border: none;
     background-color: #e8e8e8;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
-.uberoid-form-box>button:hover {
+.ruberoid-form-box>button:hover {
     background-color: #d3d3d3;
 }
 
-.uberoid-form-box>button:first-child {
-    border-radius: 0 0 0 15px;
+.ruberoid-form-box>button:first-child {
+    border-radius: 0 0 0 12px;
+    /* reduced from 15px */
     border-right: 1px solid rgba(128, 128, 128, 0.427);
 }
 
-.uberoid-form-box>button:last-child {
-    border-radius: 0 0 16px 0;
+.ruberoid-form-box>button:last-child {
+    border-radius: 0 0 12px 0;
+    /* reduced from 16px */
 }
 
-.ruberoid-form-panelheader button {
-    padding: 8px 16px;
-    width: 100%;
-    border: none;
-    background-color: #e8e8e8;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.ruberoid-form-panelheader button:first-child {
-    border-radius: 0 0 0 15px;
-}
-
-.ruberoid-form-panelheader button:last-child {
-    border-radius: 0 0 16px 0;
-}
-
-.ruberoid-form-panelheader button.active {
+.ruberoid-active-tab {
     background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
     color: white;
-    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    /* reduced from 10px 25px */
     font-weight: bold;
 }
 
-.ruberoid-container {
-    width: 100%;
-}
-
-/* Header */
-.ruberoid-header {
-    text-align: center;
-    margin-bottom: 30px;
-    padding: 20px 0;
-    border-bottom: 2px solid #ccc;
-}
-
-.ruberoid-cash-card {
-    background-color: #e6f3e6;
-    /* Light green for cash */
-}
-
-.ruberoid-bank-card {
-    background-color: #e6f0fa;
-    /* Light blue for bank */
-}
-
-.ruberoid-dollar-card {
-    background-color: #f3e6f3;
-    /* Light purple for dollar */
-}
-
-.ruberoid-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #333;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.ruberoid-title-icon {
-    width: 40px;
-    height: 40px;
-    color: #34d399;
-}
-
-/* Main Content */
+/* main content layout */
 .ruberoid-main-content {
     display: grid;
     grid-template-columns: 1fr 1.5fr;
-    gap: 10px;
+    gap: 8px;
+    /* reduced from 10px */
     width: 100%;
     align-items: start;
 }
 
-.ruberoid-date-filters {
+.ruberoid-main-content_director {
+    grid-template-columns: 1fr;
+}
+
+/* form panel */
+.ruberoid-form-panel {
+    background: linear-gradient(145deg, #ffffff, #f0f0f0);
+    border-radius: 16px;
+    /* reduced from 20px */
+    padding: 0ස;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* expense tracker container */
+.ruberoid-expense-tracker {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+    padding: 8px;
+    /* reduced from 10px */
+}
+
+/* profit icon for 'Sof foyda' */
+.ruberoid-profit-icon {
+    color: #ffa500;
+    font-size: 16px;
+    /* reduced from 20px */
+}
+
+/* form box for tabs */
+.ruberoid-form-box {
+    display: flex;
+    margin-bottom: 12px;
+    /* reduced from 15px */
+}
+
+.ruberoid-form-box>button {
+    flex: 1;
+    padding: 6px 12px;
+    /* reduced from 8px 16px */
+    border: none;
+    background-color: #e8e8e8;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ruberoid-form-box>button:hover {
+    background-color: #d3d3d3;
+}
+
+.ruberoid-form-box>button:first-child {
+    border-radius: 0 0 0 12px;
+    /* reduced from 15px */
+    border-right: 1px solid rgba(128, 128, 128, 0.427);
+}
+
+.ruberoid-form-box>button:last-child {
+    border-radius: 0 0 12px 0;
+    /* reduced from 16px */
+}
+
+.ruberoid-active-tab {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    color: white;
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    /* reduced from 10px 25px */
+    font-weight: bold;
+}
+
+/* main content layout */
+.ruberoid-main-content {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 8px;
+    /* reduced from 10px */
     width: 100%;
+    align-items: start;
 }
 
 .ruberoid-main-content_director {
-    width: 100%;
     grid-template-columns: 1fr;
 }
 
-/* Form Panel */
+/* form panel */
 .ruberoid-form-panel {
     background: linear-gradient(145deg, #ffffff, #f0f0f0);
-    border-radius: 20px;
-    padding: 0 20px 25px 20px;
-    box-shadow:
-        20px 20px 40px rgba(0, 0, 0, 0.1),
-        -20px -20px 40px rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    /* reduced from 20px */
+    padding: 0 16px 20px;
+    /* reduced from 0 20px 25px */
+    box-shadow: 16px 16px 32px rgba(0, 0, 0, 0.1), -16px -16px 32px rgba(255, 255, 255, 0.5);
+    /* reduced from 20px 40px */
     border: 1px solid #ddd;
 }
 
-/* Balance Cards */
-.ruberoid-balance-cards {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
-    margin-bottom: 20px;
+/* balance cards */
+.ruberoid-balance-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
 }
 
 .ruberoid-balance-card {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
+    /* reduced from 15px */
     width: 100%;
-    padding: 10px;
-    border-radius: 15px;
+    padding: 8px;
+    /* reduced from 10px */
+    border-radius: 12px;
+    /* reduced from 15px */
     background: linear-gradient(145deg, #f9f9f9, #e5e5e5);
     border: 1px solid #ccc;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .ruberoid-balance-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+    /* reduced from -2px */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    /* reduced from 10px 20px */
 }
 
 .ruberoid-income-card {
-    border-left: 4px solid #34d399;
+    border-left: 3px solid #34d399;
+    /* reduced from 4px */
 }
 
 .ruberoid-expense-card {
-    border-left: 4px solid #f87171;
+    border-left: 3px solid #f87171;
+    /* reduced from 4px */
 }
 
 .ruberoid-total-card {
-    border-left: 4px solid #60a5fa;
+    border-left: 3px solid #60a5fa;
+    /* reduced from 4px */
 }
 
 .ruberoid-card-icon {
-    width: 24px;
-    height: 24px;
+    width: 18px;
+    /* reduced from 24px */
+    height: 18px;
 }
 
 .ruberoid-income-card .ruberoid-card-icon {
@@ -191,19 +222,23 @@
 }
 
 .ruberoid-card-label {
-    font-size: 0.9rem;
+    font-size: 0.7rem;
+    /* reduced from 0.9rem */
     color: #666;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
+    /* reduced from 5px */
 }
 
 .ruberoid-card-amount {
-    font-size: 1rem;
+    font-size: 0.8rem;
+    /* reduced from 1rem */
     font-weight: 600;
     color: #333;
     text-wrap: nowrap;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
+    /* reduced from 5px */
 }
 
 .ruberoid-positive {
@@ -214,31 +249,39 @@
     color: #f87171 !important;
 }
 
-/* Transaction Form */
+/* transaction form */
 .ruberoid-transaction-form {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 20px;
+    /* reduced from 25px */
 }
 
-/* Type Buttons */
+/* type buttons */
 .ruberoid-type-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    gap: 12px;
+    margin-top: 15px;
+    /* reduced from 15px */
 }
 
 .ruberoid-type-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 15px 20px;
-    border: 2px solid #ccc;
-    border-radius: 12px;
+    gap: 6px;
+    /* reduced from 8px */
+    padding: 12px 16px;
+    /* reduced from 15px 20px */
+    border: 1px solid #ccc;
+    /* reduced from 2px */
+    border-radius: 10px;
+    /* reduced from 12px */
     background: linear-gradient(145deg, #f9f9f9, #e5e5e5);
     color: #333;
-    font-size: 1rem;
+    font-size: 0.8rem;
+    /* reduced from 1rem */
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -253,54 +296,62 @@
     border-color: #34d399 !important;
     background: linear-gradient(145deg, #6ee7b7, #10b981) !important;
     color: white !important;
-    box-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+    box-shadow: 0 0 16px rgba(52, 211, 153, 0.3);
+    /* reduced from 20px */
 }
 
 .ruberoid-active-expense {
     border-color: #f87171 !important;
     background: linear-gradient(145deg, #f87171, #dc2626) !important;
     color: white !important;
-    box-shadow: 0 0 20px rgba(248, 113, 113, 0.3);
+    box-shadow: 0 0 16px rgba(248, 113, 113, 0.3);
+    /* reduced from 20px */
 }
 
 .ruberoid-btn-icon {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    /* reduced from 18px */
+    height: 14px;
 }
 
-/* Form Groups */
+/* form groups */
 .ruberoid-form-group {
     display: flex;
     flex-direction: column;
 }
 
 .ruberoid-form-label {
-    font-size: 0.95rem;
+    font-size: 0.75rem;
+    /* reduced from 0.95rem */
     font-weight: 600;
     color: #555;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
+    /* reduced from 4px */
 }
 
-/* Payment Methods */
+/* payment methods */
 .ruberoid-payment-methods {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    width: 100%;
     display: flex;
-    gap: 10px;
+    gap: 8px;
+    /* reduced from 10px */
 }
 
 .ruberoid-payment-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 12px;
-    border: 2px solid #ccc;
-    border-radius: 10px;
+    gap: 6px;
+    /* reduced from 8px */
+    padding: 10px;
+    /* reduced from 12px */
+    border: 1px solid #ccc;
+    /* reduced from 2px */
+    border-radius: 8px;
+    /* reduced from 10px */
     background: linear-gradient(145deg, #f9f9f9, #e5e5e5);
     color: #333;
-    font-size: 0.9rem;
+    font-size: 0.7rem;
+    /* reduced from 0.9rem */
     font-weight: 500;
     width: 100%;
     cursor: pointer;
@@ -316,24 +367,30 @@
     border-color: #60a5fa !important;
     background: linear-gradient(145deg, #60a5fa, #3b82f6) !important;
     color: white !important;
-    box-shadow: 0 0 15px rgba(96, 165, 250, 0.3);
+    box-shadow: 0 0 12px rgba(96, 165, 250, 0.3);
+    /* reduced from 15px */
 }
 
 .ruberoid-payment-icon {
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    /* reduced from 16px */
+    height: 12px;
 }
 
-/* Form Inputs */
+/* form inputs */
 .ruberoid-form-select,
 .ruberoid-form-input,
 .ruberoid-form-textarea {
-    padding: 15px;
-    border: 2px solid #ccc;
-    border-radius: 10px;
+    padding: 12px;
+    /* reduced from 15px */
+    border: 1px solid #ccc;
+    /* reduced from 2px */
+    border-radius: 8px;
+    /* reduced from 10px */
     background: linear-gradient(145deg, #ffffff, #f0f0f0);
     color: #333;
-    font-size: 1rem;
+    font-size: 0.8rem;
+    /* reduced from 1rem */
     transition: all 0.3s ease;
 }
 
@@ -342,7 +399,8 @@
 .ruberoid-form-textarea:focus {
     outline: none;
     border-color: #60a5fa;
-    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.1);
+    /* reduced from 3px */
 }
 
 .ruberoid-form-select {
@@ -351,128 +409,146 @@
 
 .ruberoid-form-textarea {
     resize: vertical;
-    min-height: 80px;
+    min-height: 64px;
+    /* reduced from 80px */
 }
 
-/* Submit Button */
+/* submit button */
 .ruberoid-submit-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 15px 30px;
+    gap: 8px;
+    /* reduced from 10px */
+    padding: 12px 24px;
+    /* reduced from 15px 30px */
     border: none;
-    border-radius: 12px;
+    border-radius: 10px;
+    /* reduced from 12px */
     background: linear-gradient(145deg, #60a5fa, #3b82f6);
     color: white;
-    font-size: 1.1rem;
+    font-size: 0.9rem;
+    /* reduced from 1.1rem */
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(96, 165, 250, 0.3);
+    box-shadow: 0 3px 12px rgba(96, 165, 250, 0.3);
+    /* reduced from 4px 15px */
 }
 
 .ruberoid-submit-btn:hover {
     background: linear-gradient(145deg, #3b82f6, #2563eb);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(96, 165, 250, 0.4);
+    transform: translateY(-1px);
+    /* reduced from -2px */
+    box-shadow: 0 5px 16px rgba(96, 165, 250, 0.4);
+    /* reduced from 6px 20px */
 }
 
 .ruberoid-submit-btn:active {
     transform: translateY(0);
 }
 
-/* Table Panel */
+/* table panel */
 .ruberoid-table-panel {
     background: linear-gradient(145deg, #ffffff, #f0f0f0);
-    border-radius: 20px;
-    padding: 25px 15px;
-
-    box-shadow:
-        20px 20px 40px rgba(0, 0, 0, 0.1),
-        -20px -20px 40px rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    /* reduced from 20px */
+    padding: 20px 12px;
+    /* reduced from 25px 15px */
+    box-shadow: 16px 16px 32px rgba(0, 0, 0, 0.1), -16px -16px 32px rgba(255, 255, 255, 0.5);
+    /* reduced from 20px 40px */
     border: 1px solid #ddd;
     height: fit-content;
 }
 
-/* Date Filters */
+/* date filters */
 .ruberoid-date-filters {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 25px;
-    padding-bottom: 20px;
+    gap: 16px;
+    /* reduced from 20px */
+    margin-bottom: 20px;
+    /* reduced from 25px */
+    padding-bottom: 16px;
+    /* reduced from 20px */
     border-bottom: 1px solid #ccc;
 }
 
 .ruberoid-date-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+    /* reduced from 8px */
 }
 
 .ruberoid-date-label {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.9rem;
+    gap: 6px;
+    /* reduced from 8px */
+    font-size: 0.7rem;
+    /* reduced from 0.9rem */
     font-weight: 600;
     color: #555;
 }
 
 .ruberoid-date-icon {
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    /* reduced from 16px */
+    height: 12px;
     color: #60a5fa;
 }
 
 .ruberoid-date-input {
-    padding: 12px;
-    border: 2px solid #ccc;
-    border-radius: 8px;
+    padding: 10px;
+    /* reduced from 12px */
+    border: 1px solid #ccc;
+    /* reduced from 2px */
+    border-radius: 6px;
+    /* reduced from 8px */
     background: linear-gradient(145deg, #ffffff, #f0f0f0);
     color: #333;
-    font-size: 0.95rem;
+    font-size: 0.75rem;
+    /* reduced from 0.95rem */
     transition: all 0.3s ease;
 }
 
 .ruberoid-date-input:focus {
     outline: none;
     border-color: #60a5fa;
-    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.1);
+    /* reduced from 3px */
 }
 
-/* Table */
+/* table */
 .ruberoid-table-container {
     background: linear-gradient(145deg, #f0f0f0, #ffffff);
-    border-radius: 15px;
-    overflow: hidden;
+    border-radius: 12px;
+    /* reduced from 15px */
     border: 1px solid #ccc;
     overflow-y: auto;
-    height: calc(100vh - 205px);
+    height: calc(100vh - 165px);
+    /* adjusted from 205px due to reduced padding */
 }
 
 .ruberoid-table-container::-webkit-scrollbar {
-    width: 5px;
-    /* Width of the scrollbar */
+    width: 4px;
+    /* reduced from 5px */
 }
 
 .ruberoid-table-container::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
-    /* Track background, semi-transparent */
-    border-radius: 16px;
-    /* Rounded track to match container */
+    border-radius: 12px;
+    /* reduced from 16px */
 }
 
 .ruberoid-table-container::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.2);
-    /* Thumb color, subtle to blend with glassmorphism */
-    border-radius: 16px;
-    /* Rounded thumb */
-    border: 2px solid transparent;
-    /* Optional: adds spacing around thumb */
+    border-radius: 12px;
+    /* reduced from 16px */
+    border: 1px solid transparent;
+    /* reduced from 2px */
     background-clip: content-box;
-    /* Ensures border doesn't affect thumb color */
 }
 
 .ruberoid-transactions-table {
@@ -482,167 +558,76 @@
 
 .ruberoid-transactions-table th {
     background: linear-gradient(145deg, #e5e5e5, #f9f9f9);
-    padding: 15px 12px;
+    padding: 12px 10px;
+    /* reduced from 15px 12px */
     text-align: left;
     font-weight: 600;
     color: #333;
-    border-bottom: 2px solid #ccc;
-    font-size: 0.9rem;
+    border-bottom: 1px solid #ccc;
+    /* reduced from 2px */
+    font-size: 0.7rem;
+    /* reduced from 0.9rem */
 }
 
 .ruberoid-transactions-table td {
-    padding: 10px 12px;
+    padding: 8px 10px;
+    /* reduced from 10px 12px */
     border-bottom: 1px solid #ddd;
     color: #555;
-    font-size: 0.9rem;
+    font-size: 0.7rem;
+    /* reduced from 0.9rem */
 }
 
 .ruberoid-transaction-row:hover {
     background: linear-gradient(145deg, #ffffff, #f0f0f0);
 }
 
-/* style.css */
-
-/* style.css */
-
-/* Delete button styles */
-.ruberoid-delete-btn {
-    background-color: #ef4444;
-    /* bg-red-500 */
-    color: #ffffff;
-    /* text-white */
-    padding: 0.5rem;
-    /* p-2 */
-    border-radius: 9999px;
-    /* rounded-full */
-    border: none;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s ease-in-out;
-    /* transition-colors duration-200 */
-}
-
-.ruberoid-delete-btn:hover {
-    background-color: #dc2626;
-    /* hover:bg-red-600 */
-}
-
-.ruberoid-delete-btn svg {
-    color: inherit;
-}
-
-/* Popover styles */
-.ruberoid-popover-content {
-    padding: 0.5rem;
-}
-
-.ruberoid-popover-text {
-    margin: 0 0 0.5rem 0;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #1f2937;
-    /* Dark text for readability */
-}
-
-.ruberoid-popover-buttons {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: flex-end;
-}
-
-.ruberoid-popover-btn {
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    border: none;
-    cursor: pointer;
-    font-size: 0.875rem;
-    transition: background-color 0.2s ease-in-out;
-}
-
-.ruberoid-confirm-btn {
-    background-color: #ef4444;
-    /* bg-red-500 */
-    color: #ffffff;
-}
-
-.ruberoid-confirm-btn:hover {
-    background-color: #dc2626;
-    /* hover:bg-red-600 */
-}
-
-.ruberoid-cancel-btn {
-    background-color: #6b7280;
-    /* Gray for cancel */
-    color: #ffffff;
-}
-
-.ruberoid-cancel-btn:hover {
-    background-color: #4b5563;
-    /* Darker gray on hover */
-}
-
-/* Ensure antd popover blends with the theme */
-.ant-popover-inner {
-    background-color: #ffffff;
-    /* White background for antd popover */
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.ant-popover-arrow {
-    border-color: #ffffff !important;
-}
-
+/* no data message */
 .ruberoid-no-data {
     text-align: center;
     color: #999;
     font-style: italic;
-    padding: 40px !important;
+    padding: 32px;
+    /* reduced from 40px */
 }
 
-/* Type Indicator */
+/* type indicator */
 .ruberoid-type-indicator {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    /* reduced from 8px */
 }
 
 .ruberoid-income-icon {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    /* reduced from 18px */
+    height: 14px;
     color: #34d399;
 }
 
 .ruberoid-expense-icon {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    /* reduced from 18px */
+    height: 14px;
     color: #f87171;
 }
 
-.ruberoid-income-text {
-    color: #34d399;
-    font-weight: 600;
-}
-
-.ruberoid-expense-text {
-    color: #f87171;
-    font-weight: 600;
-}
-
-/* Payment Badge */
+/* payment badge */
 .ruberoid-payment-badge {
     display: inline-block;
-    padding: 4px 8px;
+    padding: 3px 6px;
+    /* reduced from 4px 8px */
     background: linear-gradient(145deg, #60a5fa, #3b82f6);
     color: white;
-    border-radius: 6px;
-    font-size: 0.8rem;
+    border-radius: 5px;
+    /* reduced from 6px */
+    font-size: 0.65rem;
+    /* reduced from 0.8rem */
     font-weight: 500;
 }
 
-/* Amount Colors */
+/* amount colors */
 .ruberoid-income-amount {
     color: #34d399 !important;
     font-weight: 600;
@@ -653,19 +638,50 @@
     font-weight: 600;
 }
 
-/* Description */
+/* description */
 .ruberoid-description {
-    max-width: 200px;
+    max-width: 160px;
+    /* reduced from 200px */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-/* Responsive Design */
-@media (max-width: 1200px) {
+/* toast customization */
+.Toastify__toast-theme--dark {
+    background: linear-gradient(145deg, #ffffff, #f0f0f0) !important;
+    border: 1px solid #ccc !important;
+    border-radius: 10px !important;
+    /* reduced from 12px */
+    color: #333 !important;
+}
+
+.Toastify__toast--success {
+    border-left: 3px solid #34d399 !important;
+    /* reduced from 4px */
+}
+
+.Toastify__toast--error {
+    border-left: 3px solid #f87171 !important;
+    /* reduced from 4px */
+}
+
+.Toastify__progress-bar--success {
+    background: #34d399 !important;
+}
+
+.Toastify__progress-bar--error {
+    background: #f87171 !important;
+}
+
+/* responsive design */
+@media (max-width: 960px) {
+
+    /* reduced from 1200px */
     .ruberoid-main-content {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 16px;
+        /* reduced from 20px */
     }
 
     .ruberoid-table-panel {
@@ -673,23 +689,18 @@
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
+
+    /* reduced from 768px */
     .ruberoid-expense-tracker {
-        padding: 10px;
+        padding: 8px;
+        /* reduced from 10px */
     }
 
     .ruberoid-form-panel,
     .ruberoid-table-panel {
-        padding: 20px;
-    }
-
-    .ruberoid-title {
-        font-size: 2rem;
-    }
-
-    .ruberoid-title-icon {
-        width: 30px;
-        height: 30px;
+        padding: 16px;
+        /* reduced from 20px */
     }
 
     .ruberoid-type-buttons {
@@ -705,79 +716,70 @@
     }
 
     .ruberoid-transactions-table {
-        font-size: 0.8rem;
+        font-size: 0.65rem;
+        /* reduced from 0.8rem */
     }
 
     .ruberoid-transactions-table th,
     .ruberoid-transactions-table td {
-        padding: 10px 8px;
+        padding: 8px 6px;
+        /* reduced from 10px 8px */
     }
 }
 
-@media (max-width: 480px) {
-    .ruberoid-title {
-        font-size: 1.5rem;
-        flex-direction: column;
-        gap: 10px;
-    }
+@media (max-width: 360px) {
 
+    /* reduced from 480px */
     .ruberoid-transaction-row td {
         text-wrap: nowrap;
     }
 
     .ruberoid-date-filters {
-        display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 5px;
-        margin-bottom: 5px;
-        padding-bottom: 2px;
-        border-bottom: 1px solid #cccccc00;
+        gap: 4px;
+        /* reduced from 5px */
+        margin-bottom: 4px;
+        /* reduced from 5px */
+        padding-bottom: 0;
+        border-bottom: none;
     }
-
-    .ruberoid-date-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        display: 100% !important;
-    }
-
-
 
     .ruberoid-date-input {
-        display: 100% !important;
-        padding: 5px 12px;
-        border: 2px solid #ccc;
-        border-radius: 5px;
-        background: linear-gradient(145deg, #ffffff, #f0f0f0);
-        color: #333;
-        font-size: 0.95rem;
-        transition: all 0.3s ease;
+        padding: 4px 10px;
+        /* reduced from 5px 12px */
+        border-radius: 4px;
+        /* reduced from 5px */
+        font-size: 0.75rem;
+        /* unchanged to maintain readability */
     }
 
     .ruberoid-expense-tracker {
-        padding: 0px;
-        border-radius: 0px !important;
-        overflow-y: hidden !important;
-        /* background: #000; */
+        padding: 0;
+        border-radius: 0;
+        overflow-y: hidden;
         height: 100vh;
     }
 
-    .ruberoid-balance-cards {
-        gap: 10px;
+    .ruberoid-balance-container {
+        gap: 8px;
+        /* reduced from 10px */
     }
 
     .ruberoid-balance-card {
-        padding: 15px;
+        padding: 12px;
+        /* reduced from 15px */
     }
 
     .ruberoid-card-amount {
-        font-size: 1rem;
+        font-size: 0.8rem;
+        /* reduced from 1rem */
     }
 
     .ruberoid-form-panel,
     .ruberoid-table-panel {
-        padding: 10px 5px;
-        border-radius: 0px;
+        padding: 8px 4px;
+        /* reduced from 10px 5px */
+        border-radius: 0;
     }
 
     .ruberoid-table-panel {
@@ -785,94 +787,42 @@
     }
 
     .ruberoid-table-container {
-        background: linear-gradient(145deg, #f0f0f0, #ffffff);
-        border-radius: 15px;
+        border-radius: 12px;
+        /* reduced from 15px */
         overflow-x: auto;
-        border: 1px solid #ccc;
-        overflow-y: auto;
-        height: calc(100vh - 186px);
+        height: calc(100vh - 150px);
+        /* adjusted from 186px due to reduced padding */
     }
 
-    /* .ruberoid-date-filters {
-        width: 100%;
-        display: flex;
-        grid-template-columns: repeat(1fr) !important;
-    } */
-
     .ruberoid-transactions-table {
-        min-width: 600px;
+        min-width: 480px;
+        /* reduced from 600px */
     }
 }
 
-/* Custom Scrollbar */
+/* custom scrollbar */
 .ruberoid-table-container::-webkit-scrollbar {
-    height: 8px;
+    height: 6px;
+    /* reduced from 8px */
 }
 
 .ruberoid-table-container::-webkit-scrollbar-track {
     background: #f0f0f0;
-    border-radius: 4px;
+    border-radius: 3px;
+    /* reduced from 4px */
 }
 
 .ruberoid-table-container::-webkit-scrollbar-thumb {
     background: linear-gradient(145deg, #60a5fa, #3b82f6);
-    border-radius: 4px;
+    border-radius: 3px;
+    /* reduced from 4px */
 }
 
 .ruberoid-table-container::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(145deg, #3b82f6, #2563eb);
 }
 
-/* Toast Customization */
-.Toastify__toast-theme--dark {
-    background: linear-gradient(145deg, #ffffff, #f0f0f0) !important;
-    border: 1px solid #ccc !important;
-    border-radius: 12px !important;
-    color: #333 !important;
-}
-
-.ruberoid-balance-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    gap: 15px;
-}
-
-.Toastify__toast--success {
-    border-left: 4px solid #34d399 !important;
-}
-
-.Toastify__toast--error {
-    border-left: 4px solid #f87171 !important;
-}
-
-.Toastify__progress-bar--success {
-    background: #34d399 !important;
-}
-
-.Toastify__progress-bar--error {
-    background: #f87171 !important;
-}
-
-/* Loading Animation */
-@keyframes ruberoid-pulse {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.7;
-    }
-}
-
-.ruberoid-loading {
-    animation: ruberoid-pulse 2s infinite;
-}
-
-/* Hover Effects */
+/* hover effects */
 .ruberoid-transaction-row:hover .ruberoid-type-indicator {
     transform: scale(1.05);
     transition: transform 0.2s ease;
@@ -884,21 +834,17 @@
     transition: all 0.2s ease;
 }
 
-/* Focus States */
+/* focus states */
 .ruberoid-type-btn:focus,
 .ruberoid-payment-btn:focus,
 .ruberoid-submit-btn:focus {
-    outline: 2px solid #60a5fa;
-    outline-offset: 2px;
+    outline: 1px solid #60a5fa;
+    /* reduced from 2px */
+    outline-offset: 1px;
+    /* reduced from 2px */
 }
 
-/* Selection Styles */
-::selection {
-    background: rgba(96, 165, 250, 0.3);
-    color: #333;
-}
-
-/* Print Styles */
+/* print styles */
 @media print {
     .ruberoid-expense-tracker {
         background: white !important;

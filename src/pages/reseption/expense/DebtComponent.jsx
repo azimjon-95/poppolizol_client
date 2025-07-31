@@ -55,6 +55,7 @@ const DebtComponent = () => {
     const handleRepayDebt = async () => {
         try {
             await repayDebt(repayData).unwrap();
+
             toast.success('Qarz muvaffaqiyatli to‘landi');
             setRepayData({
                 debtId: '',
@@ -63,7 +64,7 @@ const DebtComponent = () => {
                 note: '',
             });
         } catch (error) {
-            toast.error(`Xato: ${error.data?.error || 'Qarz to‘lashda xatolik yuz berdi'}`);
+            toast.error(`Xato: ${error.data?.message || 'Qarz to‘lashda xatolik yuz berdi'}`);
         }
     };
 
@@ -396,3 +397,5 @@ const DebtComponent = () => {
 };
 
 export default DebtComponent;
+
+

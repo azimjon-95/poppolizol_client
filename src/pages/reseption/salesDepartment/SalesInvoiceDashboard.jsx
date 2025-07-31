@@ -127,13 +127,14 @@ const SalesInvoiceDashboard = () => {
     }, []);
 
     const confirmDeleteSale = async (saleId) => {
+
         try {
             const res = await deleteCartSale(saleId);
 
-            if (res.error.data.state === false) {
-                toast.warning(res.error.data.message || "Sotuvni o'chirishda xatolik yuz berdi.");
-            } else {
+            if (res.data.state === true) {
                 toast.success(res.data.state.message || "Sotuv muvaffaqiyatli o'chirildi!");
+            } else {
+                toast.warning(res.error.data.message || "Sotuvni o'chirishda xatolik yuz berdi.");
             }
             closeModal();
         } catch (error) {
