@@ -128,6 +128,7 @@ const Bn5ProcessDialog = ({
     if (melStock < mel) {
       toast.error("Omborda yetarli Mel yo'q!");
       return false;
+      
     }
 
     const totalMix = bn5 + mel;

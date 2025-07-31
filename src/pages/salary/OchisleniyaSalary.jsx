@@ -1,6 +1,4 @@
 import React from "react";
-import { Card } from "antd";
-import { useGetAllSalaryQuery } from "../../context/salaryApi";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
@@ -23,10 +21,11 @@ function Salary({ data }) {
     const dateKey = dayjs(record.date).utc().format("YYYY-MM-DD");
 
     if (!productionMap[dateKey]) {
-      productionMap[dateKey] = { produced: 0, loaded: 0 };
+      productionMap[dateKey] = { produced: 0, loaded: 0, btm_5_sale: 0 };
     }
-    productionMap[dateKey].produced += record.producedCount;
-    productionMap[dateKey].loaded += record.loadedCount;
+    productionMap[dateKey].produced += record.btm_3;
+    productionMap[dateKey].loaded += record.btm_5;
+    productionMap[dateKey].btm_5_sale += record.btm_5_sale;
 
     record.workers.forEach((worker) => {
       const fio = `${worker.employee?.lastName} ${worker.employee?.firstName}`;
@@ -41,11 +40,12 @@ function Salary({ data }) {
     });
   });
 
-  let totalProduced =
-    data?.reduce((sum, record) => sum + record.producedCount, 0) || 0;
+  let totalProduced = data?.reduce((sum, record) => sum + record.btm_3, 0) || 0;
 
-  let totalLoaded =
-    data?.reduce((sum, record) => sum + record.loadedCount, 0) || 0;
+  let totalLoaded = data?.reduce((sum, record) => sum + record.btm_5, 0) || 0;
+
+  let totalbtm5forSale =
+    data?.reduce((sum, record) => sum + record.btm_5_sale, 0) || 0;
 
   let totalSum = data?.reduce((sum, record) => sum + record.totalSum, 0) || 0;
 
@@ -64,14 +64,20 @@ function Salary({ data }) {
           <p>
             BT-3 qozonga:{" "}
             <b>
-              {totalProduced} kg - {(totalProduced *25 )?.toLocaleString()}{" "}
-              so'm
+              {totalProduced} kg - {(totalProduced * 25)?.toLocaleString()} so'm
             </b>{" "}
           </p>
           <p>
             BT-5 olindi:{" "}
             <b>
               {totalLoaded} kg - {(totalLoaded * 70)?.toLocaleString()} so'm{" "}
+            </b>{" "}
+          </p>
+          <p>
+            BT-5 sotuv uchun:{" "}
+            <b>
+              {totalbtm5forSale} kg -{" "}
+              {(totalbtm5forSale * 150)?.toLocaleString()} so'm{" "}
             </b>{" "}
           </p>
           <p>
@@ -82,8 +88,8 @@ function Salary({ data }) {
       <table border={1}>
         <thead>
           <tr>
-            <th rowSpan={3}>№</th>
-            <th rowSpan={3}>Ism Familiya</th>
+            <th rowSpan={4}>№</th>
+            <th rowSpan={4}>Ism Familiya</th>
             {/* <th rowSpan={3}>Lavozim</th> */}
             <th>BT-3</th>
             {daysOfMonth.map((day) => (
@@ -92,9 +98,17 @@ function Salary({ data }) {
             <th rowSpan={3}>Jami hisoblandi</th>
           </tr>
           <tr>
-            <th>BT-5</th>
+            <th>BT-5 olindi</th>
             {daysOfMonth.map((day) => (
               <th key={`load-${day}`}>{productionMap[day]?.loaded || ""}</th>
+            ))}
+          </tr>
+          <tr>
+            <th>BT-5 sotuv u-n </th>
+            {daysOfMonth.map((day) => (
+              <th key={`load-${day}`}>
+                {productionMap[day]?.btm_5_sale || ""}
+              </th>
             ))}
           </tr>
           <tr>

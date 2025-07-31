@@ -5,12 +5,16 @@ import betumImg from "../../assets/betum.jpg";
 import { GiOilDrum } from "react-icons/gi";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { useGetAllNormaQuery } from "../../context/normaApi";
-import { HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineArrowsRightLeft } from "react-icons/hi2";
+import {
+  HiOutlineArrowTrendingDown,
+  HiOutlineArrowTrendingUp,
+  HiOutlineArrowsRightLeft,
+} from "react-icons/hi2";
 import {
   useGetFinishedProductsQuery,
   useStartProductionProcessMutation,
   useUpdateFinishedMutation,
-  useDeleteFinishedMutation
+  useDeleteFinishedMutation,
 } from "../../context/productionApi";
 import { capitalizeFirstLetter } from "../../hook/CapitalizeFirstLitter";
 import { NumberFormat } from "../../hook/NumberFormat";
@@ -35,7 +39,8 @@ const ProductionSystem = () => {
   const [isDefectiveModalOpen, setIsDefectiveModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedReturnProduct, setSelectedReturnProduct] = useState(null);
-  const [selectedDefectiveProduct, setSelectedDefectiveProduct] = useState(null);
+  const [selectedDefectiveProduct, setSelectedDefectiveProduct] =
+    useState(null);
   const [isDefective, setIsDefective] = useState(false);
   const [filterValue, setFilterValue] = useState("all"); // New state for filter selection
   const [modalOpen, setModalOpen] = useState(false);
@@ -43,24 +48,37 @@ const ProductionSystem = () => {
   const [form] = Form.useForm();
 
   // RTK Query hooks
-  const { data: normas, isLoading: normasLoading, error: normasError } = useGetAllNormaQuery();
-  const { data: finishedProducts, isLoading: productsLoading, error: productsError } = useGetFinishedProductsQuery();
-  const [startProduction, { isLoading: productionLoading }] = useStartProductionProcessMutation();
-  const [updateFinished, { isLoading: updateLoading }] = useUpdateFinishedMutation();
-  const [deleteFinished, { isLoading: deleteLoading }] = useDeleteFinishedMutation();
+  const {
+    data: normas,
+    isLoading: normasLoading,
+    error: normasError,
+  } = useGetAllNormaQuery();
+  const {
+    data: finishedProducts,
+    isLoading: productsLoading,
+    error: productsError,
+  } = useGetFinishedProductsQuery();
+  const [startProduction, { isLoading: productionLoading }] =
+    useStartProductionProcessMutation();
+  const [updateFinished, { isLoading: updateLoading }] =
+    useUpdateFinishedMutation();
+  const [deleteFinished, { isLoading: deleteLoading }] =
+    useDeleteFinishedMutation();
   const [consumedQuantities, setConsumedQuantities] = useState({});
   const role = localStorage.getItem("role");
 
   // Handle errors
   if (normasError) {
     toast.error(
-      normasError.data?.message || "Mahsulot turlari ma'lumotlarini olishda xatolik yuz berdi",
+      normasError.data?.message ||
+        "Mahsulot turlari ma'lumotlarini olishda xatolik yuz berdi",
       { toastId: "normas-error" }
     );
   }
   if (productsError) {
     toast.error(
-      productsError.data?.message || "Tayyor mahsulotlar ma'lumotlarini olishda xatolik yuz berdi",
+      productsError.data?.message ||
+        "Tayyor mahsulotlar ma'lumotlarini olishda xatolik yuz berdi",
       { toastId: "products-error" }
     );
   }
@@ -80,29 +98,33 @@ const ProductionSystem = () => {
       return toast.warning("Iltimos, mahsulot turi va miqdorini tanlang");
     }
 
-    const selectedNormaData = normas?.innerData?.find((n) => n._id === selectedNorma);
-    const materialStats = selectedNormaData?.materials?.map((req) => {
-      const consumed = consumedQuantities[req.materialId._id] || 0;
-      const required = req.quantity * quantityToProduce;
-      const status = getIconStatus(req.materialId._id);
-      return {
-        materialId: req.materialId._id,
-        materialName: req.materialId.name,
-        unit: req.materialId.unit,
-        requiredQuantity: required,
-        consumedQuantity: consumed,
-        status: status,
-        difference: consumed - required,
-      };
-    }) || [];
+    const selectedNormaData = normas?.innerData?.find(
+      (n) => n._id === selectedNorma
+    );
+    const materialStats =
+      selectedNormaData?.materials?.map((req) => {
+        const consumed = consumedQuantities[req.materialId._id] || 0;
+        const required = req.quantity * quantityToProduce;
+        const status = getIconStatus(req.materialId._id);
+        return {
+          materialId: req.materialId._id,
+          materialName: req.materialId.name,
+          unit: req.materialId.unit,
+          requiredQuantity: required,
+          consumedQuantity: consumed,
+          status: status,
+          difference: consumed - required,
+        };
+      }) || [];
 
     try {
       const defectiveData = isDefective
         ? {
-          isDefective: true,
-          defectiveReason: form.getFieldValue("defectiveReason") || "",
-          defectiveDescription: form.getFieldValue("defectiveDescription") || "",
-        }
+            isDefective: true,
+            defectiveReason: form.getFieldValue("defectiveReason") || "",
+            defectiveDescription:
+              form.getFieldValue("defectiveDescription") || "",
+          }
         : {};
 
       await startProduction({
@@ -117,8 +139,9 @@ const ProductionSystem = () => {
         ...defectiveData,
       }).unwrap();
       toast.success(
-        `Muvaffaqiyatli ishlab chiqarildi: ${quantityToProduce} dona ${selectedNormaData?.productName}${isDefective ? " (Brak sifatida belgilandi)" : ""
-        }`
+        `Muvaffaqiyatli ishlab chiqarildi: ${quantityToProduce} dona ${
+          selectedNormaData?.productName
+        }${isDefective ? " (Brak sifatida belgilandi)" : ""}`
       );
       setSelectedNorma("");
       setQuantityToProduce(1);
@@ -126,7 +149,11 @@ const ProductionSystem = () => {
       setIsDefective(false);
       form.resetFields();
     } catch (error) {
-      toast.error(error.data?.innerData || error.data?.message || "Ishlab chiqarishda xatolik yuz berdi");
+      toast.error(
+        error.data?.innerData ||
+          error.data?.message ||
+          "Ishlab chiqarishda xatolik yuz berdi"
+      );
     }
   };
 
@@ -198,22 +225,24 @@ const ProductionSystem = () => {
         isDefective: values.isDefective || false,
         defectiveInfo: values.isDefective
           ? {
-            defectiveReason: values.defectiveReason || "",
-            defectiveDescription: values.defectiveDescription || "",
-            defectiveDate: values.isDefective ? new Date() : null,
-          }
+              defectiveReason: values.defectiveReason || "",
+              defectiveDescription: values.defectiveDescription || "",
+              defectiveDate: values.isDefective ? new Date() : null,
+            }
           : {
-            defectiveReason: "",
-            defectiveDescription: "",
-            defectiveDate: null,
-          },
+              defectiveReason: "",
+              defectiveDescription: "",
+              defectiveDate: null,
+            },
       }).unwrap();
       toast.success("Mahsulot muvaffaqiyatli yangilandi");
       setIsModalOpen(false);
       form.resetFields();
       setSelectedProduct(null);
     } catch (error) {
-      toast.error(error.data?.message || "Mahsulotni yangilashda xatolik yuz berdi");
+      toast.error(
+        error.data?.message || "Mahsulotni yangilashda xatolik yuz berdi"
+      );
     }
   };
 
@@ -224,8 +253,12 @@ const ProductionSystem = () => {
 
   // Determine icon status for each material
   const getIconStatus = (materialId) => {
-    const selectedNormaData = normas?.innerData?.find((n) => n._id === selectedNorma);
-    const material = selectedNormaData?.materials?.find((m) => m.materialId._id === materialId);
+    const selectedNormaData = normas?.innerData?.find(
+      (n) => n._id === selectedNorma
+    );
+    const material = selectedNormaData?.materials?.find(
+      (m) => m.materialId._id === materialId
+    );
     const consumed = consumedQuantities[materialId] || 0;
     const required = material ? material.quantity * quantityToProduce : 0;
 
@@ -260,7 +293,9 @@ const ProductionSystem = () => {
       if (!productMap.has(key)) {
         productMap.set(key, {
           value: key,
-          label: `${capitalizeFirstLetter(product.productName)} (${product.category})`,
+          label: `${capitalizeFirstLetter(product.productName)} (${
+            product.category
+          })`,
         });
       }
     });
@@ -299,7 +334,6 @@ const ProductionSystem = () => {
         pauseOnHover
       />
 
-
       <CustomModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -321,33 +355,51 @@ const ProductionSystem = () => {
           <Form.Item
             label="Miqdor"
             name="quantity"
-            rules={[{ required: true, message: "Iltimos, miqdorni kiriting" }, { type: "number", min: 1, message: "Miqdor 1 dan kichik bo'lmasligi kerak" }]}
+            rules={[
+              { required: true, message: "Iltimos, miqdorni kiriting" },
+              {
+                type: "number",
+                min: 1,
+                message: "Miqdor 1 dan kichik bo'lmasligi kerak",
+              },
+            ]}
           >
             <Input type="number" min="1" step="1" />
           </Form.Item>
           <Form.Item
             label="Tannarx (so'm)"
             name="productionCost"
-            rules={[{ required: true, message: "Iltimos, tannarxni kiriting" }, { type: "number", min: 0, message: "Tannarx manfiy bo'lmasligi kerak" }]}
+            rules={[
+              { required: true, message: "Iltimos, tannarxni kiriting" },
+              {
+                type: "number",
+                min: 0,
+                message: "Tannarx manfiy bo'lmasligi kerak",
+              },
+            ]}
           >
             <Input type="number" min="0" step="1000" />
           </Form.Item>
           <Form.Item name="isDefective" valuePropName="checked">
-            <Checkbox onChange={(e) => setIsDefective(e.target.checked)}>Brak mahsulot</Checkbox>
+            <Checkbox onChange={(e) => setIsDefective(e.target.checked)}>
+              Brak mahsulot
+            </Checkbox>
           </Form.Item>
           {isDefective && (
             <>
               <Form.Item
                 label="Brak sababi"
                 name="defectiveReason"
-                rules={[{ required: true, message: "Iltimos, brak sababini kiriting" }]}
+                rules={[
+                  {
+                    required: true,
+                    message: "Iltimos, brak sababini kiriting",
+                  },
+                ]}
               >
                 <Input placeholder="Sababni kiriting" />
               </Form.Item>
-              <Form.Item
-                label="Brak tavsifi"
-                name="defectiveDescription"
-              >
+              <Form.Item label="Brak tavsifi" name="defectiveDescription">
                 <Input.TextArea placeholder="Tavsifni kiriting" rows={4} />
               </Form.Item>
             </>
@@ -382,11 +434,31 @@ const ProductionSystem = () => {
       >
         {selectedDefectiveProduct ? (
           <div>
-            <p><strong>Mahsulot Nomi:</strong> {capitalizeFirstLetter(selectedDefectiveProduct.productName)}</p>
-            <p><strong>Kategoriya:</strong> {selectedDefectiveProduct.category}</p>
-            <p><strong>Brak Sababi:</strong> {selectedDefectiveProduct.defectiveInfo?.defectiveReason || "Noma'lum"}</p>
-            <p><strong>Brak Tavsifi:</strong> {selectedDefectiveProduct.defectiveInfo?.defectiveDescription || "Tavsif yo'q"}</p>
-            <p><strong>Brak Sanasi:</strong> {selectedDefectiveProduct.defectiveInfo?.defectiveDate ? formatDate(selectedDefectiveProduct.defectiveInfo.defectiveDate) : "Noma'lum"}</p>
+            <p>
+              <strong>Mahsulot Nomi:</strong>{" "}
+              {capitalizeFirstLetter(selectedDefectiveProduct.productName)}
+            </p>
+            <p>
+              <strong>Kategoriya:</strong> {selectedDefectiveProduct.category}
+            </p>
+            <p>
+              <strong>Brak Sababi:</strong>{" "}
+              {selectedDefectiveProduct.defectiveInfo?.defectiveReason ||
+                "Noma'lum"}
+            </p>
+            <p>
+              <strong>Brak Tavsifi:</strong>{" "}
+              {selectedDefectiveProduct.defectiveInfo?.defectiveDescription ||
+                "Tavsif yo'q"}
+            </p>
+            <p>
+              <strong>Brak Sanasi:</strong>{" "}
+              {selectedDefectiveProduct.defectiveInfo?.defectiveDate
+                ? formatDate(
+                    selectedDefectiveProduct.defectiveInfo.defectiveDate
+                  )
+                : "Noma'lum"}
+            </p>
           </div>
         ) : (
           <p>Yuklanmoqda...</p>
@@ -415,19 +487,32 @@ const ProductionSystem = () => {
       >
         {selectedReturnProduct ? (
           <div>
-            <p><strong>Mahsulot Nomi:</strong> {capitalizeFirstLetter(selectedReturnProduct.productName)}</p>
-            <p><strong>Kategoriya:</strong> {selectedReturnProduct.category}</p>
-            <p><strong>Qaytarilgan Sana:</strong> {formatDate(selectedReturnProduct.returnInfo.returnDate)}</p>
-            <p><strong>Qaytarish Sababi:</strong> {selectedReturnProduct.returnInfo.returnReason}</p>
+            <p>
+              <strong>Mahsulot Nomi:</strong>{" "}
+              {capitalizeFirstLetter(selectedReturnProduct.productName)}
+            </p>
+            <p>
+              <strong>Kategoriya:</strong> {selectedReturnProduct.category}
+            </p>
+            <p>
+              <strong>Qaytarilgan Sana:</strong>{" "}
+              {formatDate(selectedReturnProduct.returnInfo.returnDate)}
+            </p>
+            <p>
+              <strong>Qaytarish Sababi:</strong>{" "}
+              {selectedReturnProduct.returnInfo.returnReason}
+            </p>
           </div>
         ) : (
           <p>Yuklanmoqda...</p>
         )}
       </Modal>
 
-      <Tabs defaultActiveKey={role === "direktor" ? "finished" : "production"} className="custom-tabs">
-        {
-          role !== "direktor" &&
+      <Tabs
+        defaultActiveKey={role === "direktor" ? "finished" : "production"}
+        className="custom-tabs"
+      >
+        {role !== "direktor" && (
           <TabPane
             tab={
               <span style={{ display: "flex", alignItems: "center" }}>
@@ -441,13 +526,17 @@ const ProductionSystem = () => {
               <div className="production-card">
                 <div className="category-buttons">
                   <button
-                    className={`category-button ${selectedCategory === "ruberoid" ? "active" : ""}`}
+                    className={`category-button ${
+                      selectedCategory === "ruberoid" ? "active" : ""
+                    }`}
                     onClick={() => setSelectedCategory("ruberoid")}
                   >
                     Ruberoid
                   </button>
                   <button
-                    className={`category-button ${selectedCategory === "polizol" ? "active" : ""}`}
+                    className={`category-button ${
+                      selectedCategory === "polizol" ? "active" : ""
+                    }`}
                     onClick={() => setSelectedCategory("polizol")}
                   >
                     Polizol
@@ -457,7 +546,9 @@ const ProductionSystem = () => {
                 <div className="production-form-box">
                   <div className="production-form-grid">
                     <div>
-                      <label className="form-label">Mahsulot turini tanlang</label>
+                      <label className="form-label">
+                        Mahsulot turini tanlang
+                      </label>
                       <div className="norma-menu">
                         {normasLoading ? (
                           <p>Yuklanmoqda...</p>
@@ -465,7 +556,9 @@ const ProductionSystem = () => {
                           filteredNormas.map((norma) => (
                             <div
                               key={norma._id}
-                              className={`norma-item ${selectedNorma === norma._id ? "selected" : ""}`}
+                              className={`norma-item ${
+                                selectedNorma === norma._id ? "selected" : ""
+                              }`}
                               onClick={() => setSelectedNorma(norma._id)}
                             >
                               {capitalizeFirstLetter(norma.productName)}
@@ -479,7 +572,9 @@ const ProductionSystem = () => {
                   </div>
                   {selectedNorma && (
                     <div className="materials-required-card">
-                      <h3 className="materials-required-title">Kerakli xom ashyolar:</h3>
+                      <h3 className="materials-required-title">
+                        Kerakli xom ashyolar:
+                      </h3>
                       {normas?.innerData
                         ?.find((n) => n._id === selectedNorma)
                         ?.materials?.map((req, index) => (
@@ -489,42 +584,78 @@ const ProductionSystem = () => {
                               Norma: {req.quantity} {req.materialId?.unit}
                             </span>
                             <span className="material-quantity">
-                              Jami kerak: {NumberFormat(req.quantity * quantityToProduce)} {req.materialId?.unit}
+                              Jami kerak:{" "}
+                              {NumberFormat(req.quantity * quantityToProduce)}{" "}
+                              {req.materialId?.unit}
                             </span>
-                            <span className="material-status-icons" style={{ width: "120px" }}>
+                            <span
+                              className="material-status-icons"
+                              style={{ width: "120px" }}
+                            >
                               <HiOutlineArrowTrendingDown
-                                className={`status-icon ${getIconStatus(req.materialId._id) === "insufficient" ? "active insufficient" : ""}`}
+                                className={`status-icon ${
+                                  getIconStatus(req.materialId._id) ===
+                                  "insufficient"
+                                    ? "active insufficient"
+                                    : ""
+                                }`}
                               />
                               <HiOutlineArrowTrendingUp
-                                className={`status-icon ${getIconStatus(req.materialId._id) === "exceed" ? "active exceed" : ""}`}
+                                className={`status-icon ${
+                                  getIconStatus(req.materialId._id) === "exceed"
+                                    ? "active exceed"
+                                    : ""
+                                }`}
                               />
                               <HiOutlineArrowsRightLeft
-                                className={`status-icon ${getIconStatus(req.materialId._id) === "equal" ? "active equal" : ""}`}
+                                className={`status-icon ${
+                                  getIconStatus(req.materialId._id) === "equal"
+                                    ? "active equal"
+                                    : ""
+                                }`}
                               />
                             </span>
                             <span className="materialId_unitInp">
                               <input
                                 type="number"
                                 placeholder="Sariflangan miqdori..."
-                                value={consumedQuantities[req.materialId._id] || ""}
-                                onChange={(e) => handleConsumedQuantityChange(req.materialId._id, e.target.value)}
+                                value={
+                                  consumedQuantities[req.materialId._id] || ""
+                                }
+                                onChange={(e) =>
+                                  handleConsumedQuantityChange(
+                                    req.materialId._id,
+                                    e.target.value
+                                  )
+                                }
                                 className="material-consumed-input"
                                 min="0"
                               />
-                              <span className="materialId_unit">{req.materialId?.unit}</span>
+                              <span className="materialId_unit">
+                                {req.materialId?.unit}
+                              </span>
                             </span>
                           </div>
                         )) || <p>Xom ashyo ma'lumotlari topilmadi</p>}
                       <Form form={form} layout="vertical">
                         <Form.Item name="isDefective" valuePropName="checked">
-                          <Checkbox onChange={(e) => setIsDefective(e.target.checked)}>Brak mahsulot</Checkbox>
+                          <Checkbox
+                            onChange={(e) => setIsDefective(e.target.checked)}
+                          >
+                            Brak mahsulot
+                          </Checkbox>
                         </Form.Item>
                         {isDefective && (
                           <>
                             <Form.Item
                               label="Brak sababi"
                               name="defectiveReason"
-                              rules={[{ required: true, message: "Iltimos, brak sababini kiriting" }]}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Iltimos, brak sababini kiriting",
+                                },
+                              ]}
                             >
                               <Input placeholder="Sababni kiriting" />
                             </Form.Item>
@@ -532,7 +663,10 @@ const ProductionSystem = () => {
                               label="Brak tavsifi"
                               name="defectiveDescription"
                             >
-                              <Input.TextArea placeholder="Tavsifni kiriting" rows={4} />
+                              <Input.TextArea
+                                placeholder="Tavsifni kiriting"
+                                rows={4}
+                              />
                             </Form.Item>
                           </>
                         )}
@@ -545,7 +679,9 @@ const ProductionSystem = () => {
                   <label className="form-label">Ishlab chiqarish miqdori</label>
                   <div className="quantity-input-container">
                     <button
-                      onClick={() => setQuantityToProduce(Math.max(1, quantityToProduce - 1))}
+                      onClick={() =>
+                        setQuantityToProduce(Math.max(1, quantityToProduce - 1))
+                      }
                       className="quantity-button quantity-button-left"
                     >
                       <Minus size={22} />
@@ -554,13 +690,17 @@ const ProductionSystem = () => {
                       type="number"
                       value={quantityToProduce}
                       onChange={(e) =>
-                        setQuantityToProduce(Math.max(1, parseInt(e.target.value) || 1))
+                        setQuantityToProduce(
+                          Math.max(1, parseInt(e.target.value) || 1)
+                        )
                       }
                       className="quantity-input"
                       min="1"
                     />
                     <button
-                      onClick={() => setQuantityToProduce(quantityToProduce + 1)}
+                      onClick={() =>
+                        setQuantityToProduce(quantityToProduce + 1)
+                      }
                       className="quantity-button quantity-button-right"
                     >
                       <Plus size={22} />
@@ -578,14 +718,15 @@ const ProductionSystem = () => {
                   onClick={handleProduce}
                   className="produce-button"
                 >
-                  {productionLoading ? "Ishlab chiqarilmoqda..." : "Ishlab Chiqarish"}
+                  {productionLoading
+                    ? "Ishlab chiqarilmoqda..."
+                    : "Ishlab Chiqarish"}
                 </button>
               </div>
             </div>
           </TabPane>
-        }
-        {
-          role !== "direktor" &&
+        )}
+        {role !== "direktor" && (
           <TabPane
             tab={
               <span style={{ display: "flex", alignItems: "center" }}>
@@ -597,7 +738,7 @@ const ProductionSystem = () => {
           >
             <BitumProductionSystem />
           </TabPane>
-        }
+        )}
         <TabPane
           tab={
             <span style={{ display: "flex", alignItems: "center" }}>
@@ -681,7 +822,8 @@ const ProductionSystem = () => {
                         <RiDeleteBinLine size={20} />
                       </button>
                     </div>
-                    {product.category === "Stakan" || product.category === "Qop" ? (
+                    {product.category === "Stakan" ||
+                    product.category === "Qop" ? (
                       <div className="product-imagebn">
                         <img src={betumImg} alt="Bitum" />
                         {product.isReturned && (
@@ -746,7 +888,8 @@ const ProductionSystem = () => {
                         )}
                       </div>
                     )}
-                    {product.category === "Stakan" || product.category === "Qop" ? (
+                    {product.category === "Stakan" ||
+                    product.category === "Qop" ? (
                       <h3 className="product-name">
                         BN-5 {capitalizeFirstLetter(product.productName)}
                       </h3>
@@ -759,10 +902,12 @@ const ProductionSystem = () => {
                       📂 Kategoriya: <span>{product.category}</span>
                     </p>
                     <p className="product-cost">
-                      💰 <strong>Tannarx:</strong> <span>{NumberFormat(+product.productionCost)} so'm</span>
+                      💰 <strong>Tannarx:</strong>{" "}
+                      <span>{NumberFormat(+product.productionCost)} so'm</span>
                     </p>
                     <div className="product-quantity-block">
-                      {product.category === "Stakan" || product.category === "Qop" ? (
+                      {product.category === "Stakan" ||
+                      product.category === "Qop" ? (
                         <span className="product-quantity">
                           {NumberFormat(product.quantity)} kg
                         </span>
@@ -772,12 +917,15 @@ const ProductionSystem = () => {
                         </span>
                       )}
                       <span className="product-Cost">
-                        Jami: {NumberFormat(+product.productionCost * +product.quantity)} so'm
+                        Jami:{" "}
+                        {NumberFormat(
+                          +product.productionCost * +product.quantity
+                        )}{" "}
+                        so'm
                       </span>
                     </div>
                   </div>
                 ))
-
               ) : (
                 <div className="empty-state-container">
                   <Archive size={48} className="empty-icon" />
@@ -787,7 +935,6 @@ const ProductionSystem = () => {
             </div>
           </div>
         </TabPane>
-
 
         <TabPane
           tab={
@@ -831,5 +978,3 @@ const ProductionSystem = () => {
 };
 
 export default ProductionSystem;
-
-
