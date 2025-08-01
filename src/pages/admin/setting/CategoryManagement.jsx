@@ -6,19 +6,33 @@ import {
     useDeleteCategoryMutation,
     useUpdateCategoryMutation
 } from '../../../context/categoryApi';
+import {
+    useCreateAdditionExpenMutation,
+    useGetAllAdditionExpenQuery,
+    useUpdateAdditionExpenMutation
+} from '../../../context/additionExpenApi';
 import './styles/ProductManagement.css';
 
 const CatigoryManagement = () => {
-    // Consolidated form state
-    const [formData, setFormData] = useState({
+    // Product form state
+    const [productFormData, setProductFormData] = useState({
         category: '',
         productName: '',
         productionCost: '',
         loadingCost: ''
     });
-    const [notification, setNotification] = useState({ message: '', type: '' });
-    const [editId, setEditId] = useState(null);
+    const [productNotification, setProductNotification] = useState({ message: '', type: '' });
+    const [productEditId, setProductEditId] = useState(null);
     const [availableProducts, setAvailableProducts] = useState([]);
+
+    // Expense form state
+    const [expenseFormData, setExpenseFormData] = useState({
+        saturdayWage: '',
+        periodicExpenses: '',
+        additionalExpenses: ''
+    });
+    const [expenseNotification, setExpenseNotification] = useState({ message: '', type: '' });
+    const [expenseEditId, setExpenseEditId] = useState(null);
 
     // Product lists
     const productLists = {
@@ -40,88 +54,179 @@ const CatigoryManagement = () => {
 
     // API hooks
     const { data: products = [], isLoading: isCategoriesLoading } = useGetAllCategoriesQuery();
-    const [createProduct, { isLoading: isCreating }] = useCreateCategoryMutation();
+    const [createProduct, { isLoading: isCreatingProduct }] = useCreateCategoryMutation();
     const [updateProduct] = useUpdateCategoryMutation();
     const [deleteProduct] = useDeleteCategoryMutation();
 
+    const { data: expenses = [], isLoading: isExpensesLoading } = useGetAllAdditionExpenQuery();
+    const [createExpense, { isLoading: isCreatingExpense }] = useCreateAdditionExpenMutation();
+    const [updateExpense] = useUpdateAdditionExpenMutation();
+
     // Update available products when category changes
     useEffect(() => {
-        setAvailableProducts(productLists[formData.category] || []);
-        setFormData(prev => ({ ...prev, productName: '' }));
-    }, [formData.category]);
+        setAvailableProducts(productLists[productFormData.category] || []);
+        setProductFormData(prev => ({ ...prev, productName: '' }));
+    }, [productFormData.category]);
 
-    // Show notification
-    const showNotification = useCallback((message, type) => {
-        setNotification({ message, type });
-        setTimeout(() => setNotification({ message: '', type: '' }), 3000);
+    // Show notification for products
+    const showProductNotification = useCallback((message, type) => {
+        setProductNotification({ message, type });
+        setTimeout(() => setProductNotification({ message: '', type: '' }), 3000);
     }, []);
 
-    // Handle form input changes
-    const handleInputChange = useCallback((e) => {
+    // Show notification for expenses
+    const showExpenseNotification = useCallback((message, type) => {
+        setExpenseNotification({ message, type });
+        setTimeout(() => setExpenseNotification({ message: '', type: '' }), 3000);
+    }, []);
+
+    // Handle product form input changes
+    const handleProductInputChange = useCallback((e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setProductFormData(prev => ({ ...prev, [name]: value }));
     }, []);
 
-    // Clear form
-    const clearForm = useCallback(() => {
-        setFormData({
+    // Handle expense form input changes
+    const handleExpenseInputChange = useCallback((e) => {
+        const { name, value } = e.target;
+        setExpenseFormData(prev => ({ ...prev, [name]: value }));
+    }, []);
+
+    // Clear product form
+    const clearProductForm = useCallback(() => {
+        setProductFormData({
             category: '',
             productName: '',
             productionCost: '',
             loadingCost: ''
         });
-        setEditId(null);
+        setProductEditId(null);
     }, []);
 
-    // Validate form
-    const validateForm = useCallback(() => {
-        const { category, productName, productionCost, loadingCost } = formData;
+    // Clear expense form
+    const clearExpenseForm = useCallback(() => {
+        setExpenseFormData({
+            saturdayWage: '',
+            periodicExpenses: '',
+            additionalExpenses: ''
+        });
+        setExpenseEditId(null);
+    }, []);
+
+    // Validate product form
+    const validateProductForm = useCallback(() => {
+        const { category, productName, productionCost, loadingCost } = productFormData;
         if (!category || !productName || !productionCost || !loadingCost) {
-            showNotification("Barcha maydonlarni to'ldiring!", 'error');
+            showProductNotification("Barcha maydonlarni to'ldiring!", 'error');
             return false;
         }
         if (isNaN(parseFloat(productionCost)) || isNaN(parseFloat(loadingCost))) {
-            showNotification("Narxlar raqam bo'lishi kerak!", 'error');
+            showProductNotification("Narxlar raqam bo'lishi kerak!", 'error');
             return false;
         }
         return true;
-    }, [formData, showNotification]);
+    }, [productFormData, showProductNotification]);
+
+    // Validate expense form
+    const validateExpenseForm = useCallback(() => {
+        const { saturdayWage, periodicExpenses, additionalExpenses } = expenseFormData;
+        if (!saturdayWage || !periodicExpenses || !additionalExpenses) {
+            showExpenseNotification("Barcha maydonlarni to'ldiring!", 'error');
+            return false;
+        }
+        if (
+            isNaN(parseFloat(saturdayWage)) ||
+            isNaN(parseFloat(periodicExpenses)) ||
+            isNaN(parseFloat(additionalExpenses))
+        ) {
+            showExpenseNotification("Barcha qiymatlar raqam bo'lishi kerak!", 'error');
+            return false;
+        }
+        return true;
+    }, [expenseFormData, showExpenseNotification]);
 
     // Handle product submission (create or update)
-    const handleSubmit = useCallback(async () => {
-        if (!validateForm()) return;
+    const handleProductSubmit = useCallback(async () => {
+        if (!validateProductForm()) return;
 
         const productData = {
-            name: formData.productName,
-            category: formData.category,
-            productionCost: parseFloat(formData.productionCost),
-            loadingCost: parseFloat(formData.loadingCost),
-            createdAt: editId ? undefined : new Date().toLocaleDateString('uz-UZ')
+            name: productFormData.productName,
+            category: productFormData.category,
+            productionCost: parseFloat(productFormData.productionCost),
+            loadingCost: parseFloat(productFormData.loadingCost),
+            createdAt: productEditId ? undefined : new Date().toLocaleDateString('uz-UZ')
         };
 
         try {
-            if (editId) {
-                await updateProduct({ id: editId, ...productData }).unwrap();
-                showNotification('Mahsulot muvaffaqiyatli yangilandi!', 'success');
+            if (productEditId) {
+                await updateProduct({ id: productEditId, ...productData }).unwrap();
+                showProductNotification('Mahsulot muvaffaqiyatli yangilandi!', 'success');
             } else {
                 await createProduct(productData).unwrap();
-                showNotification('Mahsulot muvaffaqiyatli qo\'shildi!', 'success');
+                showProductNotification('Mahsulot muvaffaqiyatli qo\'shildi!', 'success');
             }
-            clearForm();
+            clearProductForm();
         } catch (error) {
-            showNotification(`Mahsulot ${editId ? 'yangilashda' : 'qo\'shishda'} xatolik yuz berdi!`, 'error');
+            showProductNotification(`Mahsulot ${productEditId ? 'yangilashda' : 'qo\'shishda'} xatolik yuz berdi!`, 'error');
         }
-    }, [formData, editId, createProduct, updateProduct, showNotification, clearForm, validateForm]);
+    }, [productFormData, productEditId, createProduct, updateProduct, showProductNotification, clearProductForm, validateProductForm]);
+
+    // Handle expense submission (create or update)
+    const handleExpenseSubmit = useCallback(async (e) => {
+        e.preventDefault();
+        if (!validateExpenseForm()) return;
+
+        // Check if expense already exists (prevent duplicate creation)
+        const existingExpense = expenses?.innerData?.find(exp =>
+            exp.saturdayWage === parseFloat(expenseFormData.saturdayWage) &&
+            exp.periodicExpenses === parseFloat(expenseFormData.periodicExpenses) &&
+            exp.additionalExpenses === parseFloat(expenseFormData.additionalExpenses)
+        );
+
+        if (!expenseEditId && existingExpense) {
+            showExpenseNotification("Bu xarajatlar allaqachon mavjud!", 'error');
+            return;
+        }
+
+        const expenseData = {
+            saturdayWage: parseFloat(expenseFormData.saturdayWage),
+            periodicExpenses: parseFloat(expenseFormData.periodicExpenses),
+            additionalExpenses: parseFloat(expenseFormData.additionalExpenses)
+        };
+
+        try {
+            if (expenseEditId) {
+                await updateExpense({ id: expenseEditId, ...expenseData }).unwrap();
+                showExpenseNotification('Xarajatlar muvaffaqiyatli yangilandi!', 'success');
+            } else {
+                await createExpense(expenseData).unwrap();
+                showExpenseNotification('Xarajatlar muvaffaqiyatli qo\'shildi!', 'success');
+            }
+            clearExpenseForm();
+        } catch (error) {
+            showExpenseNotification(`Xarajatlar ${expenseEditId ? 'yangilashda' : 'qo\'shishda'} xatolik yuz berdi!`, 'error');
+        }
+    }, [expenseFormData, expenseEditId, createExpense, updateExpense, showExpenseNotification, clearExpenseForm, validateExpenseForm, expenses]);
 
     // Handle edit product
     const handleEditProduct = useCallback((product) => {
-        setFormData({
+        setProductFormData({
             category: product.category,
             productName: product.name,
             productionCost: product.productionCost.toString(),
             loadingCost: product.loadingCost.toString()
         });
-        setEditId(product._id);
+        setProductEditId(product._id);
+    }, []);
+
+    // Handle edit expense
+    const handleEditExpense = useCallback((expense) => {
+        setExpenseFormData({
+            saturdayWage: expense.saturdayWage.toString(),
+            periodicExpenses: expense.periodicExpenses.toString(),
+            additionalExpenses: expense.additionalExpenses.toString()
+        });
+        setExpenseEditId(expense._id);
     }, []);
 
     // Handle delete product
@@ -130,19 +235,24 @@ const CatigoryManagement = () => {
 
         try {
             await deleteProduct(id).unwrap();
-            showNotification("Mahsulot o'chirildi!", 'success');
+            showProductNotification("Mahsulot o'chirildi!", 'success');
         } catch (error) {
-            showNotification("Mahsulot o'chirishda xatolik yuz berdi!", 'error');
+            showProductNotification("Mahsulot o'chirishda xatolik yuz berdi!", 'error');
         }
-    }, [deleteProduct, showNotification]);
+    }, [deleteProduct, showProductNotification]);
 
-    // Handle Enter key press
-    const handleKeyPress = useCallback((e) => {
-        if (e.key === 'Enter') handleSubmit();
-    }, [handleSubmit]);
+    // Handle product Enter key press
+    const handleProductKeyPress = useCallback((e) => {
+        if (e.key === 'Enter') handleProductSubmit();
+    }, [handleProductSubmit]);
 
-    // createdAt "YYYY.MM.DD HH:MM"
-    const createdAt = useCallback((createdAt) => {
+    // Handle expense Enter key press
+    const handleExpenseKeyPress = useCallback((e) => {
+        if (e.key === 'Enter') handleExpenseSubmit(e);
+    }, [handleExpenseSubmit]);
+
+    // Format createdAt to "YYYY.MM.DD HH:MM"
+    const formatCreatedAt = useCallback((createdAt) => {
         const date = new Date(createdAt);
         const year = date.getFullYear().toString().padStart(4, '0');
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -157,17 +267,19 @@ const CatigoryManagement = () => {
             <div className="hyu-main-wrapper">
                 {/* Form Section */}
                 <div className="hyu-form-section">
-                    <h2 className="hyu-form-title">
-                        {editId ? 'Mahsulotni Yangilash' : 'Yangi Mahsulot Qo\'shish'}
+                    <h2 className="hyu-table-title">
+                        {productEditId ? 'Mahsulotni Yangilash' : 'Yangi Mahsulot Qo\'shish'}
                     </h2>
-                    <div className="hyu-form">
+
+
+                    <div className="hyu-form-elem">
                         <div className="hyu-form-group">
                             <label className="hyu-label">Kategoriya</label>
                             <select
                                 name="category"
                                 className="hyu-select"
-                                value={formData.category}
-                                onChange={handleInputChange}
+                                value={productFormData.category}
+                                onChange={handleProductInputChange}
                                 disabled={isCategoriesLoading}
                             >
                                 <option value="">Kategoriyani tanlang</option>
@@ -182,9 +294,9 @@ const CatigoryManagement = () => {
                             <select
                                 name="productName"
                                 className="hyu-select"
-                                value={formData.productName}
-                                onChange={handleInputChange}
-                                disabled={!formData.category || !availableProducts.length}
+                                value={productFormData.productName}
+                                onChange={handleProductInputChange}
+                                disabled={!productFormData.category || !availableProducts.length}
                             >
                                 <option value="">Mahsulot nomini tanlang</option>
                                 {availableProducts.map(name => (
@@ -200,9 +312,9 @@ const CatigoryManagement = () => {
                                 name="productionCost"
                                 className="hyu-input"
                                 placeholder="Masalan: 50000"
-                                value={formData.productionCost}
-                                onChange={handleInputChange}
-                                onKeyPress={handleKeyPress}
+                                value={productFormData.productionCost}
+                                onChange={handleProductInputChange}
+                                onKeyPress={handleProductKeyPress}
                             />
                         </div>
 
@@ -213,9 +325,9 @@ const CatigoryManagement = () => {
                                 name="loadingCost"
                                 className="hyu-input"
                                 placeholder="Masalan: 5000"
-                                value={formData.loadingCost}
-                                onChange={handleInputChange}
-                                onKeyPress={handleKeyPress}
+                                value={productFormData.loadingCost}
+                                onChange={handleProductInputChange}
+                                onKeyPress={handleProductKeyPress}
                             />
                         </div>
 
@@ -223,22 +335,127 @@ const CatigoryManagement = () => {
                             <button
                                 type="button"
                                 className="hyu-submit-btn"
-                                onClick={handleSubmit}
-                                disabled={isCreating}
+                                onClick={handleProductSubmit}
+                                disabled={isCreatingProduct}
                             >
-                                {editId ? 'Yangilash' : 'Qo\'shish'}
+                                {productEditId ? 'Yangilash' : 'Qo\'shish'}
                             </button>
-                            {editId && (
+                            {productEditId && (
                                 <button
                                     type="button"
                                     className="hyu-cancel-btn"
-                                    onClick={clearForm}
+                                    onClick={clearProductForm}
                                 >
                                     Bekor qilish
                                 </button>
                             )}
                         </div>
                     </div>
+
+                    <br />
+
+                    <div className="hyu-additional">
+                        <h2 className="hyu-table-title">
+                            {expenseEditId ? 'Xarajatlarni Yangilash' : 'Tannarx va boshqa xarajatlar'}
+                        </h2>
+
+                        <div className="hyu-f-result">
+                            {expenses?.innerData?.length === 0 ? (
+                                <div className="hyu-empty-state">
+                                    <p>Hozircha xarajatlar yo'q</p>
+                                </div>
+                            ) : (
+                                <div className="hyu-expense-list">
+                                    {expenses?.innerData?.map((expense, index) => (
+                                        <div key={index} className="hyu-expense-item">
+                                            <div className="hyu-expense-field">
+                                                <span className="hyu-label">Shanbalik Ish Haqi:</span>
+                                                <span className='hyu-expense-label'>{expense.saturdayWage.toLocaleString()} so'm</span>
+                                            </div>
+                                            <div className="hyu-expense-field">
+                                                <span className="hyu-label">Davriy Xarajatlar:</span>
+                                                <span className='hyu-expense-label'>{expense.periodicExpenses}%</span>
+                                            </div>
+                                            <div className="hyu-expense-field">
+                                                <span className="hyu-label">Qo'shimcha Xarajatlar:</span>
+                                                <span className='hyu-expense-label'>{expense.additionalExpenses}%</span>
+                                            </div>
+                                            <div className="hyu-expense-actions">
+                                                <button
+                                                    className="hyu-edit-btn"
+                                                    onClick={() => handleEditExpense(expense)}
+                                                >
+                                                    <FaEdit />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <form className="hyu-form" onSubmit={handleExpenseSubmit}>
+                            <div className="hyu-form-group">
+                                <label className="hyu-label">Shanba Ish Haqi (UZS)</label>
+                                <input
+                                    type="number"
+                                    name="saturdayWage"
+                                    className="hyu-input"
+                                    placeholder="Masalan: 50000"
+                                    value={expenseFormData.saturdayWage}
+                                    onChange={handleExpenseInputChange}
+                                    onKeyPress={handleExpenseKeyPress}
+                                    disabled={isExpensesLoading}
+                                />
+                            </div>
+                            <div className="hyu-form-group">
+                                <label className="hyu-label">Davriy Xarajatlar (%)</label>
+                                <input
+                                    type="number"
+                                    name="periodicExpenses"
+                                    className="hyu-input"
+                                    placeholder="Misol: 4%"
+                                    value={expenseFormData.periodicExpenses}
+                                    onChange={handleExpenseInputChange}
+                                    onKeyPress={handleExpenseKeyPress}
+                                    disabled={isExpensesLoading}
+                                />
+                            </div>
+                            <div className="hyu-form-group">
+                                <label className="hyu-label">Qo'shimcha Xarajatlar (%)</label>
+                                <input
+                                    type="number"
+                                    name="additionalExpenses"
+                                    className="hyu-input"
+                                    placeholder="Misol: 2%"
+                                    value={expenseFormData.additionalExpenses}
+                                    onChange={handleExpenseInputChange}
+                                    onKeyPress={handleExpenseKeyPress}
+                                    disabled={isExpensesLoading}
+                                />
+                            </div>
+                            <div className="hyu-form-actions">
+                                <button
+                                    type="submit"
+                                    className="hyu-submit-btn"
+                                    disabled={isCreatingExpense || isExpensesLoading}
+                                >
+                                    {expenseEditId ? 'Yangilash' : 'Qo\'shish'}
+                                </button>
+                                {expenseEditId && (
+                                    <button
+                                        type="button"
+                                        className="hyu-cancel-btn"
+                                        onClick={clearExpenseForm}
+                                    >
+                                        Bekor qilish
+                                    </button>
+                                )}
+                            </div>
+                        </form>
+                    </div>
+
+
                 </div>
 
                 {/* Table Section */}
@@ -276,14 +493,13 @@ const CatigoryManagement = () => {
                                             <td className="hyu-price">
                                                 {product.loadingCost.toLocaleString()} UZS
                                             </td>
-                                            <td className="hyu-date">{createdAt(product.createdAt)}</td>
+                                            <td className="hyu-date">{formatCreatedAt(product.createdAt)}</td>
                                             <td>
                                                 <button
                                                     className="hyu-edit-btn"
                                                     onClick={() => handleEditProduct(product)}
                                                 >
                                                     <FaEdit />
-
                                                 </button>
                                                 <button
                                                     className="hyu-delete-btn"
@@ -301,9 +517,9 @@ const CatigoryManagement = () => {
                 </div>
             </div>
 
-            {notification.message && (
-                <div className={`hyu-notification ${notification.type} show`}>
-                    {notification.message}
+            {(productNotification.message || expenseNotification.message) && (
+                <div className={`hyu-notification ${productNotification.message ? productNotification.type : expenseNotification.type} show`}>
+                    {productNotification.message || expenseNotification.message}
                 </div>
             )}
         </div>
@@ -311,3 +527,5 @@ const CatigoryManagement = () => {
 };
 
 export default CatigoryManagement;
+
+

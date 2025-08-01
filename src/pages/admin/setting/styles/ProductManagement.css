@@ -14,7 +14,7 @@
 .hyu-table-section {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
-    padding: 20px 10px;
+    padding: 10px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -23,8 +23,8 @@
 .hyu-form-title,
 .hyu-table-title {
     color: #2d3748;
-    font-size: 24px;
-    margin-bottom: 25px;
+    font-size: 19px;
+    margin-bottom: 15px;
     text-align: center;
     font-weight: 600;
     position: relative;
@@ -43,8 +43,13 @@
     border-radius: 2px;
 }
 
-.hyu-form-group {
-    margin-bottom: 20px;
+.hyu-form-elem .hyu-form-group {
+    margin-bottom: 10px;
+}
+
+.hyu-f-result {
+    width: 100%;
+    display: flex;
 }
 
 .hyu-label {
@@ -104,7 +109,7 @@
 }
 
 .hyu-table-wrapper {
-    max-height: calc(100vh - 160px);
+    max-height: calc(100vh - 105px);
     overflow-y: auto;
     overflow-x: hidden;
     border-radius: 12px;
@@ -128,7 +133,7 @@
 
 .hyu-table th,
 .hyu-table td {
-    padding: 12px 8px;
+    padding: 6px 8px;
     text-align: left;
     border-bottom: 1px solid #e2e8f0;
 }
@@ -278,6 +283,158 @@
 .hyu-notification.show {
     transform: translateX(0);
 }
+
+/* ====================================== */
+.hyu-expense-list {
+    display: flex;
+    width: 100% !important;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.hyu-expense-item {
+    display: flex;
+    /* align-items: center; */
+    justify-content: space-between;
+    width: 100% !important;
+    padding: 7px 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin: 10px 0;
+    gap: 20px;
+}
+
+.hyu-expense-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.hyu-expense-label {
+    font-weight: 500;
+    color: #000000;
+    font-size: 13px;
+    text-wrap: nowrap;
+}
+
+.hyu-expense-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.hyu-additional {
+    margin-bottom: 20px;
+}
+
+.hyu-form-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.hyu-form {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.hyu-form> :nth-child(4) {
+    grid-column: span 3;
+}
+
+.hyu-form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.hyu-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 5px;
+    text-wrap: nowrap;
+}
+
+.hyu-input {
+    padding: 11px;
+    border: 2px solid #e7eced;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.hyu-input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.hyu-form-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.hyu-submit-btn {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.hyu-submit-btn:hover {
+    background-color: #0056b3;
+}
+
+.hyu-submit-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.hyu-cancel-btn {
+    padding: 10px 20px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.hyu-cancel-btn:hover {
+    background-color: #5a6268;
+}
+
+.hyu-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.hyu-notification.show {
+    opacity: 1;
+}
+
+.hyu-notification.success {
+    background-color: #28a745;
+}
+
+.hyu-notification.error {
+    background-color: #dc3545;
+}
+
+/* ====================================== */
 
 @media (max-width: 1200px) {
     .hyu-main-wrapper {

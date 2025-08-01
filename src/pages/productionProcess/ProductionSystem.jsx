@@ -73,14 +73,14 @@ const ProductionSystem = () => {
   if (normasError) {
     toast.error(
       normasError.data?.message ||
-        "Mahsulot turlari ma'lumotlarini olishda xatolik yuz berdi",
+      "Mahsulot turlari ma'lumotlarini olishda xatolik yuz berdi",
       { toastId: "normas-error" }
     );
   }
   if (productsError) {
     toast.error(
       productsError.data?.message ||
-        "Tayyor mahsulotlar ma'lumotlarini olishda xatolik yuz berdi",
+      "Tayyor mahsulotlar ma'lumotlarini olishda xatolik yuz berdi",
       { toastId: "products-error" }
     );
   }
@@ -138,11 +138,11 @@ const ProductionSystem = () => {
     try {
       const defectiveData = isDefective
         ? {
-            isDefective: true,
-            defectiveReason: form.getFieldValue("defectiveReason") || "",
-            defectiveDescription:
-              form.getFieldValue("defectiveDescription") || "",
-          }
+          isDefective: true,
+          defectiveReason: form.getFieldValue("defectiveReason") || "",
+          defectiveDescription:
+            form.getFieldValue("defectiveDescription") || "",
+        }
         : {};
 
       await startProduction({
@@ -159,8 +159,7 @@ const ProductionSystem = () => {
         ...defectiveData,
       }).unwrap();
       toast.success(
-        `Muvaffaqiyatli ishlab chiqarildi: ${quantityToProduce} dona ${
-          selectedNormaData?.productName
+        `Muvaffaqiyatli ishlab chiqarildi: ${quantityToProduce} dona ${selectedNormaData?.productName
         }${isDefective ? " (Brak sifatida belgilandi)" : ""}`
       );
       setSelectedNorma("");
@@ -173,8 +172,8 @@ const ProductionSystem = () => {
     } catch (error) {
       toast.error(
         error.data?.innerData ||
-          error.data?.message ||
-          "Ishlab chiqarishda xatolik yuz berdi"
+        error.data?.message ||
+        "Ishlab chiqarishda xatolik yuz berdi"
       );
     }
   };
@@ -218,15 +217,15 @@ const ProductionSystem = () => {
         isDefective: values.isDefective || false,
         defectiveInfo: values.isDefective
           ? {
-              defectiveReason: values.defectiveReason || "",
-              defectiveDescription: values.defectiveDescription || "",
-              defectiveDate: values.isDefective ? new Date() : null,
-            }
+            defectiveReason: values.defectiveReason || "",
+            defectiveDescription: values.defectiveDescription || "",
+            defectiveDate: values.isDefective ? new Date() : null,
+          }
           : {
-              defectiveReason: "",
-              defectiveDescription: "",
-              defectiveDate: null,
-            },
+            defectiveReason: "",
+            defectiveDescription: "",
+            defectiveDate: null,
+          },
       }).unwrap();
       toast.success("Mahsulot muvaffaqiyatli yangilandi");
       setIsModalOpen(false);
@@ -285,9 +284,8 @@ const ProductionSystem = () => {
       if (!productMap.has(key)) {
         productMap.set(key, {
           value: key,
-          label: `${capitalizeFirstLetter(product.productName)} (${
-            product.category
-          })`,
+          label: `${capitalizeFirstLetter(product.productName)} (${product.category
+            })`,
         });
       }
     });
@@ -445,8 +443,8 @@ const ProductionSystem = () => {
               <strong>Brak Sanasi:</strong>{" "}
               {selectedDefectiveProduct.defectiveInfo?.defectiveDate
                 ? formatDate(
-                    selectedDefectiveProduct.defectiveInfo.defectiveDate
-                  )
+                  selectedDefectiveProduct.defectiveInfo.defectiveDate
+                )
                 : "Noma'lum"}
             </p>
           </div>
@@ -515,20 +513,25 @@ const ProductionSystem = () => {
               <div className="production-card">
                 <div className="category-buttons">
                   <button
-                    className={`category-button ${
-                      selectedCategory === "ruberoid" ? "active" : ""
-                    }`}
+                    className={`category-button ${selectedCategory === "ruberoid" ? "active" : ""
+                      }`}
                     onClick={() => setSelectedCategory("ruberoid")}
                   >
                     Ruberoid
                   </button>
                   <button
-                    className={`category-button ${
-                      selectedCategory === "polizol" ? "active" : ""
-                    }`}
+                    className={`category-button ${selectedCategory === "polizol" ? "active" : ""
+                      }`}
                     onClick={() => setSelectedCategory("polizol")}
                   >
                     Polizol
+                  </button>
+                  <button
+                    className={`category-button ${selectedCategory === "folygoizol" ? "active" : ""
+                      }`}
+                    onClick={() => setSelectedCategory("folygoizol")}
+                  >
+                    Folygoizol
                   </button>
                 </div>
                 <div className="energy-consumption-section">
@@ -576,9 +579,8 @@ const ProductionSystem = () => {
                           filteredNormas.map((norma) => (
                             <div
                               key={norma._id}
-                              className={`norma-item ${
-                                selectedNorma === norma._id ? "selected" : ""
-                              }`}
+                              className={`norma-item ${selectedNorma === norma._id ? "selected" : ""
+                                }`}
                               onClick={() => setSelectedNorma(norma._id)}
                             >
                               {capitalizeFirstLetter(norma.productName)}
@@ -613,26 +615,23 @@ const ProductionSystem = () => {
                               style={{ width: "120px" }}
                             >
                               <HiOutlineArrowTrendingDown
-                                className={`status-icon ${
-                                  getIconStatus(req.materialId._id) ===
+                                className={`status-icon ${getIconStatus(req.materialId._id) ===
                                   "insufficient"
-                                    ? "active insufficient"
-                                    : ""
-                                }`}
+                                  ? "active insufficient"
+                                  : ""
+                                  }`}
                               />
                               <HiOutlineArrowTrendingUp
-                                className={`status-icon ${
-                                  getIconStatus(req.materialId._id) === "exceed"
-                                    ? "active exceed"
-                                    : ""
-                                }`}
+                                className={`status-icon ${getIconStatus(req.materialId._id) === "exceed"
+                                  ? "active exceed"
+                                  : ""
+                                  }`}
                               />
                               <HiOutlineArrowsRightLeft
-                                className={`status-icon ${
-                                  getIconStatus(req.materialId._id) === "equal"
-                                    ? "active equal"
-                                    : ""
-                                }`}
+                                className={`status-icon ${getIconStatus(req.materialId._id) === "equal"
+                                  ? "active equal"
+                                  : ""
+                                  }`}
                               />
                             </span>
                             <span className="materialId_unitInp">
@@ -836,7 +835,7 @@ const ProductionSystem = () => {
                       </button>
                     </div>
                     {product.category === "Stakan" ||
-                    product.category === "Qop" ? (
+                      product.category === "Qop" ? (
                       <div className="product-imagebn">
                         <img src={betumImg} alt="Bitum" />
                         {product.isReturned && (
@@ -902,7 +901,7 @@ const ProductionSystem = () => {
                       </div>
                     )}
                     {product.category === "Stakan" ||
-                    product.category === "Qop" ? (
+                      product.category === "Qop" ? (
                       <h3 className="product-name">
                         BN-5 {capitalizeFirstLetter(product.productName)}
                       </h3>
@@ -920,7 +919,7 @@ const ProductionSystem = () => {
                     </p>
                     <div className="product-quantity-block">
                       {product.category === "Stakan" ||
-                      product.category === "Qop" ? (
+                        product.category === "Qop" ? (
                         <span className="product-quantity">
                           {NumberFormat(product.quantity)} kg
                         </span>
