@@ -1,12 +1,10 @@
-
-
 import { MdDashboard } from "react-icons/md";
 import { FaWarehouse, FaUsers, FaMoneyBillWave } from "react-icons/fa";
 import { BiCategoryAlt } from "react-icons/bi";
 import { GiFactory } from "react-icons/gi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaTruckMoving } from "react-icons/fa";
-import { CalendarOutlined } from "@ant-design/icons";
+import { CalendarOutlined, DollarCircleFilled } from "@ant-design/icons";
 
 export const menuItems = {
   direktor: [
@@ -98,6 +96,11 @@ export const menuItems = {
       icon: <CalendarOutlined size={20} />,
       path: "/salary",
       label: "Maoshlar",
+    },
+    {
+      icon: <DollarCircleFilled size={20} />,
+      path: "/oylik",
+      label: "Oylik",
     },
   ],
 };

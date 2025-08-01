@@ -10,19 +10,20 @@ import FactorySalesSystem from "../pages/reseption/salesDepartment/SalesDepartme
 import Atendance from "../pages/attendance/Atendance";
 import CatigoryManagement from "../pages/admin/setting/CategoryManagement";
 import Salary from "../pages/salary/Salary";
+import SalaryManagement from "../pages/reseption/salary/SalaryManagement";
 
 export const rolePaths = {
   "polizol ish boshqaruvchi": "/attendance",
   "rubiroid ish boshqaruvchi": "/attendance",
   "ochisleniya ish boshqaruvchi": "/attendance",
 
-  "direktor": "/dashboard",
-  "buxgalteriya": "/dashboard",
-  "menejir": "/dashboard",
+  direktor: "/dashboard",
+  buxgalteriya: "/dashboard",
+  menejir: "/dashboard",
 
-  "sotuvchi": "/saler",
+  sotuvchi: "/saler",
   "sotuvchi eksport": "/saler",
-  "sotuvchi menejir": "/saler"
+  "sotuvchi menejir": "/saler",
 };
 
 export const routes = [
@@ -83,10 +84,7 @@ export const routes = [
   {
     path: "/saler",
     element: <FactorySalesSystem />,
-    role: [
-      "sotuvchi",
-      "sotuvchi eksport",
-      "sotuvchi menejir",],
+    role: ["sotuvchi", "sotuvchi eksport", "sotuvchi menejir"],
     private: true,
   },
   {
@@ -107,6 +105,10 @@ export const routes = [
     role: ["direktor", "buxgalteriya", "menejir"],
     private: true,
   },
+  {
+    path: "/oylik",
+    element: <SalaryManagement />,
+    role: ["direktor", "buxgalteriya", "menejir"],
+    private: true,
+  },
 ];
-
-

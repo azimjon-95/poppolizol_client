@@ -36,6 +36,7 @@ export const api = createApi({
     "ProductionHistory",
     "Norma",
     "Expenses",
+    "Salary",
   ], // kerakli taglar
   endpoints: () => ({}), // endpointlar keyinchalik qo‘shiladi
 });
