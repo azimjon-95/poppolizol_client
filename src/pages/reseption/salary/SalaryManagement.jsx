@@ -8,6 +8,7 @@ import {
   useAddPenaltyMutation,
 } from "../../../context/alarApi";
 import { useSelector } from "react-redux";
+import { capitalizeFirstLetter } from "../../../hook/CapitalizeFirstLitter";
 import "./style.css";
 
 const SalaryManagement = () => {
@@ -385,14 +386,15 @@ const SalaryManagement = () => {
                     <td>
                       {" "}
                       <div className="factory-employee-name">
-                        {employee?.firstName} {employee.middleName}{" "}
-                        {employee?.lastName}{" "}
+                        {employee?.firstName}{" "}
+                        {/* {employee.middleName}{" "} */}
+                        {employee?.lastName}
                       </div>{" "}
                     </td>
                     <td>
                       <span className="factory-department-badge">
                         {/* {departmentNames[employee.department]} */}
-                        {employee.unit}{" "}
+                        {capitalizeFirstLetter(employee.unit)}{" "}
                       </span>{" "}
                     </td>
                     <td>
@@ -636,3 +638,5 @@ const SalaryManagement = () => {
 };
 
 export default SalaryManagement;
+
+
