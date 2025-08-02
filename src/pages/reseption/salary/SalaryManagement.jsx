@@ -1,4 +1,3 @@
-// src/components/SalaryManagement.jsx
 import React, { useState, useEffect } from "react";
 import { PiCreditCard, PiWarningFill } from "react-icons/pi";
 import { FaArrowLeft } from "react-icons/fa6";
@@ -44,8 +43,6 @@ const SalaryManagement = () => {
     month: selectedMonth,
     year: selectedYear,
   });
-
-  console.log(employeesData);
 
   const [paySalary] = usePaySalaryMutation();
   const [addPenalty] = useAddPenaltyMutation();
@@ -97,11 +94,14 @@ const SalaryManagement = () => {
     boshqa: "Boshqa",
   };
 
-  // Update employees when data is fetched
   useEffect(() => {
     if (employeesData) {
-      setEmployees(employeesData);
-      setFilteredEmployees(employeesData);
+      const all = [
+        ...(employeesData?.innerData?.monthly || []),
+        ...(employeesData?.innerData?.daily || []), // 💡 endi ishbaylar ham shu yerda
+      ];
+      setEmployees(all);
+      setFilteredEmployees(all);
     }
   }, [employeesData]);
 
@@ -137,14 +137,24 @@ const SalaryManagement = () => {
     }
 
     try {
+      // await paySalary({
+      //   employeeId: selectedEmployee._id,
+      //   paymentData: {
+      //     amount: parseFloat(paymentForm.amount),
+      //     paymentMethod: paymentForm.paymentMethod,
+      //     description: paymentForm.description,
+      //     paymentDate: new Date().toISOString(),
+      //   },
+      // }).unwrap();
+
       await paySalary({
         employeeId: selectedEmployee._id,
-        paymentData: {
-          amount: parseFloat(paymentForm.amount),
-          paymentMethod: paymentForm.paymentMethod,
-          description: paymentForm.description,
-          paymentDate: new Date().toISOString(),
-        },
+        month: selectedMonth,
+        year: selectedYear,
+        amount: parseFloat(paymentForm.amount),
+        paymentMethod: paymentForm.paymentMethod,
+        description: paymentForm.description,
+        // paymentDate: new Date().toISOString(),
       }).unwrap();
 
       setShowPaymentModal(false);
@@ -226,11 +236,11 @@ const SalaryManagement = () => {
   };
 
   const calculateSummary = () => {
-    const totalSalary = filteredEmployees.reduce(
+    const totalSalary = filteredEmployees?.reduce(
       (sum, emp) => sum + emp.salaryPayment.baseSalary,
       0
     );
-    const totalPaid = filteredEmployees.reduce(
+    const totalPaid = filteredEmployees?.reduce(
       (sum, emp) => sum + emp.salaryPayment.totalPaid,
       0
     );
@@ -294,8 +304,7 @@ const SalaryManagement = () => {
       <div className="factory-employees-table-container">
         <div className="factory-table-header">
           <h2 className="factory-table-title">
-            👥 Ishchilar ro'yxati (
-            {months.find((m) => m.value === selectedMonth)?.label}{" "}
+            ({months.find((m) => m.value === selectedMonth)?.label}{" "}
             {selectedYear})
           </h2>
           <div className="factory-month-selector">
@@ -360,6 +369,7 @@ const SalaryManagement = () => {
                 <tr>
                   <th>👤 Ishchi</th>
                   <th>🏢 Bo'lim</th>
+                  <th>💰 Maosh turi</th>
                   <th>💰 Asosiy maosh</th>
                   <th>💵 To'langan</th>
                   <th>⚠️ Jarimalar</th>
@@ -373,69 +383,35 @@ const SalaryManagement = () => {
                 {filteredEmployees.map((employee) => (
                   <tr key={employee._id}>
                     <td>
+                      {" "}
                       <div className="factory-employee-name">
                         {employee?.firstName} {employee.middleName}{" "}
-                        {employee?.lastName}
-                      </div>
-                      <div className="factory-employee-position">
-                        {employee.position}
-                      </div>
+                        {employee?.lastName}{" "}
+                      </div>{" "}
                     </td>
                     <td>
                       <span className="factory-department-badge">
-                        {departmentNames[employee.department]}
-                      </span>
+                        {/* {departmentNames[employee.department]} */}
+                        {employee.unit}{" "}
+                      </span>{" "}
                     </td>
                     <td>
-                      <span className="factory-amount-display factory-amount-positive">
-                        {formatCurrency(employee.salaryPayment.baseSalary)}
+                      <span className="badge badge-type">
+                        {employee.type === "ishbay" ? "Ishbay" : "Oylik"}
                       </span>
                     </td>
+                    <td>{formatCurrency(employee.salaryPayment.baseSalary)}</td>
+                    <td>{formatCurrency(employee.salaryPayment.totalPaid)}</td>
                     <td>
-                      <span
-                        className={`factory-amount-display ${
-                          employee.salaryPayment.totalPaid > 0
-                            ? "factory-amount-positive"
-                            : "factory-amount-zero"
-                        }`}
-                      >
-                        {formatCurrency(employee.salaryPayment.totalPaid)}
-                      </span>
+                      {formatCurrency(employee.salaryPayment.penaltyAmount)}
                     </td>
                     <td>
-                      <span
-                        className={`factory-amount-display ${
-                          employee.salaryPayment.penaltyAmount > 0
-                            ? "factory-amount-negative"
-                            : "factory-amount-zero"
-                        }`}
-                      >
-                        {formatCurrency(employee.salaryPayment.penaltyAmount)}
-                      </span>
+                      {formatCurrency(
+                        employee.salaryPayment.advanceAmount || 0
+                      )}
                     </td>
                     <td>
-                      <span
-                        className={`factory-amount-display ${
-                          employee.salaryPayment.advanceAmount > 0
-                            ? "factory-amount-positive"
-                            : "factory-amount-zero"
-                        }`}
-                      >
-                        {formatCurrency(employee.salaryPayment.advanceAmount)}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        className={`factory-amount-display ${
-                          employee.salaryPayment.remainingAmount > 0
-                            ? "factory-amount-positive"
-                            : employee.salaryPayment.remainingAmount < 0
-                            ? "factory-amount-negative"
-                            : "factory-amount-zero"
-                        }`}
-                      >
-                        {formatCurrency(employee.salaryPayment.remainingAmount)}
-                      </span>
+                      {formatCurrency(employee.salaryPayment.remainingAmount)}
                     </td>
                     <td>{getStatusBadge(employee.salaryPayment.status)}</td>
                     <td>
