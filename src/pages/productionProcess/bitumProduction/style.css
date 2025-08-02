@@ -66,13 +66,13 @@
 
 .bitum-inventory-card {
     background: white;
-    padding: 15px;
+    padding: 8px 15px;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .bitum-inventory-card h4 {
-    margin: 0 0 10px 0;
+    margin: 0 0 2px 0;
     color: #333;
 }
 
@@ -118,7 +118,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
 }
 
 .bitum-panel-header h2 {
@@ -590,6 +590,98 @@
 /* ============================================== */
 /* Premium Inventory Table Styles */
 /* Premium inventar jadval uslublari */
+.inventory-summary-cards-grid {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    /* flex-wrap: wrap;s */
+}
+
+.tabs-container {
+    padding: 20px;
+}
+
+.month-filter-container {
+    display: flex;
+    align-items: center;
+    /* margin-bottom: 20px; */
+}
+
+.month-filter-label {
+    font-size: 14px;
+    color: #666;
+    margin-right: 10px;
+}
+
+.month-filter-input {
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #333;
+}
+
+.inventory-summary-card {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.187);
+    backdrop-filter: blur(5px);
+    font-size: 14px;
+}
+
+.inventory-summary-icon {
+    margin-right: 8px;
+    color: #4a90e2;
+}
+
+.inventory-summary-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.inventory-summary-label {
+    font-size: 12px;
+    color: #666;
+}
+
+.inventory-summary-value {
+    font-weight: bold;
+    color: #333;
+}
+
+.inventory-table-container-premium {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 190px);
+    overflow-y: auto;
+}
+
+/* Scrollbar styling for WebKit browsers (Chrome, Safari, Edge) */
+.inventory-table-container-premium::-webkit-scrollbar {
+    width: 4px;
+    /* Slim scrollbar */
+}
+
+.inventory-table-container-premium::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    /* Semi-transparent track */
+    border-radius: 4px;
+}
+
+.inventory-table-container-premium::-webkit-scrollbar-thumb {
+    background: #7b00ff;
+    /* Blue thumb for premium look */
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* Subtle border */
+}
 
 .inventory-table-container-premium::before {
     content: '';
@@ -744,7 +836,7 @@
 }
 
 .inventory-main-row-interactive td {
-    padding: .65rem 1rem;
+    padding: .30rem 1rem;
     vertical-align: middle;
     border-bottom: 1px solid rgba(128, 128, 128, 0.226);
     font-size: 0.9rem;
@@ -756,8 +848,8 @@
 }
 
 .inventory-expand-btn-circular {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2rem;
+    height: 2rem;
     border-radius: 50%;
     border: none;
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);

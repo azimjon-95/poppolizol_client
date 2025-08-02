@@ -272,7 +272,7 @@ const SacodSalesModule = () => {
     setSelectedDefectiveInfo(defectiveInfo);
     setIsDefectiveInfoModalOpen(true);
   };
-
+  console.log(finishedProducts);
 
   return (
     <div className="sacod-sales-container">
@@ -383,41 +383,41 @@ const SacodSalesModule = () => {
                     {product.sellingPrice?.toLocaleString()} so'm/kg
                   </div>
                 )}
-                <div className="sacod-product-cost">
+                {/* <div className="sacod-product-cost">
                   Tannarxi: <br />{" "}
                   <strong>
                     {product.productionCost.toLocaleString()} so'm
                   </strong>
+                </div> */}
+                <div className="sacod-return-details-btn_box">
+                  <button
+                    onClick={() =>
+                      addToCart(product, product.type === "coal_paper" ? 1 : 1)
+                    }
+                    className="sacod-add-to-cart-btn"
+                  >
+                    <ShoppingCart className="sacod-icon-xs" />
+                    Savatga qo'shish
+                  </button>
+                  {product.isReturned && (
+                    <button
+                      className="sacod-return-details-btn"
+                      onClick={() => showReturnInfo(product.returnInfo)}
+                    >
+                      <Info className="sacod-icon-xs" />
+                      Batafsil
+                    </button>
+                  )}
+                  {product.isDefective && (
+                    <button
+                      className="sacod-return-details-btn"
+                      onClick={() => showDefectiveInfo(product.defectiveInfo)}
+                    >
+                      <Info className="sacod-icon-xs" />
+                      Batafsil
+                    </button>
+                  )}
                 </div>
-              </div>
-              <div className="sacod-return-details-btn_box">
-                <button
-                  onClick={() =>
-                    addToCart(product, product.type === "coal_paper" ? 1 : 1)
-                  }
-                  className="sacod-add-to-cart-btn"
-                >
-                  <ShoppingCart className="sacod-icon-xs" />
-                  Savatga qo'shish
-                </button>
-                {product.isReturned && (
-                  <button
-                    className="sacod-return-details-btn"
-                    onClick={() => showReturnInfo(product.returnInfo)}
-                  >
-                    <Info className="sacod-icon-xs" />
-                    Batafsil
-                  </button>
-                )}
-                {product.isDefective && (
-                  <button
-                    className="sacod-return-details-btn"
-                    onClick={() => showDefectiveInfo(product.defectiveInfo)}
-                  >
-                    <Info className="sacod-icon-xs" />
-                    Batafsil
-                  </button>
-                )}
               </div>
             </div>
           ))}

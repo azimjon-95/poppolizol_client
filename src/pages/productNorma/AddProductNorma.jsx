@@ -4,10 +4,39 @@ import { useGetAllMaterialsQuery } from "../../context/materialApi";
 import { useGetAllCategoriesQuery } from "../../context/categoryApi";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { Form, Button, Row, Col, Select, InputNumber } from "antd";
-import { toast } from "react-toastify";
 import "./ProductNorma.css";
 
-function AddProductNorma({ setModalState }) {
+// Message komponenti
+const Message = ({ type, content, onClose }) => {
+  // 3 soniyadan keyin xabar avtomatik yopiladi
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div
+      className={`hdr-message hdr-message-${type}`}
+      style={{
+        position: "fixed",
+        top: "20px",
+        right: "20px",
+        padding: "12px 24px",
+        borderRadius: "4px",
+        color: "#fff",
+        backgroundColor: type === "success" ? "#52c41a" : "#ff4d4f",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+        zIndex: 1000,
+      }}
+    >
+      {content}
+    </div>
+  );
+};
+
+function AddProductNorma({ setModalState, renderTable }) {
   const [form] = Form.useForm();
   const { Option } = Select;
   const { data: materialsData, isLoading: materialsLoading } = useGetAllMaterialsQuery();
@@ -17,22 +46,19 @@ function AddProductNorma({ setModalState }) {
   const [createProductNorma, { isLoading: createLoading }] = useCreateNormaMutation();
   const [productOptions, setProductOptions] = useState([]);
   const [productCategory, setProductCategory] = useState("polizol");
-  const [salePrice, setSalePrice] = useState(0); // New state for salePrice
+  const [salePrice, setSalePrice] = useState(0);
+  // Message state
+  const [message, setMessage] = useState({ visible: false, type: "", content: "" });
 
   // Number formatter and parser
   const numberFormatter = (value) => {
-    if (!value) return '';
-    return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    if (!value) return "";
+    return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
   const numberParser = (value) => {
-    if (!value) return '';
-    return value.replace(/\./g, '');
-  };
-
-  // Handle sale price change
-  const handleSalePriceChange = (value) => {
-    setSalePrice(value ? Number(numberParser(value)) : 0);
+    if (!value) return "";
+    return value.replace(/\./g, "");
   };
 
   // Function to extract size from product name
@@ -68,31 +94,52 @@ function AddProductNorma({ setModalState }) {
     form.setFieldsValue({ size });
   };
 
+  // Show message
+  const showMessage = (type, content) => {
+    setMessage({ visible: true, type, content });
+  };
+
+  // Hide message
+  const hideMessage = () => {
+    setMessage({ visible: false, type: "", content: "" });
+  };
+
   const onFinish = async (values) => {
     const payload = {
       ...values,
       category: productCategory,
       description: "",
-      salePrice: salePrice, // Use state value
+      salePrice: salePrice,
     };
 
     try {
       const res = await createProductNorma(payload).unwrap();
-      toast.success(res.data.message);
+      console.log(res);
+      showMessage("success", res.message || "Norma muvaffaqiyatli qo'shildi!");
 
       // Reset form and states
       form.resetFields();
       setProductOptions([]);
       setProductCategory("polizol");
-      setSalePrice(0); // Reset salePrice state
-      setModalState((prev) => ({ ...prev, isViewOpen: true }));
+      renderTable(productCategory);
+      setSalePrice(0);
+      setModalState((prev) => ({ ...prev, isViewOpen: false }));
     } catch (error) {
-      toast.error(error.data?.message || "Unknown error");
+      console.log(error);
+      showMessage("error", error.data?.message || "Noma'lum xatolik yuz berdi");
     }
   };
 
   return (
     <div className="hdr-main-container">
+      {/* Message komponentini ko'rsatish */}
+      {message.visible && (
+        <Message
+          type={message.type}
+          content={message.content}
+          onClose={hideMessage}
+        />
+      )}
       <Form
         form={form}
         layout="vertical"
@@ -175,8 +222,7 @@ function AddProductNorma({ setModalState }) {
                   style={{ width: "100%" }}
                   formatter={numberFormatter}
                   parser={numberParser}
-                  value={salePrice}
-                  onChange={handleSalePriceChange}
+                  onChange={(value) => setSalePrice(value ? Number(numberParser(String(value))) : 0)}
                 />
               </Form.Item>
             </Col>
@@ -270,5 +316,3 @@ function AddProductNorma({ setModalState }) {
 }
 
 export default AddProductNorma;
-
-

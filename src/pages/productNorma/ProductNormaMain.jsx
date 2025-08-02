@@ -59,15 +59,6 @@ const ProductNorma = () => {
         ),
       },
       {
-        title: "Harajatlar",
-        render: (_, item) => (
-          <EyeOutlined
-            style={{ cursor: "pointer" }}
-            onClick={() => setModalState((prev) => ({ ...prev, isDescriptionOpen: true, selectedDescription: item }))}
-          />
-        ),
-      },
-      {
         title: "Amallar",
         render: (_, item) => (
           <Space className="norma_actions">
@@ -119,12 +110,6 @@ const ProductNorma = () => {
           materialId: m.materialId?._id || m.materialId,
           quantity: m.quantity,
         })),
-        cost: {
-          gasPerUnit: norma.cost?.gasPerUnit || 0,
-          electricityPerUnit: norma.cost?.electricityPerUnit || 0,
-          laborCost: norma.cost?.laborCost || 0,
-          otherExpenses: norma.cost?.otherExpenses || 0,
-        },
       });
     },
     [form]
@@ -144,12 +129,6 @@ const ProductNorma = () => {
             materialId: newMaterial.materialId,
             quantity: newMaterial.quantity,
           })),
-          cost: {
-            gasPerUnit: values.cost.gasPerUnit || 0,
-            electricityPerUnit: values.cost.electricityPerUnit || 0,
-            laborCost: values.cost.laborCost || 0,
-            otherExpenses: values.cost.otherExpenses || 0,
-          },
         };
 
         const res = await updateProductNorma({ id: modalState.editingNormaId, body: updateData }).unwrap();
@@ -363,7 +342,7 @@ const ProductNorma = () => {
         </Form>
       </Modal>
 
-      {!modalState.isViewOpen && <AddProductNorma setModalState={setModalState} />}
+      {!modalState.isViewOpen && <AddProductNorma renderTable={renderTable} setModalState={setModalState} />}
     </div>
   );
 };

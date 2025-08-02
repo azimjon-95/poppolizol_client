@@ -5,11 +5,42 @@ import { toast } from 'react-toastify';
 import { useGetProductionHistoryQuery } from '../../../context/productionApi';
 import './style.css';
 
-const ProductionHistoryTable = () => {
+const ProductionHistoryTable = ({ startDate, endDate }) => {
     const [selectedData, setSelectedData] = useState([]);
     const [modalType, setModalType] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedProduction, setSelectedProduction] = useState(null);
+
+    const {
+        data: productionHistory = [],
+        isLoading: historyLoading,
+        error: historyError,
+    } = useGetProductionHistoryQuery({
+        startDate,
+        endDate,
+    });
+
+    const calculateMaterialsCost = (materials = []) => {
+        return materials.reduce((total, material) => {
+            const quantity = material?.quantityUsed ?? 0;
+            const price = material?.unitPrice ?? 0;
+            return total + quantity * price;
+        }, 0);
+    };
+
+    // Calculate totals for Quantity, Utilities, and Total Cost
+    const totals = productionHistory.reduce(
+        (acc, production) => ({
+            quantityProduced: acc.quantityProduced + (production.quantityProduced || 0),
+            electricity: acc.electricity + (production.electricity || 0),
+            gasAmount: acc.gasAmount + (production.gasAmount || 0),
+            totalCost:
+                acc.totalCost +
+                (production?.productNormaId?.cost?.totalCost || 0) +
+                calculateMaterialsCost(production.materialsUsed),
+        }),
+        { quantityProduced: 0, electricity: 0, gasAmount: 0, totalCost: 0 }
+    );
 
     const openModal = (materialsUsed, materialStatistics, production) => {
         // Merge materialsUsed and materialStatistics by materialName
@@ -56,12 +87,6 @@ const ProductionHistoryTable = () => {
         setSelectedProduction(null);
     };
 
-    const {
-        data: productionHistory = [],
-        isLoading: historyLoading,
-        error: historyError,
-    } = useGetProductionHistoryQuery();
-
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
         const date = new Date(dateString);
@@ -77,14 +102,6 @@ const ProductionHistoryTable = () => {
     const formatCurrency = (amount) => {
         if (typeof amount !== 'number') return '0 so\'m';
         return new Intl.NumberFormat('uz-UZ').format(amount) + " so'm";
-    };
-
-    const calculateMaterialsCost = (materials = []) => {
-        return materials.reduce((total, material) => {
-            const quantity = material?.quantityUsed ?? 0;
-            const price = material?.unitPrice ?? 0;
-            return total + quantity * price;
-        }, 0);
     };
 
     const getIconStatus = (statId) => {
@@ -124,6 +141,38 @@ const ProductionHistoryTable = () => {
                     </div>
                 ) : productionHistory.length > 0 ? (
                     <div className="mvb-table-wrapper">
+                        {/* Summary Cards Section */}
+                        <div className="mvb-summary-cards-grid">
+                            <div className="mvb-summary-card">
+                                <Hash className="mvb-summary-icon" size={16} />
+                                <div className="mvb-summary-content">
+                                    <span className="mvb-summary-label">Miqdor</span>
+                                    <span className="mvb-summary-value">{totals.quantityProduced} dona</span>
+                                </div>
+                            </div>
+                            <div className="mvb-summary-card">
+                                <Zap className="mvb-summary-icon" size={16} />
+                                <div className="mvb-summary-content">
+                                    <span className="mvb-summary-label">Kommunal (Elektr)</span>
+                                    <span className="mvb-summary-value">{totals.electricity} kWt</span>
+                                </div>
+                            </div>
+                            <div className="mvb-summary-card">
+                                <Flame className="mvb-summary-icon" size={16} />
+                                <div className="mvb-summary-content">
+                                    <span className="mvb-summary-label">Kommunal (Gaz)</span>
+                                    <span className="mvb-summary-value">{totals.gasAmount} m³</span>
+                                </div>
+                            </div>
+                            <div className="mvb-summary-card">
+                                <DollarSign className="mvb-summary-icon" size={16} />
+                                <div className="mvb-summary-content">
+                                    <span className="mvb-summary-label">Jami</span>
+                                    <span className="mvb-summary-value">{formatCurrency(Math.floor(totals.totalCost))}</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="mvb-table-container">
                             <table className="mvb-production-table">
                                 <thead className="mvb-table-header">
@@ -193,7 +242,6 @@ const ProductionHistoryTable = () => {
                                             </td>
                                             <td className="mvb-td mvb-cost-cell">
                                                 <div className="mvb-cost-info">
-
                                                     <div className="mvb-materials-cost">
                                                         Xom ashyo: {formatCurrency(Math.floor(calculateMaterialsCost(production.materialsUsed)))}
                                                     </div>
@@ -212,7 +260,7 @@ const ProductionHistoryTable = () => {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td >
+                                            <td>
                                                 <button
                                                     className="mvb-materials-btn"
                                                     onClick={() => openModal(production.materialsUsed, production.materialStatistics, production)}
@@ -277,7 +325,6 @@ const ProductionHistoryTable = () => {
                                                 <Package className="mvb-modal-header-icon" />
                                                 Material nomi
                                             </th>
-
                                             <th className="mvb-modal-th mvb-modal-th-unit">Birlik</th>
                                             <th className="mvb-modal-th mvb-modal-th-required">
                                                 <Hash className="mvb-modal-header-icon" />
@@ -334,10 +381,6 @@ const ProductionHistoryTable = () => {
                                                             <span className="mvb-modal-material-name">{item.materialName || 'N/A'}</span>
                                                         </div>
                                                     </td>
-                                                    {/* <td className="mvb-modal-td mvb-modal-quantity-cell">
-                                                        <div className="mvb-modal-quantity-badge">{item.quantityUsed || 0}</div>
-                                                    </td> */}
-
                                                     <td className="mvb-modal-td mvb-modal-unit-cell">
                                                         <div className="mvb-modal-unit-badge">{item.unit || 'N/A'}</div>
                                                     </td>
@@ -401,3 +444,5 @@ const ProductionHistoryTable = () => {
 };
 
 export default ProductionHistoryTable;
+
+

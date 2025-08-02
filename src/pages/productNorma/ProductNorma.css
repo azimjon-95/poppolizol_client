@@ -8,6 +8,19 @@
   gap: 15px;
 }
 
+/* Message komponenti uchun uslublar */
+.hdr-message {
+  transition: all 0.3s ease-in-out;
+}
+
+.hdr-message-success {
+  background-color: #52c41a;
+}
+
+.hdr-message-error {
+  background-color: #ff4d4f;
+}
+
 .product_norma {
   svg {
     font-size: 19px;

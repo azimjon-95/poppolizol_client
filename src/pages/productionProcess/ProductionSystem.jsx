@@ -310,6 +310,38 @@ const ProductionSystem = () => {
     }
   }, [finishedProducts, filterValue]);
 
+
+
+  // =========================================
+  // Get current year and month for default value (YYYY.MM)
+  const currentDate = new Date();
+  const defaultMonth = `${currentDate.getFullYear()}.${String(currentDate.getMonth() + 1).padStart(2, '0')}`; // e.g., "2025.08"
+
+  // State for selected month
+  const [selectedMonth, setSelectedMonth] = useState(defaultMonth);
+
+  // Calculate startDate and endDate based on selected month
+  const [year, month] = selectedMonth.split('.').map(Number);
+  const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0]; // First day of the month (YYYY-MM-DD)
+  const endDate = new Date(year, month, 0).toISOString().split('T')[0]; // Last day of the month (YYYY-MM-DD)
+
+  // Handle month input change
+  const handleMonthChange = (e) => {
+    setSelectedMonth(e.target.value.replace('-', '.')); // Convert YYYY-MM to YYYY.MM
+  };
+  // Month input JSX for tabBarExtraContent
+  const tabBarExtraContent = (
+    <div className="month-filter-container">
+      <input
+        type="month"
+        value={selectedMonth.replace('.', '-')} // Convert YYYY.MM to YYYY-MM for input
+        onChange={handleMonthChange}
+        className="month-filter-input"
+      />
+    </div>
+  );
+
+  console.log(filteredProducts);
   return (
     <div className="production-system-container">
       <ToastContainer
@@ -802,12 +834,12 @@ const ProductionSystem = () => {
                 </div>
                 <div className="mki-summary-item">
                   <span className="mki-summary-icon">💸</span>
-                  <span className="mki-summary-label">Umumiy tannarx: </span>
+                  <span className="mki-summary-label">Qimati: </span>
                   <span className="mki-summary-value">
                     {NumberFormat(
                       filteredProducts?.reduce(
                         (total, product) =>
-                          total + +product.productionCost * +product.quantity,
+                          total + product.sellingPrice * product.quantity,
                         0
                       ) || 0
                     )}{" "}
@@ -915,7 +947,7 @@ const ProductionSystem = () => {
                     </p>
                     <p className="product-cost">
                       💰 <strong>Tannarx:</strong>{" "}
-                      <span>{NumberFormat(+product.productionCost)} so'm</span>
+                      <span>{NumberFormat(Math.floor(product.productionCost))} so'm</span>
                     </p>
                     <div className="product-quantity-block">
                       {product.category === "Stakan" ||
@@ -929,9 +961,9 @@ const ProductionSystem = () => {
                         </span>
                       )}
                       <span className="product-Cost">
-                        Jami:{" "}
+                        Narxi:{" "}
                         {NumberFormat(
-                          +product.productionCost * +product.quantity
+                          +product.sellingPrice
                         )}{" "}
                         so'm
                       </span>
@@ -957,7 +989,9 @@ const ProductionSystem = () => {
           }
           key="history"
         >
-          <Tabs defaultActiveKey="productionrb" className="custom-tabs">
+          <Tabs
+            tabBarExtraContent={tabBarExtraContent}
+            defaultActiveKey="productionrb" className="custom-tabs">
             <TabPane
               tab={
                 <span style={{ display: "flex", alignItems: "center" }}>
@@ -968,7 +1002,7 @@ const ProductionSystem = () => {
               key="productionrb"
             >
               <div className="history-card">
-                <ProductionHistoryTable />
+                <ProductionHistoryTable startDate={startDate} endDate={endDate} />
               </div>
             </TabPane>
             <TabPane
@@ -980,7 +1014,7 @@ const ProductionSystem = () => {
               }
               key="productionbn"
             >
-              <InventoryTable />
+              <InventoryTable startDate={startDate} endDate={endDate} />
             </TabPane>
           </Tabs>
         </TabPane>

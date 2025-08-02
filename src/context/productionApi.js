@@ -14,8 +14,8 @@ export const ProductionSystemApi = api.injectEndpoints({
 
         // Get production history
         getProductionHistory: builder.query({
-            query: () => ({
-                url: "/production-history",
+            query: ({ startDate, endDate }) => ({
+                url: `/production-history?startDate=${startDate}&endDate=${endDate}`,
                 method: "GET",
             }),
             transformResponse: (response) => response.innerData, // Extract innerData from response
@@ -78,8 +78,9 @@ export const ProductionSystemApi = api.injectEndpoints({
 
         // router.get("/production/inventory",
         getInventory: builder.query({
-            query: () => ({
-                url: "/inventory",
+
+            query: ({ startDate, endDate }) => ({
+                url: `/inventory?startDate=${startDate || new Date().toISOString().split('T')[0]}&endDate=${endDate || new Date().toISOString().split('T')[0]}`,
                 method: "GET",
             }),
             providesTags: ["Inventory"], // For cache invalidation

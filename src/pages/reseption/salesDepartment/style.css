@@ -196,7 +196,7 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     transition: all 0.3s ease;
     position: relative;
-    height: 295px;
+    height: 230px;
     overflow: hidden;
 }
 
@@ -267,8 +267,8 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.5rem;
-    padding: 1rem;
-    background: #f8fafc;
+    /* padding: 1rem;
+    background: #f8fafc; */
     border-radius: 12px;
 }
 

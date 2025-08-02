@@ -1,11 +1,10 @@
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Minus, Plus, FileText, Factory } from 'lucide-react';
 import { Select } from 'antd';
 import {
     useCreateCartSaleMutation,
     useGetCompanysQuery,
-    useGetTransportQuery
 } from '../../../context/cartSaleApi';
 import { useGetSalesEmployeesQuery } from '../../../context/planSalesApi';
 import { useGetFactoriesQuery } from '../../../context/clinicApi';
@@ -29,13 +28,10 @@ const getWidthByLength = (length) => {
 
 const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromCart, onCompleteSale }) => {
     const navigate = useNavigate();
-    const dropdownRef = useRef(null);
-    const inputRef = useRef(null);
     const { data: salesEmployees = { innerData: [] } } = useGetSalesEmployeesQuery();
     const { data: factories = { innerData: [] } } = useGetFactoriesQuery();
     const { data: customers = { innerData: [] } } = useGetCompanysQuery();
     const [createCartSale, { isLoading: isCreatingCartSale }] = useCreateCartSaleMutation();
-    const { data: transport = { innerData: [] } } = useGetTransportQuery();
 
     const initialNdsRate = factories?.innerData?.[0]?.nds || 12;
     const [ndsRate, setNdsRate] = useState(initialNdsRate);
@@ -49,44 +45,22 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
     const [rawPhone, setRawPhone] = useState('');
     const [rawPaidAmount, setRawPaidAmount] = useState(0);
     const [middlemanPayment, setMiddlemanPayment] = useState(0);
-    const [transportCost, setTransportCost] = useState(0);
-    const [isContractModalOpen, setIsContractModalOpen] = useState(false);
-    const [isTransportDropdownOpen, setIsTransportDropdownOpen] = useState(false);
 
     // Customer information state
     const [customerInfo, setCustomerInfo] = useState({
         name: '',
         type: 'individual',
         companyAddress: '',
-        transport: '',
-        transportCost: 0,
     });
 
     // Memoized formatted values
     const formattedPhone = useMemo(() => formatPhone(rawPhone), [rawPhone]);
     const formattedMiddlemanPayment = useMemo(() => formatNumber(middlemanPayment), [middlemanPayment]);
-    const formattedTransportCost = useMemo(() => formatNumber(transportCost), [transportCost]);
     const customerTypeOptions = [
         { value: 'internal', label: 'Ichki Bozor' },
         { value: 'export', label: 'Eksport' },
         { value: 'exchange', label: 'Birja' },
     ];
-
-    // Handle outside clicks to close dropdown
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (
-                dropdownRef.current &&
-                !dropdownRef.current.contains(event.target) &&
-                inputRef.current &&
-                !inputRef.current.contains(event.target)
-            ) {
-                setIsTransportDropdownOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
 
     // Check if workerId matches any sales employee
     useEffect(() => {
@@ -125,8 +99,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                     name: '',
                     type: 'individual',
                     companyAddress: '',
-                    transport: '',
-                    transportCost: 0,
                 });
             } else {
                 const selected = customers.innerData.find((customer) => customer._id === value);
@@ -139,8 +111,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                         phone: selected.phone || '',
                         companyName: selected.companyName || '',
                         companyAddress: selected.companyAddress || '',
-                        transport: '',
-                        transportCost: 0,
                     });
                     setRawPhone(selected.phone?.replace(/\D/g, '') || '');
                 }
@@ -154,13 +124,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         setCustomerInfo((prev) => ({ ...prev, [key]: value }));
     }, []);
 
-    // Handle transport selection
-    const handleTransportSelect = useCallback((transport) => {
-        setCustomerInfo((prev) => ({ ...prev, transport }));
-        setIsTransportDropdownOpen(false);
-    }, []);
-
-
     const [paymentInfo, setPaymentInfo] = useState({
         paidAmount: 0,
         discount: 0,
@@ -173,8 +136,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         customerType: 'individual',
         customerName: '',
         customerPhone: '',
-        transport: '',
-        transportCost: 0,
         paymentAmount: 0,
         paymentDescription: '',
         discounts: {},
@@ -186,11 +147,10 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         if (isNewCustomer) {
             return (
                 customerInfo.name.trim() &&
-                customerInfo.transport.trim() &&
                 formattedPhone.trim()
             );
         }
-        return selectedCustomer && customerInfo.transport.trim();
+        return selectedCustomer;
     }, [customerInfo, formattedPhone, selectedCustomer, isNewCustomer]);
 
     const handleNdsChange = useCallback((e) => {
@@ -244,14 +204,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         setContractInfo((prev) => ({ ...prev, middlemanPayment: numberValue }));
     }, []);
 
-    const handleTransportCostChange = useCallback((e) => {
-        const raw = e.target.value.replace(/\D/g, '');
-        const numberValue = Number(raw) || 0;
-        setTransportCost(numberValue);
-        setCustomerInfo((prev) => ({ ...prev, transportCost: numberValue }));
-        setContractInfo((prev) => ({ ...prev, transportCost: numberValue }));
-    }, []);
-
     const calculateItemTotal = useCallback(
         (item) => {
             const price = contractInfo.discounts[item._id] ?? item.sellingPrice ?? 0;
@@ -277,9 +229,8 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         const originalTotal = cart.reduce((sum, item) => sum + (item.sellingPrice ?? 0) * item.quantity, 0);
         const itemDiscountAmount = originalTotal - subtotal;
         const percentageDiscountAmount = (subtotal * (paymentInfo.discount || 0)) / 100;
-        const totalAmount = subtotal - percentageDiscountAmount; // Total without NDS and transportCost
-        const totalWithNdsAndTransport = totalAmount + totalNdsAmount + transportCost; // Total for display
-        const debt = totalAmount - (rawPaidAmount || 0); // Debt without NDS and transportCost
+        const totalAmount = subtotal - percentageDiscountAmount;
+        const debt = totalAmount - (rawPaidAmount || 0);
         const totalDona = cart.reduce((sum, item) => (item.size === 'dona' ? sum + item.quantity : sum), 0);
         const totalKg = cart.reduce((sum, item) => (item.size === 'kg' ? sum + item.quantity : sum), 0);
 
@@ -288,13 +239,12 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
             totalNdsAmount: Math.round(totalNdsAmount * 100) / 100,
             itemDiscountAmount,
             percentageDiscountAmount,
-            totalAmount, // Total without NDS and transportCost for server
-            totalWithNdsAndTransport, // Total with NDS and transportCost for display
+            totalAmount,
             debt,
             totalDona,
             totalKg,
         };
-    }, [cart, paymentInfo, contractInfo.discounts, ndsRate, calculateItemNds, rawPaidAmount, transportCost]);
+    }, [cart, paymentInfo, contractInfo.discounts, ndsRate, calculateItemNds, rawPaidAmount]);
 
     const getProductIcon = useCallback(
         (category) =>
@@ -306,37 +256,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         []
     );
 
-    // const openContractModal = useCallback(() => {
-    //     setContractInfo({
-    //         customerType: customerInfo.type,
-    //         customerName: customerInfo.name,
-    //         customerPhone: formattedPhone,
-    //         customerCompanyName: customerInfo.companyName,
-    //         customerCompanyAddress: customerInfo.companyAddress,
-    //         transport: customerInfo.transport,
-    //         transportCost: transportCost,
-    //         paymentAmount: rawPaidAmount,
-    //         paymentDescription: paymentInfo.paymentDescription || '',
-    //         discounts: cart.reduce(
-    //             (acc, item) => ({
-    //                 ...acc,
-    //                 [item._id]: contractInfo.discounts[item._id] ?? item.sellingPrice ?? 0,
-    //             }),
-    //             {}
-    //         ),
-    //         paymentType: paymentInfo.paymentType,
-    //         middlemanPayment,
-    //     });
-    //     setIsContractModalOpen(true);
-    //     setIsTransportDropdownOpen(false);
-    // }, [customerInfo, cart, contractInfo.discounts, rawPaidAmount, paymentInfo, middlemanPayment, transportCost]);
-
     const completeContract = useCallback(async () => {
-        if (!isEmployeeValid || !selectedEmployee) {
-            toast.error('Sotuvchi tanlanmagan!', { position: 'top-right', autoClose: 3000 });
-            return;
-        }
-
         if (!isNewCustomer && !selectedCustomer) {
             toast.error('Mijoz tanlang yoki yangi mijoz ma\'lumotlarini kiriting!', {
                 position: 'top-right',
@@ -350,15 +270,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
             return;
         }
 
-        if (!customerInfo.transport.trim()) {
-            toast.error('Avtotransport ma\'lumotlari kiritilishi shart!', {
-                position: 'top-right',
-                autoClose: 3000,
-            });
-            return;
-        }
-
-        const total = summaryData.totalAmount; // Use totalAmount without NDS and transportCost
+        const total = summaryData.totalAmount;
         if (rawPaidAmount > total) {
             toast.error("To'lov summasi yakuniy summadan oshib ketdi!", {
                 position: 'top-right',
@@ -383,7 +295,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
             productionDate: item.productionDate || new Date(),
         }));
 
-        const debt = summaryData.debt; // Debt without NDS and transportCost
+        const debt = summaryData.debt;
         const newSale = {
             customer: {
                 name: customerInfo.name,
@@ -393,8 +305,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                 companyAddress: customerInfo.companyAddress,
             },
             customerType: paymentInfo.customerType,
-            transport: customerInfo.transport,
-            transportCost: transportCost, // Send transportCost separately
             items: updatedCart.map((item) => ({
                 ...item,
                 pricePerUnit: contractInfo.discounts[item._id] ?? item.sellingPrice,
@@ -402,16 +312,15 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                 ndsAmount: calculateItemNds(item) / item.quantity,
             })),
             payment: {
-                totalAmount: summaryData.totalAmount, // Total without NDS and transportCost
+                totalAmount: summaryData.totalAmount,
                 paidAmount: rawPaidAmount || 0,
                 debt,
-                ndsTotal: summaryData.totalNdsAmount, // NDS amount included separately
+                ndsTotal: summaryData.totalNdsAmount,
                 status: debt <= 0 ? 'paid' : 'partial',
                 paymentDescription: contractInfo.paymentDescription,
                 discountReason: summaryData.itemDiscountAmount > 0 || paymentInfo.discount > 0 ? discountReason : '',
                 paymentType: contractInfo.paymentType,
                 middlemanPayment,
-                transportCost, // Include transportCost separately
                 paymentHistory: rawPaidAmount > 0
                     ? [{
                         amount: rawPaidAmount,
@@ -428,14 +337,12 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         };
 
         try {
-            await createCartSale(newSale).unwrap();
-            onCompleteSale?.(newSale);
-            reactToPrintFn();
+            const res = await createCartSale(newSale).unwrap();
             toast.success('Shartnoma muvaffaqiyatli tuzildi va sotuv yakunlandi!', {
                 position: 'top-right',
                 autoClose: 3000,
             });
-            setCustomerInfo({ name: '', type: 'individual', companyAddress: '', transport: '', transportCost: 0 });
+            setCustomerInfo({ name: '', type: 'individual', companyAddress: '' });
             setPaymentInfo({
                 paidAmount: 0,
                 discount: 0,
@@ -444,7 +351,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                 customerType: 'internal',
             });
             setDiscountReason("Mijoz talabiga ko‘ra, uni yo‘qotmaslik uchun chegirma berildi");
-            setIsContractModalOpen(false);
             setCart([]);
             setActiveTab('sales');
             setSelectedEmployee(null);
@@ -454,10 +360,8 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
             setRawPhone('');
             setRawPaidAmount(0);
             setMiddlemanPayment(0);
-            setTransportCost(0);
-            localStorage.removeItem("workerId");
-            localStorage.removeItem("admin_fullname");
         } catch (error) {
+            console.log(error);
             toast.error(error.data?.message || 'Sotuvni saqlashda xatolik yuz berdi!', {
                 position: 'top-right',
                 autoClose: 3000,
@@ -482,24 +386,12 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
         formattedPhone,
         createCartSale,
         middlemanPayment,
-        transportCost,
     ]);
 
     const handlePhoneChange = useCallback((e) => {
         const raw = e.target.value.replace(/\D/g, '').slice(0, 9);
         setRawPhone(raw);
         setCustomerInfo((prev) => ({ ...prev, phone: formatPhone(raw) }));
-    }, []);
-
-    // const handleAmountChange = useCallback((e) => {
-    //     const raw = e.target.value.replace(/\D/g, '');
-    //     const numberValue = Number(raw) || 0;
-    //     setRawPaidAmount(numberValue);
-    //     setPaymentInfo((prev) => ({ ...prev, paidAmount: numberValue }));
-    // }, []);
-
-    const toggleTransportDropdown = useCallback(() => {
-        setIsTransportDropdownOpen((prev) => !prev);
     }, []);
 
     return (
@@ -657,7 +549,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                         so'm
                                     </span>
                                 </div>
-
                                 <div className={`card-summary-row ${summaryData.debt > 0 ? 'card-debt' : 'card-paid'}`}>
                                     <span>Qarz:</span>
                                     <span>{formatNumber(summaryData.debt)} so'm</span>
@@ -745,49 +636,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                         </div>
                                     </>
                                 )}
-
-                                <div className="card-summary-row relative">
-                                    <span>Avtotransport:</span>
-                                    <input
-                                        ref={inputRef}
-                                        type="text"
-                                        value={customerInfo.transport}
-                                        onChange={(e) => handleCustomerInfoChange('transport', e.target.value)}
-                                        onClick={toggleTransportDropdown}
-                                        className="card-price-input"
-                                        style={{ width: '200px', marginLeft: '10px', border: '1px solid #d9d9d9' }}
-                                        aria-label="Transport details"
-                                        placeholder="50ZZ500Z Fura..."
-                                    />
-                                    {isTransportDropdownOpen && (
-                                        <div ref={dropdownRef} className="isTransportDropdownOpen">
-                                            {transport.innerData.map((item, index) => (
-                                                <button
-                                                    key={index}
-                                                    onClick={() => handleTransportSelect(item.transport)}
-                                                    className="card-transport-option"
-                                                >
-                                                    {item.transport}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="card-summary-row">
-                                    <span>Transport harajati:</span>
-                                    <span>
-                                        <input
-                                            type="text"
-                                            value={formattedTransportCost}
-                                            onChange={handleTransportCostChange}
-                                            className="card-price-input"
-                                            style={{ width: '170px', textAlign: 'right', border: '1px solid #d9d9d9' }}
-                                            aria-label="Transport cost"
-                                            placeholder="0"
-                                        />
-                                        so'm
-                                    </span>
-                                </div>
                                 {!isEmployeeValid && (
                                     <div className="card-summary-row">
                                         <span>Sotuvchi tanlang:</span>
@@ -824,11 +672,8 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                     </div>
                 )}
             </div>
-
-
         </div>
     );
 };
 
 export default CartTab;
-

@@ -13,10 +13,11 @@ const Bn5ProcessDialog = ({
   const [packagingType, setPackagingType] = useState("bag"); // 'bag', 'smallCup', 'largeCup'
   const [unitType, setUnitType] = useState("dona"); // 'dona', 'gram', 'kilo'
   const [showBn5ProcessDialog, setShowBn5ProcessDialog] = useState(false);
-  const [bn5Amount, setBn5Amount] = useState("");
+  const [bn5Amount, setBn5Amount] = useState(""); // Raw number value
+  const [formattedBn5Amount, setFormattedBn5Amount] = useState(""); // Formatted display value
   const [quantity, setQuantity] = useState("");
   const [inputValues, setInputValues] = useState([]);
-  const [isLoading, setIsLoading] = useState(false); // New loading state
+  const [isLoading, setIsLoading] = useState(false);
 
   const [createBn5Production] = useProductionForSalesBN5Mutation();
 
@@ -53,6 +54,29 @@ const Bn5ProcessDialog = ({
       ropePerUnit: 1.5,
       kraftPerUnit: 0,
     },
+  };
+
+  // Format number with commas
+  const formatNumber = (value) => {
+    if (!value) return "";
+    return parseFloat(value).toLocaleString("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+  };
+
+  // Parse formatted number to raw number
+  const parseNumber = (value) => {
+    return String(value).replace(/,/g, "");
+  };
+
+  // Handle bn5Amount input change
+  const handleBn5AmountChange = (e) => {
+    const rawValue = parseNumber(e.target.value);
+    if (rawValue === "" || !isNaN(rawValue)) {
+      setBn5Amount(rawValue);
+      setFormattedBn5Amount(formatNumber(rawValue));
+    }
   };
 
   const handleChange = (key, value) => {
@@ -128,7 +152,6 @@ const Bn5ProcessDialog = ({
     if (melStock < mel) {
       toast.error("Omborda yetarli Mel yo'q!");
       return false;
-      
     }
 
     const totalMix = bn5 + mel;
@@ -155,7 +178,7 @@ const Bn5ProcessDialog = ({
   };
 
   const confirmBn5Processing = async () => {
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
     try {
       const payload = {
         processData: {
@@ -183,14 +206,7 @@ const Bn5ProcessDialog = ({
         timestamp: new Date().toISOString(),
       };
 
-      const res = await createBn5Production(payload);
-
-      if (res?.error.status === 400) {
-        return toast.error(
-          res?.error.data.message ||
-            "Xatolik yuz berdi, iltimos qaytadan urinib ko‘ring!"
-        );
-      }
+      const res = await createBn5Production(payload).unwrap();
 
       refetch();
       toast.success("Mahsulot muvaffiyatli qadoqlandi va serverga tayyor!");
@@ -199,7 +215,7 @@ const Bn5ProcessDialog = ({
       toast.error("Xatolik yuz berdi, iltimos qaytadan urinib ko‘ring!");
       console.error(error);
     } finally {
-      setIsLoading(false); // Stop loading
+      setIsLoading(false);
     }
   };
 
@@ -269,18 +285,19 @@ const Bn5ProcessDialog = ({
 
     const newEntry = {
       label: packagingConfig[packagingType].label,
-      bn: bn5Amount,
+      bn: bn5Amount, // Use raw number
       value: quantity,
     };
 
     setInputValues((prev) => [...prev, newEntry]);
 
-    // Inputlarni tozalash
     setBn5Amount("");
+    setFormattedBn5Amount("");
     setQuantity("");
 
     toast.success("Qadoqlash birligi qo‘shildi!");
   };
+  console.log(inputValues.reduce((sum, item) => sum + +item.bn, 0));
 
   return (
     <>
@@ -309,11 +326,7 @@ const Bn5ProcessDialog = ({
               <strong>
                 {(
                   parseFloat(currentBn5Process.bn5Amount) +
-                  parseFloat(currentBn5Process.melAmount) -
-                  inputValues.reduce(
-                    (sum, input) => sum + (parseFloat(input.bn) || 0),
-                    0
-                  )
+                  parseFloat(currentBn5Process.melAmount) - inputValues.reduce((sum, item) => sum + +item.bn, 0)
                 ).toLocaleString()}{" "}
                 kg
               </strong>
@@ -323,9 +336,8 @@ const Bn5ProcessDialog = ({
               {Object.keys(packagingConfig).map((type) => (
                 <button
                   key={type}
-                  className={`bitum-action-button ${
-                    packagingType === type ? "active" : ""
-                  }`}
+                  className={`bitum-action-button ${packagingType === type ? "active" : ""
+                    }`}
                   onClick={() => {
                     setPackagingType(type);
                     setUnitType(type === "bag" ? "dona" : "kilo");
@@ -340,8 +352,8 @@ const Bn5ProcessDialog = ({
                 type="text"
                 className="input-field"
                 placeholder="Bn-5 miqdorini kiriting (kg)"
-                value={bn5Amount}
-                onChange={(e) => setBn5Amount(e.target.value)}
+                value={formattedBn5Amount}
+                onChange={handleBn5AmountChange}
               />
               <input
                 type="text"
@@ -369,7 +381,9 @@ const Bn5ProcessDialog = ({
                       <RiDeleteBin6Line />
                     </button>
                     <span className="package-type">{input.label}</span>
-                    <span className="package-info">BN-5: {input.bn} kg</span>
+                    <span className="package-info">
+                      BN-5 + Mel: {formatNumber(input.bn)} kg
+                    </span>
                     <span className="package-info">
                       {input.label === "Qop" ? input.label : "Kraf qog'oz"}{" "}
                       {input.value} {input.label === "Qop" ? "dona" : "kg"}
@@ -398,13 +412,9 @@ const Bn5ProcessDialog = ({
               <button
                 className="bitum-confirm-button bitum-bn5-confirm"
                 onClick={confirmBn5Processing}
-                disabled={isLoading} // Disable button when loading
+                disabled={isLoading}
               >
-                {isLoading ? (
-                  <span>Loading...</span> // Replace with a spinner if desired
-                ) : (
-                  "Tasdiqlash"
-                )}
+                {isLoading ? <span>Loading...</span> : "Tasdiqlash"}
               </button>
             </div>
           </div>

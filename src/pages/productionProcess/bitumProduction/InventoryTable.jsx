@@ -18,13 +18,22 @@ import {
 import { useGetInventoryQuery } from '../../../context/productionApi';
 import './style.css';
 
-const InventoryTable = () => {
+const InventoryTable = ({ startDate, endDate }) => {
     const [expandedRows, setExpandedRows] = useState(new Set());
-    //useGetInventoryQuery
-    const { data, error, isLoading } = useGetInventoryQuery({});
-    // Sample data based on your schema
+    const { data, error, isLoading } = useGetInventoryQuery({ startDate, endDate });
     const inventoryData = data?.innerData;
 
+    // Calculate totals for BN-5, Mel, Electricity, Gas, and Selling Price
+    const totals = inventoryData?.reduce(
+        (acc, record) => ({
+            bn5Amount: acc.bn5Amount + (record.bn5Amount || 0),
+            melAmount: acc.melAmount + (record.melAmount || 0),
+            electricity: acc.electricity + (record.electricity || 0),
+            gasAmount: acc.gasAmount + (record.gasAmount || 0),
+            sellingPrice: acc.sellingPrice + (record.sellingPrice || 0),
+        }),
+        { bn5Amount: 0, melAmount: 0, electricity: 0, gasAmount: 0, sellingPrice: 0 }
+    ) || {};
 
     const toggleRowExpansion = (id) => {
         const newExpanded = new Set(expandedRows);
@@ -42,11 +51,11 @@ const InventoryTable = () => {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'
-        }).split('.').join('.'); // Ensure consistent dot separator
+        }).split('.').join('.');
         const timePart = date.toLocaleTimeString('uz-UZ', {
             hour: '2-digit',
             minute: '2-digit',
-            hour12: false // 24-hour format
+            hour12: false
         });
         return `${datePart} ${timePart}`;
     };
@@ -72,6 +81,45 @@ const InventoryTable = () => {
 
     return (
         <div className="inventory-table-container-premium">
+            {/* Summary Cards Section */}
+            <div className="inventory-summary-cards-grid">
+                <div className="inventory-summary-card">
+                    <Weight className="inventory-summary-icon" size={16} />
+                    <div className="inventory-summary-content">
+                        <span className="inventory-summary-label">BN-5 (kg)</span>
+                        <span className="inventory-summary-value">{formatCurrency(totals.bn5Amount)}</span>
+                    </div>
+                </div>
+                <div className="inventory-summary-card">
+                    <Package className="inventory-summary-icon" size={16} />
+                    <div className="inventory-summary-content">
+                        <span className="inventory-summary-label">Mel (kg)</span>
+                        <span className="inventory-summary-value">{formatCurrency(totals.melAmount)}</span>
+                    </div>
+                </div>
+                <div className="inventory-summary-card">
+                    <Zap className="inventory-summary-icon" size={16} />
+                    <div className="inventory-summary-content">
+                        <span className="inventory-summary-label">Elektr</span>
+                        <span className="inventory-summary-value">{formatCurrency(totals.electricity)}</span>
+                    </div>
+                </div>
+                <div className="inventory-summary-card">
+                    <Flame className="inventory-summary-icon" size={16} />
+                    <div className="inventory-summary-content">
+                        <span className="inventory-summary-label">Gaz</span>
+                        <span className="inventory-summary-value">{formatCurrency(totals.gasAmount)}</span>
+                    </div>
+                </div>
+                <div className="inventory-summary-card">
+                    <DollarSign className="inventory-summary-icon" size={16} />
+                    <div className="inventory-summary-content">
+                        <span className="inventory-summary-label">Narx</span>
+                        <span className="inventory-summary-value">{formatCurrency(totals.sellingPrice)} so'm</span>
+                    </div>
+                </div>
+            </div>
+
             <div className="inventory-table-wrapper-glassmorphism">
                 <table className="inventory-table-advanced-design">
                     <thead className="inventory-thead-gradient-modern">
@@ -131,7 +179,7 @@ const InventoryTable = () => {
                         {inventoryData?.map((record) => (
                             <React.Fragment key={record._id}>
                                 <tr className="inventory-main-row-interactive">
-                                    <td className="inventory-td-expand-button">
+                                    <td classNameName="inventory-td-expand-button">
                                         <button
                                             className="inventory-expand-btn-circular"
                                             onClick={() => toggleRowExpansion(record._id)}
@@ -277,4 +325,3 @@ const InventoryTable = () => {
 };
 
 export default InventoryTable;
-

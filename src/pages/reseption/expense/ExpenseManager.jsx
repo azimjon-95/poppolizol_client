@@ -10,6 +10,7 @@ import TransportTable from './TransportTable';
 import DebtComponent from './DebtComponent';
 import SalesTable from './SalesTable';
 import './style/style.css';
+import ExpenseTrackerLoading from './loading/ExpenseTrackerLoading';
 
 const ExpenseTracker = () => {
     const [activeTab, setActiveTab] = useState(() => localStorage.getItem('ruberoid-active-tab') || 'Expenses');
@@ -238,7 +239,7 @@ const ExpenseTracker = () => {
     };
 
     const role = localStorage.getItem("role")
-    if (isLoading) return <div>Loading...</div>;
+    if (isLoading) return <ExpenseTrackerLoading />
 
     return (
         <>

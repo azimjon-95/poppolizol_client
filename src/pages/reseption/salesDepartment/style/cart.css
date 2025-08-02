@@ -290,26 +290,26 @@
 
 .card-summary-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
+    flex-direction: column;
     font-size: 14px;
     position: relative;
     color: #64748b;
-    border-bottom: 1px solid #e2e8f0;
-    /* overflow: hidden !important; */
 }
 
 .isTransportDropdownOpen {
     position: absolute;
     width: 51%;
-    top: 38px;
+    top: 44px;
     right: 0;
+    padding: 2px;
     z-index: 999;
+    width: 100%;
     background: #ffffff;
-    padding: 5px;
+    border: 1px solid #d9d9d9;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
+    border-top: none;
     gap: 3px;
     border-radius: 0 0 10px 10px;
 }
@@ -746,7 +746,7 @@
     .card-summary-row {
         font-size: 13px;
         padding: 6px 0;
-        flex-wrap: wrap;
+        width: 100% !important;
     }
 
     .card-summary-row-textarea {
