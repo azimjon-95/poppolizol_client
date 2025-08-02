@@ -23,6 +23,7 @@ import "react-toastify/dist/ReactToastify.css";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for redirection
 import AttendanceHistory from "./AttendanceHistory";
+import DailyWorkers from "./DailyWorkers";
 
 const { Option } = Select;
 const { TabPane } = Tabs;
@@ -485,6 +486,9 @@ function Attendance() {
               bordered
             />
           </Card>
+        </TabPane>
+        <TabPane tab="Kunlik xodimlar" key="3">
+          <DailyWorkers />
         </TabPane>
         <TabPane tab="Davomat tarixi" key="2">
           <AttendanceHistory />
