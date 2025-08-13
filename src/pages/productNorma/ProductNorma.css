@@ -1,5 +1,20 @@
 .product_norma {
+  position: relative;
   padding: 10px;
+}
+
+.addModalnorma {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 550px;
+  height: 100%;
+  background-color: #ffffffbb;
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
 }
 
 .hdr-materials-nav {
@@ -50,29 +65,10 @@
 
 /* Main Container */
 .hdr-main-container {
-  height: calc(100vh - 125px);
+  height: 100vh;
   position: relative;
   width: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
 }
-
-.hdr-main-container::-webkit-scrollbar {
-  width: 8px;
-}
-
-.hdr-main-container::-webkit-scrollbar-track {
-  background: #f0f0f0;
-  border-radius: 8px;
-}
-
-.hdr-main-container::-webkit-scrollbar-thumb {
-  background-color: #999;
-  border-radius: 8px;
-  border: 2px solid transparent;
-  background-clip: content-box;
-}
-
 
 .hdr-form-wrapper {
   width: 100%;
@@ -90,17 +86,41 @@
   font-size: 1.4rem;
   font-weight: 600;
   color: #2c3e50;
-  margin-bottom: 1.5rem;
+  margin-bottom: .1rem;
   padding-left: 1rem;
   border-left: 4px solid #667eea;
 }
 
+.hdr-category-section>button {
+  height: 48px;
+  padding: 0;
+  border-radius: 12px 0 0 12px;
+  color: #ff0000;
+  position: absolute;
+  left: -49px;
+  top: 26px;
+  cursor: pointer;
+  width: 50px;
+  z-index: 999 !important;
+  font-weight: 600;
+  background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+  border: none;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  border-right: none;
+  /* box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); */
+}
+
+.hdr-category-section>button>svg {
+  font-size: 30px;
+}
+
 /* Category Section */
 .hdr-category-section {
-  margin-bottom: 1rem;
-  padding: 2rem;
+  margin-bottom: .5rem;
+  padding: 1rem 1rem 0rem 1rem;
   background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
-  border-radius: 16px;
+  border-radius: 0 0 16px 16px;
   border: 1px solid rgba(102, 126, 234, 0.1);
 }
 
@@ -145,23 +165,43 @@
 /* Materials Section */
 .hdr-materials-section {
   margin-bottom: 1rem;
-  padding: 2rem;
+  padding: 1rem;
   background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
-  border-radius: 16px;
+  border-radius: 16px 16px 0 0;
   border: 1px solid rgba(72, 187, 120, 0.1);
+  height: calc(100vh - 232px);
+  overflow-y: scroll;
+}
+
+.hdr-materials-section::-webkit-scrollbar {
+  width: 8px;
+}
+
+.hdr-materials-section::-webkit-scrollbar-track {
+  background: #f0f0f000;
+  border-radius: 8px;
+}
+
+.hdr-materials-section::-webkit-scrollbar-thumb {
+  background-color: #999;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 .hdr-materials-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: .3rem;
 }
 
 .hdr-material-item {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1.5rem;
+  /* align-items: flex-start; */
+  gap: .5rem;
+  padding: .5rem;
+  width: 100%;
+  background: #000;
   background: rgba(255, 255, 255, 0.8);
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.06);
@@ -179,13 +219,12 @@
 }
 
 .hdr-quantity-input {
-  flex: 1;
   margin-bottom: 0 !important;
 }
 
 .hdr-remove-btn {
   color: #ff4d4f;
-  margin-top: 30px;
+  margin-top: 5px;
   transition: all 0.3s ease;
   border-radius: 8px;
 }
@@ -235,12 +274,17 @@
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
 }
 
-.hdr-material-dropdown .ant-select-selector {
-  min-width: 250px !important;
+.hdr-material-dropdown {
+  width: 100% !important;
+  height: 44px !important;
+  outline: none;
+  border-radius: 8px !important;
+  border: 2px solid #e2e8f0 !important;
+  transition: all 0.3s ease;
 }
 
 .hdr-quantity-field {
-  max-width: 120px;
+  max-width: 150px;
 }
 
 .hdr-textarea {
@@ -285,16 +329,15 @@
   border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.hdr-submit-wrapper {
-  margin-bottom: 0 !important;
-}
 
 .hdr-submit-btn {
   height: 56px;
   padding: 0 3rem;
+  margin-top: 20px;
   border-radius: 12px;
   font-weight: 600;
   font-size: 1.1rem;
+  width: 100%;
   background: linear-gradient(135deg, #667eea, #764ba2);
   border: none;
   transition: all 0.3s ease;

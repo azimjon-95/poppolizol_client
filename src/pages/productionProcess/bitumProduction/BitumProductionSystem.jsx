@@ -7,6 +7,7 @@ import { TbNeedleThread } from "react-icons/tb";
 import { FaIndustry, FaFlask } from 'react-icons/fa';
 import { useCreateBn5ProductionMutation } from '../../../context/productionApi';
 import { useGetFactoriesQuery } from '../../../context/clinicApi';
+import { Button } from 'antd';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './style.css';
@@ -16,7 +17,9 @@ const BitumProductionSystem = () => {
   const [showBn3Dialog, setShowBn3Dialog] = useState(false);
   const [calculatedBn5, setCalculatedBn5] = useState(0);
   const [actualBn5Result, setActualBn5Result] = useState('');
-  const [createBn5Production] = useCreateBn5ProductionMutation();
+  const [createBn5Production, {
+    isLoading: createBn5ProductionLoading
+  }] = useCreateBn5ProductionMutation();
   const { data: material, refetch, isLoading, isFetching } = useGetFilteredMaterialsQuery();
 
   const { data } = useGetFactoriesQuery();
@@ -287,9 +290,14 @@ const BitumProductionSystem = () => {
               <button className="bitum-cancel-button" onClick={() => setShowBn3Dialog(false)}>
                 Bekor qilish
               </button>
-              <button className="bitum-confirm-button bitum-bn3-confirm" onClick={confirmBn3Production}>
+              <Button
+                className="bitum-confirm-button bitum-bn3-confirm"
+                onClick={confirmBn3Production}
+                disabled={createBn5ProductionLoading}
+                loading={createBn5ProductionLoading}
+              >
                 Tasdiqlash
-              </button>
+              </Button>
             </div>
           </div>
         </div>

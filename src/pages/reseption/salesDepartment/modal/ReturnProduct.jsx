@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { toast } from 'react-toastify';
 
-import { Select } from 'antd';
+import { Select, Button } from 'antd';
 import {
     useReturnProductsMutation
 } from '../../../../context/cartSaleApi';
@@ -25,7 +25,9 @@ const ReturnProduct = ({
     NumberFormat,
     calculateTotalRefund
 }) => {
-    const [returnProducts] = useReturnProductsMutation();
+    const [returnProducts, {
+        isLoading
+    }] = useReturnProductsMutation();
 
     const processReturn = useCallback(async () => {
         const refund = parseFloat(refundAmount);
@@ -138,14 +140,26 @@ const ReturnProduct = ({
                     placeholder={`Qaytariladigan summa ${NumberFormat(refundAmount || calculateTotalRefund())}`}
                 />
                 <div>Jami qaytarish summasi: {NumberFormat(refundAmount || calculateTotalRefund())}</div>
-                <button
-                    className="invoice-btn invoice-btn-success"
-                    onClick={() => processReturn()}
-                    disabled={!refundAmount || parseFloat(refundAmount) <= 0 || !returnReason}
-                >
-                    <RotateCcw size={16} />
-                    Qaytarishni tasdiqlash
-                </button>
+                {
+                    refundAmount <= 0 ?
+                        <Button
+                            className="invoice-btn invoice-btn-success"
+                            disabled={true}
+                        >
+                            <RotateCcw size={16} />
+                            Qaytarishni tasdiqlash
+                        </Button>
+                        :
+                        <Button
+                            className="invoice-btn invoice-btn-success"
+                            onClick={() => processReturn()}
+                            disabled={isLoading}
+                            loading={isLoading}
+                        >
+                            <RotateCcw size={16} />
+                            Qaytarishni tasdiqlash
+                        </Button>
+                }
             </div>
         </Modal>
     )

@@ -28,7 +28,7 @@ const ProductNorma = () => {
   const { data: materialsData, isLoading: materialsLoading } = useGetAllMaterialsQuery();
   const [deleteProductNorma] = useDeleteNormaMutation();
   const [updateProductNorma, { isLoading: updateLoading }] = useUpdateNormaMutation();
-
+  const [addModal, setAddModal] = useState(false);
   const materials = materialsData?.innerData || [];
   const normasData = useMemo(() => normas?.innerData || [], [normas]);
 
@@ -177,7 +177,7 @@ const ProductNorma = () => {
       <Tabs
         tabBarExtraContent={{
           right: (
-            <Button onClick={() => setModalState((prev) => ({ ...prev, isViewOpen: false }))} type="primary">
+            <Button onClick={() => setAddModal(true)} type="primary">
               Qo'shish
             </Button>
           ),
@@ -342,9 +342,15 @@ const ProductNorma = () => {
         </Form>
       </Modal>
 
-      {!modalState.isViewOpen && <AddProductNorma renderTable={renderTable} setModalState={setModalState} />}
+      {addModal && <div className="addModalnorma">
+        <AddProductNorma setAddModal={setAddModal} renderTable={renderTable} setModalState={setModalState} />
+      </div>
+      }
     </div>
   );
 };
 
 export default ProductNorma;
+
+
+

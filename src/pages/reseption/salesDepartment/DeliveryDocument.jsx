@@ -3,7 +3,6 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { NumberFormat } from '../../../hook/NumberFormat';
 
 const DeliveryDocument = ({ sale, contentRef, deliveryItems }) => {
-    console.log(sale, contentRef, deliveryItems);
     const calculateItemTotal = (item) => {
         const price = item.discountedPrice ?? item.pricePerUnit ?? 0;
         return price * item.quantity;
@@ -13,7 +12,7 @@ const DeliveryDocument = ({ sale, contentRef, deliveryItems }) => {
 
     return (
         <div ref={contentRef} className="card-doc-wrapper">
-            <h2 className="card-doc-title">YUK XATLAMASI №{sale?._id?.slice(-4)}</h2>
+            <h2 className="card-doc-title">Yuk Xati №{sale?._id?.slice(-4)}</h2>
             <p className="card-doc-date">{new Date(sale?.createdAt || Date.now()).toLocaleDateString('uz-UZ')} yil</p>
             <div className="card-doc-info">
                 <p><strong>Yuboruvchi:</strong> "SELEN BUNYODKOR" MCHJ</p>

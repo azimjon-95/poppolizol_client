@@ -199,6 +199,7 @@
 .factory-table-head th {
     padding: 8px 6px;
     text-align: left;
+    font-size: 0.6rem;
     font-weight: 600;
     color: #374151;
     border-bottom: 1px solid #e5e7eb;
@@ -213,11 +214,13 @@
     padding: 5px 6px;
     border-bottom: 1px solid #f3f4f6;
     vertical-align: middle;
+    font-size: 0.7rem;
 }
 
 .factory-employee-name {
     font-weight: 600;
     color: #1f2937;
+    font-size: 0.7rem;
 }
 
 .factory-employee-position {
@@ -232,7 +235,7 @@
     color: #0891b2;
     border-radius: 10px;
     text-wrap: nowrap;
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     font-weight: 500;
 }
 
@@ -254,31 +257,49 @@
 }
 
 .factory-status-badge {
-    padding: 3px 6px;
-    border-radius: 10px;
-    font-size: 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 12px;
     font-weight: 500;
-    gap: 3px;
 }
 
 .factory-status-paid {
-    background: #d1fae5;
-    color: #065f46;
+    background-color: #e6f4ea;
+    color: #2e7d32;
 }
 
 .factory-status-partial {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.factory-status-unpaid {
-    background: #fee2e2;
-    color: #991b1b;
+    background-color: #fff3e0;
+    color: #f57c00;
 }
 
 .factory-status-overpaid {
-    background: #dbeafe;
-    color: #1e40af;
+    background-color: #ffebee;
+    color: #d32f2f;
+}
+
+/* Yangi statuslar uchun stillar */
+.factory-status-debt {
+    background-color: #fff0f6;
+    color: #c2185b;
+}
+
+.factory-status-penalty {
+    background-color: #fef7e0;
+    color: #fbc02d;
+}
+
+.factory-status-no-salary {
+    background-color: #f5f5f5;
+    color: #616161;
+}
+
+.factory-status-transferred {
+    background-color: #e3f2fd;
+    color: #1976d2;
 }
 
 .factory-penalty-indicator {
@@ -307,7 +328,7 @@
 }
 
 .factory-btn {
-    padding: 4px 8px;
+    padding: 5px 8px;
     border: none;
     border-radius: 4px;
     font-size: 0.7rem;
@@ -445,6 +466,13 @@
     margin-bottom: 10px;
 }
 
+.factory-form-group-box {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
 .factory-form-label {
     font-weight: 600;
     color: #374151;
@@ -456,7 +484,7 @@
 .factory-form-select,
 .factory-form-textarea {
     width: 100%;
-    padding: 6px 8px;
+    padding: 10px 8px;
     border: 1px solid #e5e7eb;
     border-radius: 4px;
     font-size: 0.8rem;
@@ -485,24 +513,48 @@
     margin-top: 4px;
 }
 
+.factory-payment-method-option {
+    padding: 6px;
+    /* border: 1px solid #e5e7eb; */
+    border-radius: 4px;
+    width: 100%;
+    font-weight: 500;
+    color: #6b7280;
+    margin-bottom: 5px;
+}
+
 .factory-payment-method-label {
     padding: 6px;
     border: 1px solid #e5e7eb;
     border-radius: 4px;
     font-weight: 500;
+    width: 100%;
     color: #6b7280;
+}
+
+.factory-payment-method-input {
+    display: none;
 }
 
 .factory-payment-method-input:checked+.factory-payment-method-label {
     border-color: #3b82f6;
     background: #eff6ff;
     color: #1e40af;
+
 }
 
 .factory-modal-footer {
     padding: 10px 12px;
     border-top: 1px solid #e5e7eb;
     gap: 6px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.factory-form-input[type="text"] {
+    text-align: right;
+    font-family: monospace;
+    /* Optional: improves number alignment */
 }
 
 .factory-loading-spinner {
@@ -644,3 +696,84 @@
         flex-direction: column;
     }
 }
+
+
+
+
+
+
+/* =================================== */
+/* Modal Overlay */
+.ghy-factory-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: start;
+    z-index: 1000;
+}
+
+/* Modal Container */
+.ghy-factory-modal {
+    background-color: white;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 300px;
+    max-height: 95vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Modal Close Button */
+.factory-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6b7280;
+    /* Tailwind's text-gray-500 */
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.factory-modal-close:hover {
+    color: #1f2937;
+    /* Tailwind's text-gray-900 */
+}
+
+/* Modal Footer */
+.factory-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 6px 24px;
+    border-top: 1px solid #e5e7eb;
+    /* Tailwind's border-gray-200 */
+    background-color: #f9fafb;
+    /* Tailwind's bg-gray-50 */
+}
+
+
+
+/* Outline Button (for "Yopish") */
+.factory-btn-outline {
+    background-color: transparent;
+    border: 1px solid #d1d5db;
+    /* Tailwind's border-gray-300 */
+    color: #374151;
+    /* Tailwind's text-gray-700 */
+}
+
+.factory-btn-outline:hover {
+    background-color: #f3f4f6;
+    /* Tailwind's bg-gray-100 */
+    border-color: #9ca3af;
+    /* Tailwind's border-gray-400 */
+}
+
+/* =================================== */

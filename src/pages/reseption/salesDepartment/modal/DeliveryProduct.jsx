@@ -4,6 +4,7 @@ import { Truck as DeliveryIcon } from 'lucide-react';
 import { Package, Calendar, Truck, DollarSign, Hash, Printer } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { QRCodeCanvas } from 'qrcode.react';
+import { Button } from 'antd';
 import {
     useGetTransportQuery,
     useGetSaleCartByIdQuery
@@ -19,7 +20,9 @@ const DeliveryProduct = ({
     closeModal,
     modalState,
 }) => {
-    const [deliverProduct] = useDeliverProductMutation();
+    const [deliverProduct, {
+        isLoading
+    }] = useDeliverProductMutation();
     const role = localStorage.getItem('role');
     const inputRef = useRef(null);
     const [transportCost, setTransportCost] = useState(0);
@@ -269,13 +272,16 @@ const DeliveryProduct = ({
                             );
                         })}
                         {role !== 'direktor' && (
-                            <button
+
+                            <Button
                                 className="invoice-btn invoice-btn-success"
                                 onClick={processDelivery}
-                                disabled={!validItems.length}
+                                disabled={isLoading}
+                                aria-label="Save changes"
+                                loading={isLoading}
                             >
-                                <DeliveryIcon size={16} /> Yuborishni tasdiqlash
-                            </button>
+                                Yuborishni tasdiqlash
+                            </Button>
                         )}
                     </div>
                     {saleCar?.innerData?.deliveredItems?.length > 0 && (
@@ -294,7 +300,7 @@ const DeliveryProduct = ({
                                                 <div className="liu-card-header">
                                                     <div className="liu-product-info">
                                                         <h3 className="liu-product-name">{item.productName}</h3>
-                                                        <span className="liu-product-id"> YUK XATLAMASI № {item?._id?.slice(-4)}</span>
+                                                        <span className="liu-product-id"> Yuk Xati № {item?._id?.slice(-4)}</span>
                                                     </div>
                                                     <div className="liu-quantity-badge">
                                                         <Hash className="liu-icon" />
@@ -347,7 +353,7 @@ const DeliveryProduct = ({
                                                     <button style={{ marginLeft: "4px" }}
                                                         className="invoice-btn invoice-btn-primary"
                                                         onClick={() => handlePrintDeliveredItem(item)}
-                                                        title="Yuk xatlamasini chop etish"
+                                                        title="Yuk Xatini chop etish"
                                                     >
                                                         <Printer size={16} />
                                                     </button>
@@ -363,7 +369,7 @@ const DeliveryProduct = ({
             {printData && (
                 <div ref={contentRef} className="card-doc-wrapper">
                     <h2 className="card-doc-title">
-                        YUK XATLAMASI №{printData.saleId?.slice(-4)}
+                        Yuk Xati №{printData.saleId?.slice(-4)}
                     </h2>
                     <p className="card-doc-date">
                         {new Date(printData.createdAt).toLocaleDateString('uz-UZ')} yil

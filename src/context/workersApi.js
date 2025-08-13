@@ -36,8 +36,8 @@ export const workersApi = api.injectEndpoints({
             }),
         }),
 
-        getOchisleniyaWorkers: builder.query({
-            query: () => '/ochisleniya',
+        getOkisleniyaWorkers: builder.query({
+            query: () => '/Okisleniya',
             providesTags: ['Workers'],
         }),
 
@@ -56,6 +56,6 @@ export const {
     useUpdateWorkerMutation,
     useDeleteWorkerMutation,
     useGetByIdWorkerMutation,
-    useGetOchisleniyaWorkersQuery,
+    useGetOkisleniyaWorkersQuery,
     useGetProductionEmployeesQuery
 } = workersApi;

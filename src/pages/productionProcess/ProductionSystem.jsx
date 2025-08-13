@@ -341,7 +341,6 @@ const ProductionSystem = () => {
     </div>
   );
 
-  console.log(filteredProducts);
   return (
     <div className="production-system-container">
       <ToastContainer
@@ -856,7 +855,7 @@ const ProductionSystem = () => {
               ) : filteredProducts?.length > 0 ? (
                 filteredProducts.map((product, inx) => (
                   <div key={inx} className="product-card-container">
-                    <div className="product-card_actins">
+                    {/* <div className="product-card_actins">
                       <button
                         onClick={() => handleDelete(product._id)}
                         disabled={deleteLoading || updateLoading}
@@ -865,7 +864,7 @@ const ProductionSystem = () => {
                       >
                         <RiDeleteBinLine size={20} />
                       </button>
-                    </div>
+                    </div> */}
                     {product.category === "Stakan" ||
                       product.category === "Qop" ? (
                       <div className="product-imagebn">

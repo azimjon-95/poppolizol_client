@@ -7,12 +7,12 @@ import Header from "../header/Header";
 const NON_SIDEBAR_ROLES = [
   "sotuvchi",
   "polizol ish boshqaruvchi",
-  "ochisleniya ish boshqaruvchi",
+  "Okisleniya ish boshqaruvchi",
   "rubiroid ish boshqaruvchi",
 ];
 const LOCATION_ROLES = [
   "polizol ish boshqaruvchi",
-  "ochisleniya ish boshqaruvchi",
+  "Okisleniya ish boshqaruvchi",
   "rubiroid ish boshqaruvchi",
 ];
 

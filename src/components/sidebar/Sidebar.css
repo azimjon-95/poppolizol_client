@@ -2,23 +2,134 @@ aside {
   width: 100%;
   height: 100%;
   padding: 0 5px 15px 15px;
-  background-color: var(--main-color);
+  background-color: #242e3c;
+  /* background: linear-gradient(90deg, #242e3c, #001430); */
   position: relative;
 }
 
 /* Sidebar logosi */
 .sidebar_logo {
-  height: 45px;
-  width: 240px;
-  min-width: 240px;
-  max-width: 240px;
+  height: 60px;
+  width: 210px;
   font-size: 30px;
-  text-align: center;
+  /* text-align: center; */
   user-select: none;
   position: relative;
   margin-top: 5px;
-  /* background: #478581; */
   overflow: hidden;
+}
+
+.sidebar_logo i {
+  font-size: 12px;
+  color: #fff;
+  user-select: none;
+  position: absolute;
+  white-space: nowrap;
+  left: 0;
+  bottom: 0;
+}
+
+/* Logo asosiy */
+.sidebar_logo {
+  height: 55px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  margin-top: 5px;
+  overflow: hidden;
+}
+
+.sidebar_logo i {
+  font-size: 10.5px;
+  color: #fff;
+  position: absolute;
+  white-space: nowrap;
+  left: 0;
+  bottom: 0;
+  font-family: "Poppins", sans-serif;
+}
+
+.LogoPol {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+  font-family: "Poppins", sans-serif;
+  font-weight: bold;
+}
+
+.LogoPol span {
+  display: inline-block;
+  font-size: 20px;
+  color: #fff;
+  opacity: 0;
+  transform: translateY(-50px);
+  animation: flyIn 0.6s ease forwards, pulse 1.5s ease-in-out infinite;
+}
+
+.LogoPol span:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.LogoPol span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.LogoPol span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.LogoPol span:nth-child(5) {
+  animation-delay: 0.4s;
+}
+
+.LogoPol span:nth-child(6) {
+  animation-delay: 0.5s;
+}
+
+.LogoPol span:nth-child(7) {
+  animation-delay: 0.6s;
+}
+
+.LogoPol span:nth-child(8) {
+  animation-delay: 0.7s;
+}
+
+.LogoPol span:nth-child(9) {
+  animation-delay: 0.8s;
+}
+
+.LogoPol span:nth-child(10) {
+  animation-delay: 0.9s;
+}
+
+.LogoPol span:nth-child(11) {
+  animation-delay: 1s;
+}
+
+.gap {
+  width: 8px;
+}
+
+/* Kirish animatsiyasi */
+@keyframes flyIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pulsatsiya effekti */
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
 }
 
 .sidebar_menu_item.active {
@@ -42,28 +153,9 @@ aside {
   font-weight: 500;
 }
 
-.sidebar_logo i {
-  font-size: 11px;
-  color: #FFBB00;
-  user-select: none;
-  position: absolute;
-  white-space: nowrap;
-  left: 0;
-  bottom: 0;
-}
-
-.sidebar_logo img {
-  width: 100%;
-  height: 95px !important;
-  padding: 0 20px 0 0;
-  -webkit-user-drag: none;
-  margin-top: -25px;
-  pointer-events: none;
-}
-
 /* Sidebar linklari */
 .sidebar_links {
-  margin-top: 20px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;

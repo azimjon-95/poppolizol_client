@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { useCreateNormaMutation } from "../../context/normaApi";
 import { useGetAllMaterialsQuery } from "../../context/materialApi";
+import { IoClose } from "react-icons/io5";
+import SmartKgInput from "./SmartKgInput";
 import { useGetAllCategoriesQuery } from "../../context/categoryApi";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import { Form, Button, Row, Col, Select, InputNumber } from "antd";
+import { Form, Button, Row, Col, InputNumber, Input } from "antd";
 import "./ProductNorma.css";
 
 // Message komponenti
 const Message = ({ type, content, onClose }) => {
-  // 3 soniyadan keyin xabar avtomatik yopiladi
   React.useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -36,21 +37,20 @@ const Message = ({ type, content, onClose }) => {
   );
 };
 
-function AddProductNorma({ setModalState, renderTable }) {
+function AddProductNorma({ setAddModal, setModalState, renderTable }) {
   const [form] = Form.useForm();
-  const { Option } = Select;
+
   const { data: materialsData, isLoading: materialsLoading } = useGetAllMaterialsQuery();
   const materials = materialsData?.innerData || [];
   const { data: categoriesData, isLoading: categoriesLoading } = useGetAllCategoriesQuery();
   const categories = categoriesData?.innerData || [];
+
   const [createProductNorma, { isLoading: createLoading }] = useCreateNormaMutation();
   const [productOptions, setProductOptions] = useState([]);
   const [productCategory, setProductCategory] = useState("polizol");
   const [salePrice, setSalePrice] = useState(0);
-  // Message state
   const [message, setMessage] = useState({ visible: false, type: "", content: "" });
 
-  // Number formatter and parser
   const numberFormatter = (value) => {
     if (!value) return "";
     return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -61,7 +61,6 @@ function AddProductNorma({ setModalState, renderTable }) {
     return value.replace(/\./g, "");
   };
 
-  // Function to extract size from product name
   const extractSize = (productName, category) => {
     if (category === "polizol") {
       const match = productName.match(/(\d+\.?\d*\s*mm)/);
@@ -73,33 +72,32 @@ function AddProductNorma({ setModalState, renderTable }) {
     return "";
   };
 
-  // Handle button clicks to set product options
   const handleButtonClick = (type) => {
-    if (type === "polizol") {
-      setProductOptions(categories.filter((i) => i.category === "Polizol"));
-      setProductCategory(type);
-    } else if (type === "folygoizol") {
-      setProductOptions(categories.filter((i) => i.category === "Folygoizol"));
-      setProductCategory(type);
-    } else if (type === "ruberoid") {
-      setProductOptions(categories.filter((i) => i.category === "Ruberoid"));
+
+    const categoryMap = {
+      polizol: "Polizol",
+      folygoizol: "Folygoizol",
+      ruberoid: "Ruberoid",
+    };
+
+    if (categoryMap[type]) {
+      setProductOptions(categories.filter((i) => i.category === categoryMap[type]));
       setProductCategory(type);
     }
+
     form.setFieldsValue({ productName: undefined, size: undefined });
   };
 
-  // Handle product selection to set size
+
   const handleProductChange = (productName) => {
     const size = extractSize(productName, productCategory);
     form.setFieldsValue({ size });
   };
 
-  // Show message
   const showMessage = (type, content) => {
     setMessage({ visible: true, type, content });
   };
 
-  // Hide message
   const hideMessage = () => {
     setMessage({ visible: false, type: "", content: "" });
   };
@@ -112,15 +110,13 @@ function AddProductNorma({ setModalState, renderTable }) {
       salePrice: salePrice,
     };
 
+
     try {
       const res = await createProductNorma(payload).unwrap();
-      console.log(res);
       showMessage("success", res.message || "Norma muvaffaqiyatli qo'shildi!");
-
-      // Reset form and states
+      setAddModal(false);
       form.resetFields();
       setProductOptions([]);
-      setProductCategory("polizol");
       renderTable(productCategory);
       setSalePrice(0);
       setModalState((prev) => ({ ...prev, isViewOpen: false }));
@@ -132,7 +128,6 @@ function AddProductNorma({ setModalState, renderTable }) {
 
   return (
     <div className="hdr-main-container">
-      {/* Message komponentini ko'rsatish */}
       {message.visible && (
         <Message
           type={message.type}
@@ -158,6 +153,8 @@ function AddProductNorma({ setModalState, renderTable }) {
         className="hdr-form"
       >
         <div className="hdr-category-section">
+          {/* Change onChange to onClick */}
+          <button onClick={() => setAddModal(false)}><IoClose /></button>
           <h3 className="hdr-section-title">Mahsulot Kategoriyasi</h3>
           <div className="hdr-category-buttons">
             <Button
@@ -193,20 +190,17 @@ function AddProductNorma({ setModalState, renderTable }) {
                 name="productName"
                 rules={[{ required: true, message: "Mahsulot nomini tanlang!" }]}
               >
-                <Select
+                <select
                   placeholder="Mahsulotni tanlang"
-                  className="hdr-select"
-                  showSearch
+                  className="hdr-select hdr-material-dropdown"
                   onChange={handleProductChange}
-                  optionFilterProp="children"
-                  loading={categoriesLoading}
                 >
-                  {productOptions.map((option) => (
-                    <Option key={option._id} value={option.name}>
+                  {productOptions.map((option, inx) => (
+                    <option key={inx} value={option.name}>
                       {option.name}
-                    </Option>
+                    </option>
                   ))}
-                </Select>
+                </select>
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -242,35 +236,26 @@ function AddProductNorma({ setModalState, renderTable }) {
                       rules={[{ required: true, message: "Materialni tanlang!" }]}
                       className="hdr-material-select"
                     >
-                      <Select
+                      <select
                         placeholder="Materialni tanlang"
-                        loading={materialsLoading}
                         className="hdr-select hdr-material-dropdown"
-                        showSearch
-                        optionFilterProp="children"
+
                       >
                         {materials.map((material) => (
-                          <Option key={material._id} value={material._id}>
+                          <option key={material._id} value={material._id}>
                             {material.name} (Narxi: {material?.price?.toLocaleString()} so'm)
-                          </Option>
+                          </option>
                         ))}
-                      </Select>
+                      </select>
                     </Form.Item>
 
                     <Form.Item
                       {...restField}
                       name={[name, "quantity"]}
-                      rules={[
-                        { required: true, message: "Miqdorni kiriting!" },
-                        { type: "number", min: 1, message: "Miqdor 1 dan kam bo'lmasligi kerak!" },
-                      ]}
                       className="hdr-quantity-input"
+                      rules={[{ required: true, message: "Miqdor kiriting!" }]}
                     >
-                      <InputNumber
-                        placeholder="Miqdor"
-                        className="hdr-input hdr-quantity-field"
-                        min={1}
-                      />
+                      <SmartKgInput />
                     </Form.Item>
 
                     <Button
@@ -281,34 +266,28 @@ function AddProductNorma({ setModalState, renderTable }) {
                     />
                   </div>
                 ))}
-                <Form.Item className="hdr-add-material-wrapper">
-                  <Button
-                    type="dashed"
-                    onClick={() => add()}
-                    block
-                    icon={<PlusOutlined />}
-                    className="hdr-add-material-btn"
-                  >
-                    Material qo'shish
-                  </Button>
-                </Form.Item>
+
+                <Button
+                  type="dashed"
+                  onClick={() => add()}
+                  block
+                  icon={<PlusOutlined />}
+                  className="hdr-add-material-btn"
+                >
+                  Material qo'shish
+                </Button>
               </div>
             )}
           </Form.List>
-        </div>
-
-        <div className="hdr-submit-section">
-          <Form.Item className="hdr-submit-wrapper">
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={createLoading}
-              className="hdr-submit-btn"
-              size="large"
-            >
-              {createLoading ? "Saqlanmoqda..." : "Norma qo'shish"}
-            </Button>
-          </Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={createLoading}
+            className="hdr-submit-btn"
+            size="large"
+          >
+            {createLoading ? "Saqlanmoqda..." : "Norma qo'shish"}
+          </Button>
         </div>
       </Form>
     </div>
@@ -316,3 +295,5 @@ function AddProductNorma({ setModalState, renderTable }) {
 }
 
 export default AddProductNorma;
+
+

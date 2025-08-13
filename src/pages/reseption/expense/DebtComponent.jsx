@@ -89,7 +89,6 @@ const DebtComponent = () => {
     const debtTypes = {
         lend: '🤝 Qarz berildi',
         borrow: '📋 Qarz olindi',
-        null: '🧾 Xomashyo qarzi',
     };
 
 
@@ -332,11 +331,11 @@ const DebtComponent = () => {
                                                 acc[type] = (acc[type] || 0) + debt.remainingAmount;
                                                 return acc;
                                             },
-                                            { lend: 0, borrow: 0, null: 0 }
-                                        ) || { lend: 0, borrow: 0, null: 0 };
+                                            { lend: 0, borrow: 0 }
+                                        ) || { lend: 0, borrow: 0 };
 
                                         return Object.entries(debtSummary).map(([type, amount]) => (
-                                            <div key={type} className={`hgj-summary-card ${type === 'lend' ? 'hgj-summary-lend' : type === 'borrow' ? 'hgj-summary-borrow' : 'hgj-summary-null'}`}  >
+                                            <div key={type} className={`hgj-summary-card ${type === 'lend' ? 'hgj-summary-lend' : 'hgj-summary-borrow'}`}  >
                                                 <span className="hgj-summary-type">
                                                     {debtTypes[type]}
                                                 </span>
@@ -357,7 +356,7 @@ const DebtComponent = () => {
                                     >
                                         <div className="hgj-debt-header">
                                             <span className="hgj-debt-type">
-                                                {debtTypes[debt.type] || debtTypes.null}
+                                                {debtTypes[debt.type]}
                                             </span>
                                             <span className="hgj-debt-method">
                                                 {debt.paymentMethod === 'naqt' ? '💵' : debt.paymentMethod === 'bank' ? '🏦 Bank' : ' '}

@@ -361,7 +361,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
             setRawPaidAmount(0);
             setMiddlemanPayment(0);
         } catch (error) {
-            console.log(error);
             toast.error(error.data?.message || 'Sotuvni saqlashda xatolik yuz berdi!', {
                 position: 'top-right',
                 autoClose: 3000,

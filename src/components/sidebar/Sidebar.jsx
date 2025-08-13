@@ -45,9 +45,25 @@ function Sidebar() {
 
   return (
     <aside>
+      {/* JSX */}
       <div className="sidebar_logo">
+        <div className="LogoPol fly-logo">
+          <span>P</span>
+          <span>o</span>
+          <span>p</span>
+          <span className="gap"></span>
+          <span>P</span>
+          <span>o</span>
+          <span>l</span>
+          <span>i</span>
+          <span>z</span>
+          <span>o</span>
+          <span>l</span>
+        </div>
         <i>Avtomatlashtirish - kelajak bugun</i>
       </div>
+
+
       <div className="sidebar_links">
         {menuItems[role]?.map((item) =>
           item.children ? (

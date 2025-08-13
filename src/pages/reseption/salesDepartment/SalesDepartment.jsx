@@ -262,7 +262,7 @@ const SacodSalesModule = () => {
   };
 
   const showReturnInfo = (returnInfo) => {
-    console.log(returnInfo);
+
     setSelectedReturnInfo(returnInfo);
     setIsReturnInfoModalOpen(true);
   };
@@ -272,7 +272,6 @@ const SacodSalesModule = () => {
     setSelectedDefectiveInfo(defectiveInfo);
     setIsDefectiveInfoModalOpen(true);
   };
-  console.log(finishedProducts);
 
   return (
     <div className="sacod-sales-container">

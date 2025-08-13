@@ -1,13 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { Card, Typography, Divider, Input, Tag, Table, Collapse, Modal, Button, Select, Form } from 'antd';
+import { Card, Typography, Divider, Input, Tag, Table, Modal, Button, Select, Form } from 'antd';
 import { useSelector } from "react-redux";
 import {
     LuPackagePlus, LuBuilding2, LuPhone, LuCalendar, LuDollarSign, LuCreditCard, LuTruck,
     LuUsers, LuFileText, LuChevronRight, LuChevronDown, LuPackage, LuWeight, LuBanknote, LuFilter, LuWallet
 } from 'react-icons/lu';
 import { MdAccountBalance } from "react-icons/md";
-import { InputNumber } from 'antd';
-import { useGetIncomesQuery, usePayDebtIncomeMutation } from "../../context/materialApi";
+import { useGetIncomesQuery } from "../../context/materialApi";
 import { useGetBalanceQuery } from "../../context/expenseApi";
 import { numberFormat } from '../../utils/numberFormat';
 import { PhoneNumberFormat } from '../../hook/NumberFormat';
@@ -16,7 +15,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const { Title, Text } = Typography;
-const { Panel } = Collapse;
 const { Option } = Select;
 
 const IncomeListModal = () => {
@@ -24,14 +22,10 @@ const IncomeListModal = () => {
         const date = new Date();
         return `${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
     });
-    const role = localStorage.getItem("role")
-    const [selectedFirm, setSelectedFirm] = useState('all'); // New state for firm filter
-    const [payDebtIncome, { isLoading: isPayDebtLoading }] = usePayDebtIncomeMutation();
-    const [paymentModal, setPaymentModal] = useState({ visible: false, incomeData: null });
+    const [selectedFirm, setSelectedFirm] = useState('all');
     const [debtPaymentsModal, setDebtPaymentsModal] = useState({ visible: false, debtPayments: [], incomeData: null });
     const { data: balanceData, refetch: balanceRefetch, isLoading: balanceIsLoading } = useGetBalanceQuery();
-    const [debtFilter, setDebtFilter] = useState('all'); // 'all', 'debt', 'paid'
-    const [form] = Form.useForm();
+    const [debtFilter, setDebtFilter] = useState('all');
     const { data: incomesData, isLoading: incomesIsLoading, refetch } = useGetIncomesQuery(selectedMonth, {
         skip: !selectedMonth,
     });
@@ -39,15 +33,13 @@ const IncomeListModal = () => {
     const incomesDataList = incomesData?.innerData || [];
     const searchTextValue = useSelector((s) => s.search.searchQuery);
 
-    // Compute unique firm names
     const uniqueFirms = useMemo(() => {
         const firms = incomesDataList
             .map((income) => income.firm?.name || "Noma'lum firma")
-            .filter((value, index, self) => self.indexOf(value) === index); // Remove duplicates
-        return ['all', ...firms.sort()]; // Add 'all' option and sort firms
+            .filter((value, index, self) => self.indexOf(value) === index);
+        return ['all', ...firms.sort()];
     }, [incomesDataList]);
 
-    // Optimized filtering with firm filter included
     const filteredIncomes = useMemo(() => {
         return incomesDataList.filter((income) => {
             const firmName = income.firm?.name?.toLowerCase() || "noma'lum firma";
@@ -63,7 +55,6 @@ const IncomeListModal = () => {
             }
 
             const matchesFirmFilter = selectedFirm === 'all' || firmName === selectedFirm.toLowerCase();
-
             return matchesSearch && matchesDebtFilter && matchesFirmFilter;
         });
     }, [incomesDataList, searchTextValue, debtFilter, selectedFirm]);
@@ -81,23 +72,6 @@ const IncomeListModal = () => {
         }
     };
 
-    const handlePaymentClick = (income) => {
-        setPaymentModal({
-            visible: true,
-            incomeData: {
-                ...income,
-                totalAmount: income.debt?.initialAmount || income.totalWithVat || 0,
-                paidAmount: (income.debt?.initialAmount || 0) - (income.debt?.remainingAmount || 0),
-                debtAmount: income.debt?.remainingAmount || 0
-            }
-        });
-
-        form.setFieldsValue({
-            paymentAmount: income.debt?.remainingAmount || 0,
-            paymentMethod: 'naqt'
-        });
-    };
-
     const handleDebtPaymentsClick = (income) => {
         setDebtPaymentsModal({
             visible: true,
@@ -109,32 +83,6 @@ const IncomeListModal = () => {
         });
     };
 
-    const handlePaymentSubmit = async (values) => {
-        try {
-            const paymentData = {
-                incomeId: paymentModal.incomeData._id,
-                debtPayment: {
-                    amount: values.paymentAmount,
-                    paymentMethod: values.paymentMethod,
-                    note: values.note || ''
-                }
-            };
-            await payDebtIncome(paymentData).unwrap();
-            toast.success('To\'lov muvaffaqiyatli amalga oshirildi!');
-            setPaymentModal({ visible: false, incomeData: null });
-            balanceRefetch();
-            form.resetFields();
-            refetch();
-        } catch (error) {
-            toast.error('To\'lov amalga oshirilmadi. Qayta urinib ko\'ring.');
-        }
-    };
-
-    const handlePaymentCancel = () => {
-        setPaymentModal({ visible: false, incomeData: null });
-        form.resetFields();
-    };
-
     const handleDebtPaymentsCancel = () => {
         setDebtPaymentsModal({
             visible: false,
@@ -143,7 +91,6 @@ const IncomeListModal = () => {
         });
     };
 
-    // Calculate totals for header cards
     const { totalIncomes, totalAmount, totalPaid, totalDebt, vatAmount } = useMemo(() => {
         return filteredIncomes.reduce(
             (acc, income) => {
@@ -283,6 +230,92 @@ const IncomeListModal = () => {
         }
     ];
 
+    const incomeColumns = [
+        {
+            title: <span className="nns-table-header"><LuBuilding2 className="nns-icon" /> Firma</span>,
+            key: 'firm',
+            render: (_, record) => (
+                <div className="nns-firm-info">
+                    <LuBuilding2 className="nns-firm-icon" />
+                    <div className="nns-firm-details">
+                        <Text strong className="nns-firm-name">{record.firm?.name || "Noma'lum firma"}</Text>
+                        <Text className="nns-firm-phone">
+                            <LuPhone className="nns-phone-icon" />
+                            {PhoneNumberFormat(record.firm?.phone) || "Telefon yo'q"}
+                        </Text>
+                    </div>
+                </div>
+            ),
+        },
+        {
+            title: <span className="nns-table-header"><LuCalendar className="nns-icon" /> Sana</span>,
+            key: 'date',
+            render: (_, record) => (
+                <Tag className="nns-date-tag">
+                    <LuCalendar className="nns-tag-icon" />
+                    {new Date(record.createdAt).toLocaleDateString('uz-UZ')}
+                </Tag>
+            ),
+        },
+        {
+            title: <span className="nns-table-header"><LuDollarSign className="nns-icon" /> Umumiy summa</span>,
+            key: 'totalAmount',
+            render: (_, record) => (
+                <Tag className="nns-amount-tag">
+                    <LuDollarSign className="nns-tag-icon" />
+                    {numberFormat(record.debt?.initialAmount || record.totalWithVat || 0)} so'm
+                </Tag>
+            ),
+        },
+        {
+            title: <span className="nns-table-header"><LuCreditCard className="nns-icon" /> To'langan</span>,
+            key: 'paidAmount',
+            render: (_, record) => {
+                const total = record.debt?.initialAmount || record.totalWithVat || 0;
+                const debt = record.debt?.remainingAmount || 0;
+                const paid = total - debt;
+                return (
+                    <Tag className="nns-payment-tag nns-paid-amount">
+                        <LuCreditCard className="nns-tag-icon" />
+                        {numberFormat(paid)} so'm
+                    </Tag>
+                );
+            },
+        },
+        {
+            title: <span className="nns-table-header"><LuBanknote className="nns-icon" /> Qarz</span>,
+            key: 'debtAmount',
+            render: (_, record) => {
+                const debt = record.debt?.remainingAmount || 0;
+                return (
+                    <Tag className={`nns-debt-tag ${debt > 0 ? 'nns-debt-amount' : 'nns-no-debt'}`}>
+                        <LuBanknote className="nns-tag-icon" />
+                        {numberFormat(debt)} so'm
+                    </Tag>
+                );
+            },
+        },
+        {
+            title: <span className="nns-table-header"><LuFileText className="nns-icon" /> To'lov tarixi</span>,
+            key: 'debtPayments',
+            render: (_, record) => (
+                record.debt?.debtPayments?.length > 0 ? (
+                    <Button
+                        type="default"
+                        size="small"
+                        icon={<LuBanknote />}
+                        onClick={() => handleDebtPaymentsClick(record)}
+                        className="nns-debt-payments-button"
+                    >
+                        To'lov tarixi
+                    </Button>
+                ) : (
+                    <Text>-</Text>
+                )
+            ),
+        },
+    ];
+
     return (
         <div className="nns-warehouse-modal nns-income-list-modal">
             <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
@@ -336,7 +369,7 @@ const IncomeListModal = () => {
                         <div className="nns-stat-info">
                             <Text className="nns-stat-number-bal">Naqt: {numberFormat(balanceData?.innerData?.naqt)}</Text>
                             <Text className="nns-stat-number-bal">Bank: {numberFormat(balanceData?.innerData?.bank)}</Text>
-                            <Text className="nns-stat-label">Balans</Text>
+                            {/* <Text className="nns-stat-label">Balans</Text> */}
                         </div>
                     </div>
                 </Card>
@@ -404,289 +437,115 @@ const IncomeListModal = () => {
                         </Text>
                     </div>
                 ) : (
-                    <Collapse
-                        className="nns-income-collapse"
-                        expandIcon={({ isActive }) => isActive ? <LuChevronDown /> : <LuChevronRight />}
-                        size="small"
-                    >
-                        {filteredIncomes.map((income) => {
-                            const totalAmount = income.debt?.initialAmount || income.totalWithVat || 0;
-                            const debtAmount = income.debt?.remainingAmount || 0;
-                            const paidAmount = totalAmount - debtAmount;
-
-                            return (
-                                <Panel
-                                    key={income._id}
-                                    header={
-                                        <div className="nns-income-header">
-                                            <div className="nns-firm-info">
-                                                <LuBuilding2 className="nns-firm-icon" />
-                                                <div className="nns-firm-details">
-                                                    <Text strong className="nns-firm-name">
-                                                        {income.firm?.name || "Noma'lum firma"}
-                                                    </Text>
-                                                    <Text className="nns-firm-phone">
-                                                        <LuPhone className="nns-phone-icon" />
-                                                        {PhoneNumberFormat(income.firm?.phone) || "Telefon yo'q"}
-                                                    </Text>
-                                                </div>
-                                            </div>
-                                            <div className="nns-income-summary">
-                                                <Tag className="nns-date-tag">
-                                                    <LuCalendar className="nns-tag-icon" />
-                                                    {new Date(income.createdAt).toLocaleDateString('uz-UZ')}
-                                                </Tag>
-                                                <Tag className="nns-amount-tag">
-                                                    <LuDollarSign className="nns-tag-icon" />
-                                                    {numberFormat(totalAmount)} so'm
-                                                </Tag>
-                                                {/* <Tag className={`nns-payment-type-tag nns-payment-${income.paymentType}`}>
-                                                    <LuCreditCard className="nns-tag-icon" />
-                                                    {income.paymentType}
-                                                </Tag> */}
-                                                {debtAmount > 0 && (
-                                                    <Tag className="nns-debt-tag">
-                                                        <LuBanknote className="nns-tag-icon" />
-                                                        Qarz: {numberFormat(debtAmount)} so'm
-                                                    </Tag>
-                                                )}
-                                                {income.debt?.debtPayments?.length > 0 && (
-                                                    <Button
-                                                        type="default"
-                                                        size="small"
-                                                        icon={<LuBanknote />}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleDebtPaymentsClick(income);
-                                                        }}
-                                                        className="nns-debt-payments-button"
-                                                    >
-                                                        Tulov tarixi
-                                                    </Button>
-                                                )}
-                                                {
-                                                    role !== "direktor" && <>
-
-                                                        {debtAmount > 0 && (
-                                                            <Button
-                                                                type="primary"
-                                                                size="small"
-                                                                icon={<LuWallet />}
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handlePaymentClick(income);
-                                                                }}
-                                                                className="nns-pay-button"
-                                                            >
-                                                                To'lov
-                                                            </Button>
-                                                        )}
-                                                    </>
-                                                }
-                                            </div>
+                    <Table
+                        columns={incomeColumns}
+                        dataSource={filteredIncomes}
+                        rowKey="_id"
+                        pagination={false}
+                        expandable={{
+                            expandedRowRender: (record) => (
+                                <div className="nns-income-details">
+                                    <div className="nns-financial-summary">
+                                        <div className="nns-summary-item">
+                                            <Text className="nns-summary-label">QQSsiz summa:</Text>
+                                            <Text strong className="nns-summary-value">
+                                                {numberFormat(Math.floor(record.totalWithoutVat))} so'm
+                                            </Text>
                                         </div>
-                                    }
-                                    className="nns-income-panel"
-                                >
-                                    <div className="nns-income-details">
-                                        <div className="nns-financial-summary">
-                                            <div className="nns-summary-item">
-                                                <Text className="nns-summary-label">QQSsiz summa:</Text>
-                                                <Text strong className="nns-summary-value">
-                                                    {numberFormat(Math.floor(income.totalWithoutVat))} so'm
-                                                </Text>
-                                            </div>
-                                            <div className="nns-summary-item">
-                                                <Text className="nns-summary-label">QQS ({income.vatPercentage}%):</Text>
-                                                <Text strong className="nns-summary-value">
-                                                    {numberFormat(Math.floor(income.vatAmount))} so'm
-                                                </Text>
-                                            </div>
-                                            <div className="nns-summary-item">
-                                                <Text className="nns-summary-label">QQSli summa:</Text>
-                                                <Text strong className="nns-summary-value nns-total-amount">
-                                                    {numberFormat(totalAmount)} so'm
-                                                </Text>
-                                            </div>
-                                            <div className="nns-summary-item">
-                                                <Text className="nns-summary-label">To'langan:</Text>
-                                                <Text strong className="nns-summary-value nns-paid-amount">
-                                                    {numberFormat(paidAmount)} so'm
-                                                </Text>
-                                            </div>
-                                            <div className="nns-summary-item">
-                                                <Text className="nns-summary-label">Qarz:</Text>
-                                                <Text strong className={`nns-summary-value ${debtAmount > 0 ? 'nns-debt-amount' : 'nns-no-debt'}`}>
-                                                    {numberFormat(debtAmount)} so'm
-                                                </Text>
-                                            </div>
-                                            <div className="nns-summary-item">
-                                                <Text className="nns-summary-label">Qarz holati:</Text>
-                                                <Text strong className="nns-summary-value">
-                                                    {income.debt?.status === 'partially_paid' ? 'Qisman to\'langan' :
-                                                        income.debt?.status === 'fully_paid' ? 'To\'liq to\'langan' : 'To\'lanmagan'}
-                                                </Text>
-                                            </div>
-                                            <div className="nns-summary-item">
-                                                <Text className="nns-summary-label">Transport xarajati:</Text>
-                                                <Text strong className="nns-summary-value">
-                                                    {numberFormat(Math.floor(income.totalTransportCost))} so'm
-                                                </Text>
-                                            </div>
-                                            <div className="nns-summary-item">
-                                                <Text className="nns-summary-label">Ishchi xarajati:</Text>
-                                                <Text strong className="nns-summary-value">
-                                                    {numberFormat(income.totalWorkerCost)} so'm
-                                                </Text>
-                                            </div>
+                                        <div className="nns-summary-item">
+                                            <Text className="nns-summary-label">QQS ({record.vatPercentage}%):</Text>
+                                            <Text strong className="nns-summary-value">
+                                                {numberFormat(Math.floor(record.vatAmount))} so'm
+                                            </Text>
                                         </div>
-
-                                        <Divider className="nns-section-divider" />
-
-                                        <div className="nns-materials-section">
-                                            <Title level={5} className="nns-section-title">
-                                                <LuPackage className="nns-section-icon" />
-                                                Materiallar
-                                            </Title>
-                                            <Table
-                                                dataSource={income.materials}
-                                                columns={materialColumns}
-                                                pagination={false}
-                                                size="small"
-                                                className="nns-materials-table"
-                                                rowKey="_id"
-                                            />
+                                        <div className="nns-summary-item">
+                                            <Text className="nns-summary-label">QQSli summa:</Text>
+                                            <Text strong className="nns-summary-value nns-total-amount">
+                                                {numberFormat(record.debt?.initialAmount || record.totalWithVat || 0)} so'm
+                                            </Text>
                                         </div>
-
-                                        {income.workerPayments && income.workerPayments.length > 0 && (
-                                            <>
-                                                <Divider className="nns-section-divider" />
-                                                <div className="nns-workers-section">
-                                                    <Title level={5} className="nns-section-title">
-                                                        <LuUsers className="nns-section-icon" />
-                                                        Ishchi to'lovlari
-                                                    </Title>
-                                                    <Table
-                                                        dataSource={income.workerPayments}
-                                                        columns={workerColumns}
-                                                        pagination={false}
-                                                        size="small"
-                                                        className="nns-workers-table"
-                                                        rowKey="_id"
-                                                    />
-                                                </div>
-                                            </>
-                                        )}
+                                        <div className="nns-summary-item">
+                                            <Text className="nns-summary-label">To'langan:</Text>
+                                            <Text strong className="nns-summary-value nns-paid-amount">
+                                                {numberFormat((record.debt?.initialAmount || record.totalWithVat || 0) - (record.debt?.remainingAmount || 0))} so'm
+                                            </Text>
+                                        </div>
+                                        <div className="nns-summary-item">
+                                            <Text className="nns-summary-label">Qarz:</Text>
+                                            <Text strong className={`nns-summary-value ${record.debt?.remainingAmount > 0 ? 'nns-debt-amount' : 'nns-no-debt'}`}>
+                                                {numberFormat(record.debt?.remainingAmount || 0)} so'm
+                                            </Text>
+                                        </div>
+                                        <div className="nns-summary-item">
+                                            <Text className="nns-summary-label">Qarz holati:</Text>
+                                            <Text strong className="nns-summary-value">
+                                                {record.debt?.status === 'partially_paid' ? 'Qisman to\'langan' :
+                                                    record.debt?.status === 'fully_paid' ? 'To\'liq to\'langan' : 'To\'lanmagan'}
+                                            </Text>
+                                        </div>
+                                        <div className="nns-summary-item">
+                                            <Text className="nns-summary-label">Transport xarajati:</Text>
+                                            <Text strong className="nns-summary-value">
+                                                {numberFormat(Math.floor(record.totalTransportCost))} so'm
+                                            </Text>
+                                        </div>
+                                        <div className="nns-summary-item">
+                                            <Text className="nns-summary-label">Ishchi xarajati:</Text>
+                                            <Text strong className="nns-summary-value">
+                                                {numberFormat(record.totalWorkerCost)} so'm
+                                            </Text>
+                                        </div>
                                     </div>
-                                </Panel>
-                            );
-                        })}
-                    </Collapse>
+
+                                    <Divider className="nns-section-divider" />
+
+                                    <div className="nns-materials-section">
+                                        <Title level={5} className="nns-section-title">
+                                            <LuPackage className="nns-section-icon" />
+                                            Materiallar
+                                        </Title>
+                                        <Table
+                                            dataSource={record.materials}
+                                            columns={materialColumns}
+                                            pagination={false}
+                                            size="small"
+                                            className="nns-materials-table"
+                                            rowKey="_id"
+                                        />
+                                    </div>
+
+                                    {record.workerPayments && record.workerPayments.length > 0 && (
+                                        <>
+                                            <Divider className="nns-section-divider" />
+                                            <div className="nns-workers-section">
+                                                <Title level={5} className="nns-section-title">
+                                                    <LuUsers className="nns-section-icon" />
+                                                    Ishchi to'lovlari
+                                                </Title>
+                                                <Table
+                                                    dataSource={record.workerPayments}
+                                                    columns={workerColumns}
+                                                    pagination={false}
+                                                    size="small"
+                                                    className="nns-workers-table"
+                                                    rowKey="_id"
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            ),
+                            expandIcon: ({ expanded, onExpand, record }) =>
+                                expanded ? (
+                                    <LuChevronDown onClick={(e) => onExpand(record, e)} />
+                                ) : (
+                                    <LuChevronRight onClick={(e) => onExpand(record, e)} />
+                                ),
+                        }}
+                        className="nns-income-table"
+                    />
                 )}
             </div>
-
-            <Modal
-                title={
-                    <div className="nns-payment-modal-title">
-                        <LuWallet className="nns-modal-icon" />
-                        To'lov qilish
-                    </div>
-                }
-                open={paymentModal.visible}
-                onCancel={handlePaymentCancel}
-                footer={null}
-                width={500}
-                className="nns-payment-modal"
-            >
-                {paymentModal.incomeData && (
-                    <div className="nns-payment-modal-content">
-                        <div className="nns-payment-info">
-                            <div className="nns-firm-payment-info">
-                                <Text strong>{paymentModal.incomeData.firm?.name}</Text>
-                                <Text className="nns-payment-date">
-                                    {new Date(paymentModal.incomeData.createdAt).toLocaleDateString('uz-UZ')}
-                                </Text>
-                            </div>
-                            <div className="nns-payment-summary">
-                                <div className="nns-payment-summary-item">
-                                    <Text>Umumiy summa:</Text>
-                                    <Text strong>{numberFormat(paymentModal.incomeData.totalAmount)} so'm</Text>
-                                </div>
-                                <div className="nns-payment-summary-item">
-                                    <Text>To'langan:</Text>
-                                    <Text strong className="nns-paid-text">
-                                        {numberFormat(paymentModal.incomeData.paidAmount)} so'm
-                                    </Text>
-                                </div>
-                                <div className="nns-payment-summary-item">
-                                    <Text>Qarz:</Text>
-                                    <Text strong className="nns-debt-text">
-                                        {numberFormat(paymentModal.incomeData.debtAmount)} so'm
-                                    </Text>
-                                </div>
-                                <div className="nns-payment-summary-item">
-                                    <Text>Qarz holati:</Text>
-                                    <Text strong>
-                                        {paymentModal.incomeData.debt?.status === 'partially_paid' ? 'Qisman to\'langan' :
-                                            paymentModal.incomeData.debt?.status === 'fully_paid' ? 'To\'liq to\'langan' : 'To\'lanmagan'}
-                                    </Text>
-                                </div>
-                            </div>
-                        </div>
-                        <Divider />
-                        <Form
-                            form={form}
-                            layout="vertical"
-                            onFinish={handlePaymentSubmit}
-                            className="nns-payment-form"
-                        >
-                            <Form.Item
-                                label="To'lov miqdori"
-                                name="paymentAmount"
-                                rules={[
-                                    { required: true, message: "To'lov miqdorini kiriting" },
-                                    {
-                                        type: 'number',
-                                        min: 0.01,
-                                        max: paymentModal.incomeData.debtAmount,
-                                        message: `To'lov miqdori 0.01 dan ${paymentModal.incomeData.debtAmount} gacha bo'lishi kerak`,
-                                    },
-                                ]}
-                            >
-                                <InputNumber
-                                    style={{ width: '100%' }}
-                                    min={0.01}
-                                    max={paymentModal.incomeData.debtAmount}
-                                    placeholder="To'lov miqdorini kiriting"
-                                    formatter={(value) => value ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
-                                    parser={(value) => value?.replace(/\./g, '')}
-                                    addonBefore={<LuDollarSign />}
-                                    addonAfter="so'm"
-                                />
-                            </Form.Item>
-                            <Form.Item
-                                label="To'lov turi"
-                                name="paymentMethod"
-                                rules={[{ required: true, message: "To'lov turini tanlang" }]}
-                            >
-                                <Select placeholder="To'lov turini tanlang">
-                                    <Option value="naqt"><LuBanknote className="nns-option-icon" /> Naqt</Option>
-                                    <Option value="bank"><LuCreditCard className="nns-option-icon" /> Bank</Option>
-                                </Select>
-                            </Form.Item>
-                            <Form.Item label="Izoh (ixtiyoriy)" name="note">
-                                <Input.TextArea placeholder="To'lov haqida qo'shimcha ma'lumot" rows={3} />
-                            </Form.Item>
-                            <div className="nns-payment-form-buttons">
-                                <Button onClick={handlePaymentCancel} className="nns-cancel-btn">Bekor qilish</Button>
-                                <Button disabled={isPayDebtLoading} loading={isPayDebtLoading} type="primary" htmlType="submit" className="nns-pay-btn">
-                                    <LuWallet className="nns-btn-icon" /> To'lov qilish
-                                </Button>
-                            </div>
-                        </Form>
-                    </div>
-                )}
-            </Modal>
 
             <Modal
                 title={

@@ -33,7 +33,7 @@ function Salary() {
           <PolizolSalary data={PolizolData} />
         </Tabs.TabPane>
 
-        <Tabs.TabPane tab="Ochisleniya" key="2">
+        <Tabs.TabPane tab="Okisleniya" key="2">
           <OchisleniyaSalary data={OchisleniyaData} />
         </Tabs.TabPane>
 

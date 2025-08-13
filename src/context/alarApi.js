@@ -44,6 +44,13 @@ export const alarApi = api.injectEndpoints({
       }),
       invalidatesTags: ["Salary"],
     }),
+
+
+    // New endpoint to get employee finance history
+    getEmployeeFinanceHistory: builder.query({
+      query: (employeeId) => `/finance-history/${employeeId}`,
+      providesTags: ["Salary"],
+    }),
   }),
 });
 
@@ -55,4 +62,5 @@ export const {
   useGetMonthlySalaryReportQuery,
   useGetEmployeePenaltiesQuery,
   useHandleOverpaymentMutation,
+  useGetEmployeeFinanceHistoryQuery
 } = alarApi;

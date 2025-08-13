@@ -42,11 +42,10 @@ function DailyWorkers() {
       setAttendanceData(newAttendanceData);
     }
   }, [attendances]);
-  console.log(attendanceData);
 
   const LOCATION_ROLES = [
     "polizol ish boshqaruvchi",
-    "ochisleniya ish boshqaruvchi",
+    "Okisleniya ish boshqaruvchi",
     "rubiroid ish boshqaruvchi",
   ];
 

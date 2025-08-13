@@ -7,7 +7,8 @@
 }
 
 .layout_left {
-  width: 250px;
+  min-width: 210px;
+  max-width: 210px;
   height: 100%;
 }
 

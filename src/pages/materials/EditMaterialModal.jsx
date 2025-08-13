@@ -1,38 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useMemo, useCallback } from "react";
 import { Modal, Form, Typography, Divider, Input, Select, Button, Row, Col } from 'antd';
 import { LuPackagePlus, LuTruck } from 'react-icons/lu';
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { toast } from 'react-toastify';
 import { useGetFactoriesQuery } from "../../context/clinicApi";
-import { useGetOchisleniyaWorkersQuery } from "../../context/workersApi";
+import { useGetOkisleniyaWorkersQuery } from "../../context/workersApi";
 import { useGetFirmsQuery, useCreateIncomeMutation } from "../../context/materialApi";
+import { useGetTransportQuery } from '../../context/cartSaleApi';
+import './style/incom.css'
 
 const { Option } = Select;
 const { Text } = Typography;
 
 const numberFormat = (value) => {
     return new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: 2,
+        minimumFractionDigits: 0,
         maximumFractionDigits: 2,
-    }).format(value);
+    }).format(value).replace(/,/g, ' ');
 };
 
 const FormattedInput = ({ value, onChange, max, min, ...props }) => {
+    const [displayValue, setDisplayValue] = useState(value ? numberFormat(value) : '');
+
     const handleChange = (e) => {
         const rawValue = e.target.value.replace(/[^0-9.]/g, '');
         const parsedValue = parseFloat(rawValue) || 0;
         if ((max !== undefined && parsedValue > max) || (min !== undefined && parsedValue < min)) {
             return;
         }
+        setDisplayValue(rawValue ? numberFormat(parsedValue) : '');
         onChange(parsedValue);
     };
-    return <Input value={value} onChange={handleChange} {...props} />;
+
+    const handleBlur = () => {
+        setDisplayValue(value ? numberFormat(value) : '');
+    };
+
+    return <Input value={displayValue} onChange={handleChange} onBlur={handleBlur} {...props} />;
 };
 
 const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen }) => {
     const [createIncome, { isLoading: createIncomeLoading }] = useCreateIncomeMutation();
     const { data: factories } = useGetFactoriesQuery();
-    const { data: firms, isLoading: firmsLoading } = useGetFirmsQuery();
+    const { data: firms, refetch: isRefetch, isLoading: firmsLoading } = useGetFirmsQuery();
     const firmsData = firms?.innerData || [];
     const [incomeForm] = Form.useForm();
     const [paidAmount, setPaidAmount] = useState(0);
@@ -41,10 +51,28 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
     const [selectedMaterials, setSelectedMaterials] = useState([]);
     const [selectedWorkers, setSelectedWorkers] = useState([]);
     const [transportCost, setTransportCost] = useState(0);
-    const { data: getOchisleniyaWorkers } = useGetOchisleniyaWorkersQuery();
-    const workersData = getOchisleniyaWorkers?.innerData?.employees || [];
+    const { data: getOkisleniyaWorkers } = useGetOkisleniyaWorkersQuery();
+    const workersData = getOkisleniyaWorkers?.innerData?.employees || [];
+    const [firmLabel, setFirmLabel] = useState("Firmani tanlang");
+    const inputRef = useRef(null);
+    const [isTransportDropdownOpen, setIsTransportDropdownOpen] = useState(false);
+    const formatNumber = (num) => (num || num === 0 ? num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '');
+    const { data: transport = { innerData: [] } } = useGetTransportQuery();
+    const dropdownRef = useRef(null);
+    const [customerTransport, setCustomerTransport] = useState("");
 
-    // Add a new material to the list
+    const toggleTransportDropdown = useCallback(() => {
+        setIsTransportDropdownOpen((prev) => !prev);
+    }, []);
+    const formattedTransportCost = useMemo(() => formatNumber(transportCost), [transportCost]);
+
+
+    const handleTransportCostChange = useCallback((e) => {
+        const raw = e.target.value.replace(/\D/g, '');
+        const numberValue = Number(raw) || 0;
+        setTransportCost(numberValue);
+    }, []);
+
     const handleAddMaterialToIncome = () => {
         setSelectedMaterials([
             ...selectedMaterials,
@@ -60,24 +88,32 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
         ]);
     };
 
-    // Remove a material by ID
     const handleRemoveMaterialFromIncome = (id) => {
         setSelectedMaterials(selectedMaterials.filter((m) => m.id !== id));
     };
 
-    // Update material field
     const handleMaterialChange = (id, field, value) => {
         setSelectedMaterials(
             selectedMaterials.map((m) => (m.id === id ? { ...m, [field]: value } : m))
         );
     };
 
-    // Update selected workers
     const handleWorkerChange = (workerIds) => {
         setSelectedWorkers(workerIds);
     };
 
-    // Calculate worker payments for BN-3 materials (25 so'm per kg)
+    const handleFormValuesChange = (changedValues) => {
+        if (changedValues.firmId) {
+            const selectedFirm = firmsData.find((firm) => firm._id === changedValues.firmId);
+            setFirmLabel(
+                selectedFirm
+                    ? `${selectedFirm.name} | ${numberFormat(Math.abs(selectedFirm.debt))} | ${selectedFirm.debt < 0 ? "Haqdorlik" : "Qarzdorlik"}`
+                    : "Firmani tanlang"
+            );
+        }
+    };
+
+
     const calculateWorkerPayments = () => {
         const bn3Material = selectedMaterials.find((m) => m.category === "BN-3" && m.unit === "kilo");
         if (!bn3Material || selectedWorkers.length === 0) return [];
@@ -93,10 +129,9 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
         });
     };
 
-    // Calculate transport and worker cost distribution per material
     const calculateMaterialCosts = () => {
         const workerPayments = calculateWorkerPayments();
-        const totalWorkerPayment = workerPayments.reduce((sum, wp) => sum + wp.payment, 0, 0);
+        const totalWorkerPayment = workerPayments.reduce((sum, wp) => sum + wp.payment, 0);
         const totalMaterialValue = selectedMaterials.reduce(
             (sum, material) => sum + Number(material.quantity) * Number(material.price),
             0
@@ -113,7 +148,6 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
         });
     };
 
-    // Calculate material financials for display
     const calculateMaterialFinancials = (material) => {
         const materialBasePrice = Number(material.quantity) * Number(material.price);
         const materialVatAmount = paymentType === "bank"
@@ -135,7 +169,6 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
         };
     };
 
-    // Handle form submission
     const handleIncomeSubmit = async () => {
         try {
             const values = await incomeForm.validateFields();
@@ -179,6 +212,7 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
                     name: selectedFirm.name,
                     phone: selectedFirm.phone,
                     address: selectedFirm.address,
+                    _id: selectedFirm._id
                 },
                 materials: materialsWithCosts.map((material) => ({
                     name: material.name,
@@ -197,6 +231,7 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
                 totalWithoutVat: Number(totalWithoutVat),
                 vatAmount: Number(vatAmount),
                 totalTransportCost: Number(transportCost),
+                customerTransport: customerTransport || "",
                 totalWorkerCost: workerPayments.reduce((sum, wp) => sum + wp.payment, 0),
                 workerPayments: workerPayments.map((wp) => ({
                     workerId: wp.workerId,
@@ -206,8 +241,10 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
 
             await createIncome(incomeData).unwrap();
             refetch();
+            isRefetch();
             toast.success("Kirim muvaffaqiyatli qo'shildi");
             setIsIncomeModalOpen(false);
+            setCustomerTransport("");
             setSelectedMaterials([]);
             setSelectedWorkers([]);
             setPaidAmount(0);
@@ -224,9 +261,14 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
     const hasBn3Material = selectedMaterials.some((m) => m.category === "BN-3" && m.unit === "kilo");
     const workerPayments = calculateWorkerPayments();
 
+    const handleTransportSelect = useCallback((transport) => {
+        setCustomerTransport(transport);
+        setIsTransportDropdownOpen(false);
+    }, []);
+
     return (
         <Modal
-            title={<span style={{ color: "#fff" }}>Yangi Material Keldi</span>}
+            title={<Text style={{ color: "#000000", textAlign: "center", fontSize: "18px" }}>Yangi Material Keldi</Text>}
             open={isIncomeModalOpen}
             onCancel={() => {
                 setIsIncomeModalOpen(false);
@@ -251,12 +293,13 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
                         form={incomeForm}
                         layout="vertical"
                         onFinish={handleIncomeSubmit}
+                        onValuesChange={handleFormValuesChange}
                         className="warehouse-add-form"
                     >
                         <Row gutter={[16, 16]}>
                             <Col xs={24} sm={12} md={12}>
                                 <Form.Item
-                                    label="Firmani tanlang"
+                                    label={firmLabel}
                                     name="firmId"
                                     rules={[{ required: true, message: "Firmani tanlash shart" }]}
                                     className="warehouse-form-item"
@@ -275,23 +318,54 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
                                 </Form.Item>
                             </Col>
                             <Col xs={24} sm={12} md={12}>
-                                <Form.Item
-                                    label={
-                                        <span>
+                                <div className="mjl-invoice-delivery-box">
+                                    <div className="mjl-card-summary-row">
+                                        <span style={{ marginBottom: "8px" }}>
                                             <LuTruck style={{ marginRight: 8 }} />
-                                            Transport harajati
+                                            Transportni tanlang
                                         </span>
-                                    }
-                                    name="transportCost"
-                                >
-                                    <FormattedInput
-                                        placeholder="Pul miqdorini kiriting"
-                                        value={transportCost}
-                                        onChange={setTransportCost}
-                                        className="warehouse-input"
-                                        min={0}
-                                    />
-                                </Form.Item>
+                                        <input
+                                            ref={inputRef}
+                                            type="text"
+                                            value={customerTransport}
+                                            // customerTransport, setCustomerTransport
+                                            onChange={(e) => setCustomerTransport(e.target.value)}
+                                            onClick={toggleTransportDropdown}
+                                            className="mjl-card-price-input"
+                                            style={{ width: '100%', height: "40px", border: '1px solid #d9d9d9' }}
+                                            aria-label="Transport details"
+                                            placeholder="50ZZ500Z Fura..."
+                                        />
+                                        {isTransportDropdownOpen && (
+                                            <div ref={dropdownRef} className="mjl-isTransportDropdownOpen">
+                                                {transport.innerData.map((item, index) => (
+                                                    <button
+                                                        key={index}
+                                                        onClick={() => handleTransportSelect(item.transport)}
+                                                        className="mjl-card-transport-option"
+                                                    >
+                                                        {item.transport}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="mjl-card-summary-row">
+                                        <span style={{ marginBottom: "8px" }}>
+                                            <LuTruck style={{ marginRight: 8 }} />Transport harajati: (so'm)</span>
+                                        <span>
+                                            <input
+                                                type="text"
+                                                value={formattedTransportCost}
+                                                onChange={handleTransportCostChange}
+                                                className="mjl-card-price-input"
+                                                style={{ width: '100%', height: "40px", border: '1px solid #d9d9d9' }}
+                                                aria-label="Transport cost"
+                                                placeholder="0"
+                                            />
+                                        </span>
+                                    </div>
+                                </div>
                             </Col>
                         </Row>
                         <Divider className="warehouse-divider">Materiallar</Divider>
@@ -453,7 +527,7 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
                             Material Qo'shish
                         </Button>
                         <Row gutter={[16, 16]}>
-                            <Col xs={24} sm={12} md={paymentType === "bank" ? 14 : 12}>
+                            {/* <Col xs={24} sm={12} md={paymentType === "bank" ? 14 : 12}>
                                 <Form.Item
                                     label="To'langan summa"
                                     name="paidAmount"
@@ -463,18 +537,12 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
                                         placeholder="To'langan summani kiriting"
                                         value={paidAmount}
                                         onChange={setPaidAmount}
-                                        max={materialsWithCosts.reduce(
-                                            (sum, material) => sum + Number(material.quantity) * (
-                                                Number(material.price) + Number(material.transportCostPerUnit) + Number(material.workerCostPerUnit)
-                                            ),
-                                            0
-                                        )}
-                                        min={0}
                                         className="warehouse-input"
+                                        min={0}
                                     />
                                 </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={12} md={paymentType === "bank" ? 5 : 12}>
+                            </Col>*/}
+                            <Col xs={24} sm={12} md={paymentType === "bank" ? 19 : 24}>
                                 <Form.Item
                                     label="To'lov turi"
                                     name="paymentType"
@@ -516,6 +584,7 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
                             style={{ width: "100%", margin: "15px 0" }}
                             htmlType="submit"
                             loading={createIncomeLoading}
+                            disabled={createIncomeLoading}
                             icon={<PlusOutlined />}
                             size="large"
                             className="warehouse-submit-btn"
@@ -588,10 +657,13 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
                     )}
                 </div>
             </div>
-        </Modal>
+        </Modal >
     );
 };
 
 export default EditMaterialModal;
+
+
+
 
 

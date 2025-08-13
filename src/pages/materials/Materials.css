@@ -87,7 +87,7 @@
 }
 
 .warehouse-container .ant-card-body {
-  padding: 10px 24px !important;
+  padding: 10px !important;
   border-radius: 0 0 8px 8px;
 }
 
@@ -1040,13 +1040,18 @@ h4:where(.css-dev-only-do-not-override-mc1tut).ant-typography {
     gap: 12px;
   }
 
+
   .warehouse-income-date-amount {
     align-items: flex-start;
     flex-direction: row;
     gap: 8px;
   }
 
-  .warehouse-income-materials-grid {
+  .warehouse-table-title {
+    display: none
+  }
+
+  .warehouse-table-titlerid {
     grid-template-columns: 1fr;
   }
 

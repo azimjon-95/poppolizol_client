@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { Select } from 'antd';
+import { Select, Button } from 'antd';
 import { toast } from 'react-toastify';
-import { Banknote } from 'lucide-react';
 import { usePayDebtMutation } from '../../../../context/cartSaleApi';
 
 const { Option } = Select;
@@ -16,7 +15,9 @@ const IsPaymentModal = ({
     Modal,
     salesData, setSalesData
 }) => {
-    const [payDebt] = usePayDebtMutation();
+    const [payDebt, {
+        isLoading
+    }] = usePayDebtMutation();
     const [paymentDescription, setPaymentDescription] = useState('');
 
     const processPayment = useCallback(async (saleId) => {
@@ -76,7 +77,8 @@ const IsPaymentModal = ({
             closeModal()
             toast.success("To'lov muvaffaqiyatli amalga oshirildi!");
         } catch (error) {
-            toast.error("To'lov amalga oshirishda xatolik yuz berdi.");
+            console.log(error?.data?.message);
+            toast.error(error?.data?.innerData || error?.data?.message || "To'lov amalga oshirishda xatolik yuz berdi.");
         }
 
         setPaymentAmount('');
@@ -129,19 +131,31 @@ const IsPaymentModal = ({
                         value={paymentDescription}
                         onChange={(e) => setPaymentDescription(e.target.value)}
                     />
-                    <button
-                        className="invoice-btn invoice-btn-success"
-                        onClick={() => processPayment(modalState.activeSaleId)}
-                        disabled={!paymentAmount || parseFloat(paymentAmount) <= 0 || !currentSale}
-                    >
-                        <Banknote size={16} />
-                        To'lovni amalga oshirish
-                    </button>
+                    {
+                        paymentAmount <= 0 ?
+                            <Button
+                                className="invoice-btn invoice-btn-success"
+                                onClick={() => processPayment(modalState.activeSaleId)}
+                                disabled={true}
+                            >
+                                To'lovni amalga oshirish
+                            </Button>
+                            :
+                            <Button
+                                className="invoice-btn invoice-btn-success"
+                                onClick={() => processPayment(modalState.activeSaleId)}
+                                disabled={isLoading}
+                                loading={isLoading}
+                            >
+                                To'lovni amalga oshirish
+                            </Button>
+                    }
                 </div>
             ) : (
                 <p>Sotuv topilmadi. Iltimos, qayta urinib ko'ring.</p>
-            )}
-        </Modal>
+            )
+            }
+        </Modal >
     )
 }
 

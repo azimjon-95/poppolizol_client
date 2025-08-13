@@ -263,7 +263,7 @@ const WarehouseManagement = () => {
                       <BarChartOutlined />
                     </div>
                     <div className="warehouse-stat-info">
-                      <Text className="warehouse-stat-number">{numberFormat(totalValue, 2)} so'm</Text>
+                      <Text className="warehouse-stat-number">{numberFormat(Math.floor(totalValue), 2)} so'm</Text>
                       <Text className="warehouse-stat-label">Umumiy qiymat</Text>
                     </div>
                   </div>

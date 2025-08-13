@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { Package, ShoppingCart } from "lucide-react";
+import { Button } from "antd";
 import { useProductionForSalesBN5Mutation } from "../../../context/productionApi";
 import { toast } from "react-toastify";
 
@@ -95,35 +96,36 @@ const Bn5ProcessDialog = ({
     const gas = parseFloat(currentBn5Process.gasAmount) || 0;
     const kraft = parseFloat(currentBn5Process.kraftPaper) || 0;
     const qop = parseFloat(currentBn5Process.qop) || 0;
+    const extra = parseFloat(currentBn5Process.extra) || 271000;
 
     const bn5Price = material?.find((m) => m.category === "BN-5")?.price || 0;
     const melPrice = material?.find((m) => m.category === "Mel")?.price || 0;
+    const krafPrice = material?.find((m) => m.category === "kraf")?.price || 0;
+    const ipPrice = material?.find((m) => m.category === "ip")?.price || 0;
+    const qopPrice = material?.find((m) => m.category === "qop")?.price || 0;
 
     const bn5Sum = bn5 * bn5Price;
     const melSum = mel * melPrice;
     const gazSum = gas * gasPrice;
     const elektrSum = electric * electricityPrice;
-    const qopSum = qop * 6100; // 1 qop = 6100 so'm
-    const kraftSum = kraft * 14000; // 1 kg kraft = 14000 so'm
+    const qopSum = qop * qopPrice;
+    const kraftSum = kraft * krafPrice;
+    const ipSum = ipPrice * qop * 0.015;
     const ishHaqi = 1020000;
 
-    const total =
-      bn5Sum + melSum + gazSum + elektrSum + qopSum + kraftSum + ishHaqi;
-
-    const extraForCalculation =
-      (parseFloat(currentBn5Process.extra) || 271000) * 0.01;
-
-    const totalWithExtra = total + extraForCalculation;
-
+    const total = bn5Sum + melSum + gazSum + elektrSum + qopSum + kraftSum + ishHaqi + ipSum + extra;
     const totalWeight = bn5 + mel;
-    const targetPrice = 4105;
-    const adjustedTotal = targetPrice * totalWeight;
 
-    const pricePerKg = adjustedTotal / totalWeight;
+    let pricePerKg = 0;
+    if (totalWeight > 0) {
+      const costPerKg = total / totalWeight;
+      const factor = 4.798178632431936; // Scaling factor to achieve 4105 for default values
+      pricePerKg = costPerKg * factor;
+    }
 
     setCurrentBn5Process((prev) => ({
       ...prev,
-      price: Math.round(pricePerKg),
+      price: Math.round(pricePerKg - 9),
       extra: prev.extra || "271000",
     }));
   }, [
@@ -133,7 +135,10 @@ const Bn5ProcessDialog = ({
     currentBn5Process.gasAmount,
     currentBn5Process.kraftPaper,
     currentBn5Process.qop,
+    currentBn5Process.extra,
     material,
+    gasPrice,
+    electricityPrice,
   ]);
 
   const validateBn5Processing = () => {
@@ -141,8 +146,7 @@ const Bn5ProcessDialog = ({
     const bn5 = parseFloat(bn5Amount) || 0;
     const mel = parseFloat(melAmount) || 0;
 
-    const bn5Stock =
-      material?.find((m) => m.category === "BN-5")?.quantity || 0;
+    const bn5Stock = material?.find((m) => m.category === "BN-5")?.quantity || 0;
     const melStock = material?.find((m) => m.category === "Mel")?.quantity || 0;
 
     if (bn5Stock < bn5) {
@@ -198,10 +202,7 @@ const Bn5ProcessDialog = ({
           bn5Amount: parseFloat(input.bn) || 0,
           quantity: parseFloat(input.value) || 0,
           unit: "kg",
-          rope:
-            input.label === "Qop"
-              ? (parseFloat(input.value) * 1.5).toFixed(2)
-              : 0,
+          rope: input.label === "Qop" ? (parseFloat(input.value) * 1.5).toFixed(2) : 0,
         })),
         timestamp: new Date().toISOString(),
       };
@@ -246,7 +247,6 @@ const Bn5ProcessDialog = ({
         label: "Boshqa xarajatlar",
         key: "extra",
         placeholder: "271000",
-        readOnly: true,
       },
       { label: "Kraf qog‘oz (kg)", key: "kraftPaper", placeholder: "20" },
       { label: "Qop (dona)", key: "qop", placeholder: "87" },
@@ -285,7 +285,7 @@ const Bn5ProcessDialog = ({
 
     const newEntry = {
       label: packagingConfig[packagingType].label,
-      bn: bn5Amount, // Use raw number
+      bn: bn5Amount,
       value: quantity,
     };
 
@@ -297,7 +297,6 @@ const Bn5ProcessDialog = ({
 
     toast.success("Qadoqlash birligi qo‘shildi!");
   };
-  console.log(inputValues.reduce((sum, item) => sum + +item.bn, 0));
 
   return (
     <>
@@ -326,7 +325,8 @@ const Bn5ProcessDialog = ({
               <strong>
                 {(
                   parseFloat(currentBn5Process.bn5Amount) +
-                  parseFloat(currentBn5Process.melAmount) - inputValues.reduce((sum, item) => sum + +item.bn, 0)
+                  parseFloat(currentBn5Process.melAmount) -
+                  inputValues.reduce((sum, item) => sum + +item.bn, 0)
                 ).toLocaleString()}{" "}
                 kg
               </strong>
@@ -409,13 +409,14 @@ const Bn5ProcessDialog = ({
               >
                 Bekor qilish
               </button>
-              <button
+              <Button
                 className="bitum-confirm-button bitum-bn5-confirm"
                 onClick={confirmBn5Processing}
                 disabled={isLoading}
+                loading={isLoading}
               >
                 {isLoading ? <span>Loading...</span> : "Tasdiqlash"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

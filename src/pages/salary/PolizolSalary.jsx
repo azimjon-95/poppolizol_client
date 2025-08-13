@@ -8,7 +8,6 @@ dayjs.extend(timezone);
 import "./Salary.css";
 
 function Salary({ data }) {
-  console.log(data);
 
   // UTC kunlar
   const today = dayjs().utc();
