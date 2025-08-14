@@ -109,7 +109,6 @@ const ExpenseTracker = () => {
             'Litsenziya va ruxsatnomalar',
             'Oziq ovqat xarajatlari',
             'Avto KAPA xarajati',
-            'Avto Qora xarajati',
             'Eksport xarajatlari',
             'USTA va Qurilish ishlari',
             'Ish/chik.xarajatlari',
