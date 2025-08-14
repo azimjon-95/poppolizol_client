@@ -52,7 +52,6 @@ const DEPARTMENT_OPTIONS = [
   { value: "rubiroid", label: "Rubiroid" },
   { value: "Okisleniya", label: "Okisleniya" },
 ];
-
 const LOCATION_ROLES = [
   "polizol ish boshqaruvchi",
   "Okisleniya ish boshqaruvchi",
@@ -62,23 +61,18 @@ const LOCATION_ROLES = [
 function Attendance() {
   const [attendanceData, setAttendanceData] = useState({});
   const [markedToday, setMarkedToday] = useState({});
-  const [markedDepartments, setMarkedDepartments] = useState({}); // Track which departments each worker is marked in
   const [filterUnit, setFilterUnit] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDate, setSelectedDate] = useState(
-    dayjs().format("YYYY-MM-DD")
-  );
-  const [markAttendance, { isLoading: isMarkLoading }] =
-    useMarkAttendanceMutation();
-  const [deleteAttendance, { isLoading: isDeleteLoading }] =
-    useDeleteAttendanceMutation();
-  const { data: workers, isLoading: isWorkersLoading } =
-    useGetProductionEmployeesQuery();
+  const [selectedDate, setSelectedDate] = useState(dayjs().format("YYYY-MM-DD"));
+  const [loadingStates, setLoadingStates] = useState({}); // New state for button-specific loading
+  const [markAttendance] = useMarkAttendanceMutation();
+  const [deleteAttendance] = useDeleteAttendanceMutation();
+  const { data: workers, isLoading: isWorkersLoading } = useGetProductionEmployeesQuery();
   const role = localStorage.getItem("role");
   const isLocationRole = role && LOCATION_ROLES.includes(role);
   const navigate = useNavigate();
 
-  const { data: existingRecords } = useGetAllAttendanceQuery({
+  const { data: existingRecords, refetch } = useGetAllAttendanceQuery({
     startDate: selectedDate,
     endDate: selectedDate,
   });
@@ -87,44 +81,35 @@ function Attendance() {
     if (existingRecords) {
       const newMarkedToday = {};
       const newAttendanceData = {};
-      const newMarkedDepartments = {};
-
       existingRecords.forEach((r) => {
-        const employeeId = r.employee._id;
-        newMarkedToday[employeeId] = true;
-        newAttendanceData[employeeId] = {
+        const key = r.department ? `${r.employee._id}_${r.department}` : r.employee._id;
+        newMarkedToday[key] = true;
+        newAttendanceData[key] = {
           department: r.department,
           percentage: r.percentage,
           attendanceId: r._id,
+          cleaning: r.cleaning,
         };
-
-        // Track departments for each employee
-        if (!newMarkedDepartments[employeeId]) {
-          newMarkedDepartments[employeeId] = [];
-        }
-        newMarkedDepartments[employeeId].push(r.department);
       });
-
       setMarkedToday(newMarkedToday);
-      setMarkedDepartments(newMarkedDepartments);
       setAttendanceData((prev) => ({ ...newAttendanceData, ...prev }));
     }
   }, [existingRecords]);
 
-  // Reset attendanceData when filterUnit or selectedDate changes
   useEffect(() => {
     setAttendanceData({});
+    setLoadingStates({}); // Reset loading states when filterUnit or selectedDate changes
   }, [filterUnit, selectedDate]);
 
-  const handleChange = useCallback((employeeId, field, value) => {
+  const handleChange = useCallback((key, field, value) => {
     setAttendanceData((prev) => {
-      if (!value) {
-        const { [employeeId]: _, ...rest } = prev;
+      if (!value && field !== "cleaning") {
+        const { [key]: _, ...rest } = prev;
         return rest;
       }
       return {
         ...prev,
-        [employeeId]: { ...prev[employeeId], [field]: value },
+        [key]: { ...prev[key], [field]: value },
       };
     });
   }, []);
@@ -135,38 +120,36 @@ function Attendance() {
   }, []);
 
   const handleSave = useCallback(
-    async (employeeId) => {
-      const record = attendanceData[employeeId];
+    async (employeeId, department) => {
+      const key = department ? `${employeeId}_${department}` : employeeId;
+      const record = attendanceData[key];
       if (!record?.percentage) {
         toast.warning("Foiz tanlanmagan", { autoClose: 3000 });
         return;
       }
-      if (!record?.department && filterUnit === "all") {
-        toast.warning("Bo'lim tanlanmagan", { autoClose: 3000 });
-        return;
-      }
+
+      setLoadingStates((prev) => ({ ...prev, [`save_${key}`]: true }));
       try {
         await markAttendance({
           employeeId,
           date: selectedDate,
           percentage: record.percentage,
-          department: record.department ?? filterUnit,
+          department: department ?? record.department ?? filterUnit,
           cleaning: record.cleaning,
         }).unwrap();
+        refetch()
+
         toast.success("Davomat saqlandi", { autoClose: 3000 });
-
-        // Update marked departments for avto kara workers
-        const department = record.department ?? filterUnit;
-        setMarkedDepartments((prev) => ({
-          ...prev,
-          [employeeId]: [...(prev[employeeId] || []), department],
-        }));
-
-        setMarkedToday((prev) => ({ ...prev, [employeeId]: true }));
+        setMarkedToday((prev) => ({ ...prev, [key]: true }));
       } catch (err) {
         console.error(err);
         toast.error(err?.data?.message || "Xatolik yuz berdi", {
           autoClose: 3000,
+        });
+      } finally {
+        setLoadingStates((prev) => {
+          const { [`save_${key}`]: _, ...rest } = prev;
+          return rest;
         });
       }
     },
@@ -174,58 +157,42 @@ function Attendance() {
   );
 
   const handleDelete = useCallback(
-    async (employeeId) => {
-      const record = attendanceData[employeeId._id];
+    async (employeeId, department) => {
+      const existingRecord = existingRecords?.find((r) => r.employee._id === employeeId)
 
-      if (!record) {
-        toast.warning("O'chirish uchun davomat topilmadi", { autoClose: 3000 });
+      if (!existingRecord) {
+        toast.warning("O‘chirish uchun davomat topilmadi", { autoClose: 3000 });
         return;
       }
 
+      setLoadingStates((prev) => ({ ...prev, [employeeId]: true }));
       try {
         await deleteAttendance({
-          attendanceId: record.attendanceId,
-          unit: record.department ?? filterUnit,
+          attendanceId: existingRecord._id,
+          unit: department ?? existingRecord.department ?? filterUnit,
         }).unwrap();
-        toast.success("Davomat o'chirildi", { autoClose: 3000 });
+        refetch()
+        toast.success("Davomat o‘chirildi", { autoClose: 3000 });
 
-        // Update marked departments
-        const department = record.department ?? filterUnit;
-        setMarkedDepartments((prev) => ({
-          ...prev,
-          [employeeId._id]: (prev[employeeId._id] || []).filter(d => d !== department),
-        }));
-
-        setMarkedToday((prev) => {
-          const newMarked = { ...prev };
-          // Only remove from markedToday if no departments left
-          if (!(markedDepartments[employeeId._id] || []).filter(d => d !== department).length) {
-            delete newMarked[employeeId._id];
-          }
-          return newMarked;
-        });
-
-        setAttendanceData((prev) => {
-          const newData = { ...prev };
-          delete newData[employeeId._id];
-          return newData;
-        });
       } catch (err) {
         console.error(err);
-        toast.error(err?.data?.message || "O'chirishda xatolik yuz berdi", {
+        toast.error(err?.data?.message || "O‘chirishda xatolik yuz berdi", {
           autoClose: 3000,
+        });
+      } finally {
+        setLoadingStates((prev) => {
+          const { [employeeId]: _, ...rest } = prev;
+          return rest;
         });
       }
     },
-    [attendanceData, deleteAttendance, filterUnit, markedDepartments]
+    [attendanceData, deleteAttendance, filterUnit, existingRecords]
   );
 
   const filteredWorkers = useMemo(() => {
     if (!workers?.innerData) return [];
     return workers.innerData
-      .filter(
-        (w) => filterUnit === "all" || w.unit?.toLowerCase() === filterUnit
-      )
+      .filter((w) => filterUnit === "all" || w.unit?.toLowerCase() === filterUnit)
       .filter((w) => {
         if (!searchTerm.trim()) return true;
         const fio = [w.firstName, w.lastName, w.middleName]
@@ -236,21 +203,107 @@ function Attendance() {
       });
   }, [workers, filterUnit, searchTerm]);
 
-  // Helper function to check if worker should be disabled
-  const isWorkerDisabled = useCallback((record, selectedDepartment) => {
-    const isAvtoKara = record.unit === "avto kara";
-    const isTransport = record.unit === "transport";
+  const renderAvtoKaraSelect = useCallback(
+    (record, department) => {
+      const existingForEmployee = existingRecords?.filter(
+        (i) => i.employee._id === record._id
+      );
+      const existingRecordForUnit = existingForEmployee?.find(
+        (i) => i.unit === department
+      );
+      const key = `${record._id}_${department}`;
+      const isDisabled = Boolean(existingRecordForUnit) || loadingStates[`delete_${key}`];
 
-    if (isTransport) return false; // Transport workers are never disabled
-    if (isAvtoKara) {
-      // For avto kara workers, only disable if they're already marked in the selected department
-      const employeeMarkedDepts = markedDepartments[record._id] || [];
-      return selectedDepartment && employeeMarkedDepts.includes(selectedDepartment);
-    }
+      return (
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
 
-    // For regular workers, disable if marked today
-    return markedToday[record._id];
-  }, [markedToday, markedDepartments]);
+          <Select
+            placeholder="Foiz tanlang"
+            style={{ width: 120 }}
+            value={
+              existingRecordForUnit?.percentage ?? attendanceData[key]?.percentage
+            }
+            onChange={(value) => handleChange(key, "percentage", value)}
+            disabled={isDisabled}
+            allowClear
+          >
+            {PERCENTAGE_OPTIONS.default.map((opt) => (
+              <Option key={opt.value} value={opt.value}>
+                {opt.label}
+              </Option>
+            ))}
+          </Select>
+        </div>
+      );
+    },
+    [attendanceData, handleChange, existingRecords, loadingStates]
+  );
+
+  const renderAvtoKaraActions = useCallback(
+    (record, department) => {
+      const existingForEmployee = existingRecords?.filter(
+        (i) => i.employee?._id === record._id
+      );
+      const existingRecordForUnit = existingForEmployee?.find(
+        (i) => i.unit === department
+      );
+      const key = `${record._id}_${department}`;
+      const isMarked = Boolean(existingRecordForUnit);
+
+      return (
+        <div style={{ display: "flex", gap: 8, alignItems: "Lean" }}>
+          {isMarked ? (
+            <BsCheck2Circle style={{ color: "green", fontSize: "20px" }} />
+          ) : (
+            <Button
+              type="primary"
+              onClick={() => handleSave(record._id, department)}
+              loading={loadingStates[`save_${key}`]}
+              disabled={loadingStates[`delete_${key}`]}
+            >
+              Saqlash
+            </Button>
+          )}
+        </div>
+      );
+    },
+    [handleSave, loadingStates, existingRecords]
+  );
+
+  const renderAvtoKaraDelete = useCallback(
+    (record, department) => {
+      const existingForEmployee = existingRecords?.filter(
+        (i) => i.employee._id === record._id
+      );
+      const existingRecordForUnit = existingForEmployee?.find(
+        (i) => i.unit === department
+      );
+      const key = `${record._id}_${department}`;
+      const isMarked = Boolean(existingRecordForUnit);
+
+      return isMarked && !isLocationRole ? (
+        <Popconfirm
+          title={`${DEPARTMENT_OPTIONS.find((opt) => opt.value === department)?.label} bo‘limi davomatini o‘chirishni xohlaysizmi?`}
+          onConfirm={() => handleDelete(record._id, department)}
+          okText="Ha"
+          cancelText="Yo‘q"
+          disabled={loadingStates[`save_${key}`] || loadingStates[`delete_${key}`]}
+        >
+          <Button
+            type="primary"
+            danger
+            loading={loadingStates[`delete_${key}`]}
+            disabled={loadingStates[`save_${key}`]}
+          >
+            O‘chirish
+          </Button>
+        </Popconfirm>
+      ) : (
+        <i style={{ fontSize: "13px", color: "grey" }}>Mavjud emas</i>
+      );
+    },
+    [handleDelete, loadingStates, existingRecords, isLocationRole]
+  );
 
   const baseColumns = useMemo(
     () => [
@@ -268,9 +321,17 @@ function Attendance() {
       {
         title: "Davomat %",
         render: (_, record) => {
+          if (record.unit?.toLowerCase() === "avto kara") {
+            return (
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {DEPARTMENT_OPTIONS.map((dept) => renderAvtoKaraSelect(record, dept.value))}
+              </div>
+            );
+          }
+
           const isTransport = record.unit === "transport";
           const isOkisleniya = record.unit === "Okisleniya";
-          const selectedDepartment = attendanceData[record._id]?.department;
+          const isDisabled = (!isTransport && markedToday[record._id]) || loadingStates[`delete_${record._id}`];
           const options = isTransport
             ? PERCENTAGE_OPTIONS.transport
             : isOkisleniya
@@ -282,10 +343,8 @@ function Attendance() {
               placeholder="Foiz tanlang"
               style={{ width: 120 }}
               value={attendanceData[record._id]?.percentage}
-              onChange={(value) =>
-                handleChange(record._id, "percentage", value)
-              }
-              disabled={isWorkerDisabled(record, selectedDepartment) || isDeleteLoading}
+              onChange={(value) => handleChange(record._id, "percentage", value)}
+              disabled={isDisabled}
               allowClear
             >
               {options.map((opt) => (
@@ -300,13 +359,12 @@ function Attendance() {
       {
         title: "Shanbalik",
         render: (_, record) => {
-          const selectedDepartment = attendanceData[record._id]?.department;
+          const isDisabled = markedToday[record._id] || loadingStates[`delete_${record._id}`];
           return (
             <Checkbox
-              onChange={(e) =>
-                handleChange(record._id, "cleaning", e.target.checked)
-              }
-              disabled={isWorkerDisabled(record, selectedDepartment)}
+              checked={attendanceData[record._id]?.cleaning ?? false}
+              onChange={(e) => handleChange(record._id, "cleaning", e.target.checked)}
+              disabled={isDisabled}
             />
           );
         },
@@ -314,124 +372,185 @@ function Attendance() {
       {
         title: "Saqlash",
         render: (_, record) => {
-          const selectedDepartment = attendanceData[record._id]?.department;
-          const disabled = isWorkerDisabled(record, selectedDepartment);
+          if (record.unit?.toLowerCase() === "avto kara") {
+            return (
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {DEPARTMENT_OPTIONS.map((dept) => renderAvtoKaraActions(record, dept.value))}
+              </div>
+            );
+          }
+
+          const isDisabled = (record.unit !== "transport" && markedToday[record._id]) || loadingStates[`delete_${record._id}`];
 
           return (
             <div style={{ display: "flex", gap: 8 }}>
-              {disabled && record.unit !== "transport" ? (
+              {markedToday[record._id] ? (
                 <BsCheck2Circle style={{ color: "green", fontSize: "25px" }} />
               ) : (
                 <Button
                   type="primary"
                   onClick={() => handleSave(record._id)}
-                  loading={isMarkLoading}
-                  disabled={disabled || isDeleteLoading}
-                >
-                  Saqlash
+                  loading={loadingStates[`save_${record._id}`]}
+                  disabled={isDisabled}
+                  gambar >Saqlash
                 </Button>
               )}
             </div>
           );
         },
       },
+      ...(isLocationRole
+        ? []
+        : [
+          {
+            title: "O‘chirish",
+            render: (i, record) => {
+              if (record.unit?.toLowerCase() === "avto kara") {
+                return (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {DEPARTMENT_OPTIONS.map((dept) => renderAvtoKaraDelete(record, dept.value))}
+                  </div>
+                );
+              }
+
+              return markedToday[record._id] ? (
+                <Popconfirm
+                  title="Davomatni o‘chirishni xohlaysizmi?"
+                  onConfirm={() => handleDelete(record._id, "")}
+                  okText="Ha"
+                  cancelText="Yo‘q"
+                  disabled={loadingStates[`save_${record._id}`] || loadingStates[`delete_${record._id}`]}
+                >
+                  <Button
+                    type="primary"
+                    danger
+                    loading={loadingStates[`delete_${record._id}`]}
+                    disabled={loadingStates[`save_${record._id}`]}
+                  >
+                    O‘chirish
+                  </Button>
+                </Popconfirm>
+              ) : (
+                <i style={{ fontSize: "13px", color: "grey" }}>Mavjud emas</i>
+              );
+            },
+          },
+        ]),
     ],
     [
       attendanceData,
       handleChange,
       handleSave,
-      isMarkLoading,
-      isDeleteLoading,
-      isWorkerDisabled,
+      handleDelete,
+      loadingStates,
+      markedToday,
+      isLocationRole,
+      existingRecords,
+      renderAvtoKaraSelect,
+      renderAvtoKaraActions,
+      renderAvtoKaraDelete,
     ]
   );
 
-  if (!isLocationRole) {
-    baseColumns.push({
-      title: "O'chirish",
-      render: (_, record) => (
-        <div style={{ display: "flex", gap: 8 }}>
-          {markedToday[record._id] ? (
-            <Popconfirm
-              title="Davomatni o'chirishni xohlaysizmi?"
-              onConfirm={() => handleDelete(record)}
-              okText="Ha"
-              cancelText="Yo'q"
-              disabled={isMarkLoading || isDeleteLoading}
-            >
-              <Button
-                type="primary"
-                danger
-                loading={isDeleteLoading}
-                disabled={isMarkLoading}
-              >
-                O'chirish
-              </Button>
-            </Popconfirm>
-          ) : (
-            <i style={{ fontSize: "13px", color: "grey" }}>Mavjud emas</i>
-          )}
-        </div>
-      ),
-    });
-  }
+  // const departmentColumn = useMemo(
+  //   () => ({
+  //     title: "Boshqa bo‘limga yo'naltrish",
+  //     render: (_, record) => {
+  //       if (record.unit?.toLowerCase() === "avto kara") {
+  //         return (
+  //           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+  //             {DEPARTMENT_OPTIONS.map((dept) => (
+  //               <span key={dept.value} style={{ color: "gray" }}>
+  //                 {dept.label}
+  //               </span>
+  //             ))}
+  //           </div>
+  //         );
+  //       }
+
+  //       const defaultDepartment =
+  //         filterUnit !== "all" && DEPARTMENT_OPTIONS.some((opt) => opt.value === filterUnit)
+  //           ? filterUnit
+  //           : attendanceData[record._id]?.department;
+  //       const isDisabled = (record.unit !== "transport" && markedToday[record._id]) || loadingStates[`delete_${record._id}`];
+
+  //       return (
+  //         <Select
+  //           placeholder="Bo‘lim tanlang"
+  //           style={{ width: 190 }}
+  //           value={defaultDepartment}
+  //           onChange={(value) => handleChange(record._id, "department", value)}
+  //           disabled={isDisabled}
+  //           allowClear
+  //         >
+  //           {DEPARTMENT_OPTIONS.map((opt) => (
+  //             <Option key={opt.value} value={opt.value}>
+  //               {opt.label}
+  //             </Option>
+  //           ))}
+  //         </Select>
+  //       );
+  //     },
+  //   }),
+  //   [attendanceData, filterUnit, handleChange, markedToday, loadingStates]
+  // );
 
   const departmentColumn = useMemo(
     () => ({
-      title: "Boshqa bo'limga yo'naltrish",
+      title: "Boshqa bo‘limga yo'naltrish",
       render: (_, record) => {
-        const isTransport = record.unit === "transport";
-        const defaultDepartment =
-          filterUnit !== "all" &&
-            DEPARTMENT_OPTIONS.some((opt) => opt.value === filterUnit)
-            ? filterUnit
-            : attendanceData[record._id]?.department;
+        if (record.unit?.toLowerCase() === "avto kara") {
+          return (
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              {DEPARTMENT_OPTIONS.map((dept) => (
+                <span key={dept.value} style={{ color: "gray" }}>
+                  {dept.label}
+                </span>
+              ))}
+            </div>
+          );
+        }
 
-        const selectedDepartment = attendanceData[record._id]?.department || defaultDepartment;
-        const disabled = isWorkerDisabled(record, selectedDepartment);
+        // Find the existing record for this employee on the selected date
+        const existingRecord = existingRecords?.find((r) => r.employee._id === record._id && r.date === selectedDate
+        );
+
+        // Prioritize department from server (existingRecords), then attendanceData, then filterUnit
+        const defaultDepartment =
+          existingRecord?.department ??
+          (filterUnit !== "all" && DEPARTMENT_OPTIONS.some((opt) => opt.value === filterUnit)
+            ? filterUnit
+            : attendanceData[record._id]?.department);
+
+        console.log(existingRecords);
+        const isDisabled =
+          (record.unit !== "transport" && markedToday[record._id]) ||
+          loadingStates[`delete_${record._id}`];
 
         return (
           <Select
-            placeholder="Bo'lim tanlang"
-            style={{ width: 190 }}
+            placeholder="Bo‘lim tanlang"
+            style={{ width: 180 }}
             value={defaultDepartment}
             onChange={(value) => handleChange(record._id, "department", value)}
-            disabled={disabled || isDeleteLoading}
+            disabled={isDisabled}
             allowClear
           >
-            {DEPARTMENT_OPTIONS.map((opt) => {
-              // For avto kara workers, disable departments they're already marked in
-              const isAvtoKara = record.unit === "avto kara";
-              const employeeMarkedDepts = markedDepartments[record._id] || [];
-              const optionDisabled = isAvtoKara && employeeMarkedDepts.includes(opt.value);
-              // console.log(isAvtoKara);
-
-              return (
-                <Option
-                  key={opt.value}
-                  value={opt.value}
-                  disabled={optionDisabled}
-                >
-                  {opt.label}
-                  {optionDisabled && " (belgilangan)"}
-                </Option>
-              );
-            })}
+            {DEPARTMENT_OPTIONS.map((opt) => (
+              <Option key={opt.value} value={opt.value}>
+                {opt.label}
+              </Option>
+            ))}
           </Select>
         );
       },
     }),
-    [attendanceData, filterUnit, handleChange, isWorkerDisabled, markedDepartments, isDeleteLoading]
+    [attendanceData, filterUnit, handleChange, markedToday, loadingStates, existingRecords, selectedDate]
   );
-
   const columns = useMemo(
     () =>
       filterUnit === "all"
-        ? [
-          ...baseColumns.slice(0, 2),
-          departmentColumn,
-          ...baseColumns.slice(2),
-        ]
+        ? [...baseColumns.slice(0, 2), departmentColumn, ...baseColumns.slice(2)]
         : baseColumns,
     [baseColumns, departmentColumn, filterUnit]
   );
@@ -457,11 +576,7 @@ function Attendance() {
     );
 
   return (
-    <div
-      style={{
-        padding: "0rem 1rem ",
-      }}
-    >
+    <div style={{ padding: "0rem 1rem" }} className="atend-boxx">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -537,8 +652,7 @@ function Attendance() {
                   </Select>
                 </div>
               </div>
-            }
-          >
+            }>
             <Table
               rowKey="_id"
               dataSource={filteredWorkers}
@@ -561,3 +675,7 @@ function Attendance() {
 }
 
 export default Attendance;
+
+
+
+

@@ -26,7 +26,10 @@
     gap: 16px;
 }
 
-
+.atend-boxx .ant-card-body {
+    padding: 0px 0px !important;
+    border-radius: 0 0 8px 8px;
+}
 
 .xsd-subject-label {
     font-weight: 600;
