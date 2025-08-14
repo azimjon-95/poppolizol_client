@@ -11,6 +11,7 @@ export const attendanceApi = api.injectEndpoints({
         }
         return url;
       },
+      providesTags: ["Attendance"],
       transformResponse: (response) => response.innerData,
     }),
 
@@ -18,6 +19,7 @@ export const attendanceApi = api.injectEndpoints({
     getAllAttendance: builder.query({
       query: ({ startDate, endDate }) =>
         `/attendance/all?startDate=${startDate}&endDate=${endDate}`,
+      providesTags: ["Attendance"],
       transformResponse: (response) => response.innerData,
     }),
 
@@ -28,6 +30,7 @@ export const attendanceApi = api.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["Attendance"],
       transformResponse: (response) => response.innerData,
     }),
 
@@ -38,6 +41,7 @@ export const attendanceApi = api.injectEndpoints({
         method: "PUT",
         body: data,
       }),
+      invalidatesTags: ["Attendance"],
       transformResponse: (response) => response.innerData,
     }),
 
@@ -48,9 +52,9 @@ export const attendanceApi = api.injectEndpoints({
         method: "DELETE",
         body: data,
       }),
+      invalidatesTags: ["Attendance"],
       transformResponse: (response) => response.innerData,
-    })
-
+    }),
   }),
 });
 
@@ -59,5 +63,5 @@ export const {
   useGetAllAttendanceQuery,
   useMarkAttendanceMutation,
   useUpdateAttendanceMutation,
-  useDeleteAttendanceMutation
+  useDeleteAttendanceMutation,
 } = attendanceApi;

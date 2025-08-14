@@ -19,7 +19,7 @@ function DailyWorkers() {
   const [attendanceData, setAttendanceData] = useState({}); // Ob'ekt shaklida saqlanadi
 
   const [markAttendance] = useMarkAttendanceMutation();
-  //   const [deleteAttendance] = useDeleteAttendanceMutation();
+  const [deleteAttendance] = useDeleteAttendanceMutation();
   const { data } = useGetWorkersQuery();
   let workers = data?.innerData?.filter((i) => i.paymentType === "kunlik");
 
@@ -119,13 +119,42 @@ function DailyWorkers() {
       render: (_, record) => {
         const isMarked = Boolean(attendanceData[record._id]);
         return (
-          <Button danger disabled={!isMarked}>
+          <Button
+            danger
+            disabled={!isMarked}
+            onClick={() => handleDelete(record)}
+          >
             O'chirish
           </Button>
         );
       },
     },
   ];
+
+  const handleDelete = useCallback(
+    async (employeeId) => {
+      const record = attendanceData[employeeId._id];
+
+      if (!record) {
+        toast.warning("O'chirish uchun davomat topilmadi", { autoClose: 3000 });
+        return;
+      }
+
+      try {
+        await deleteAttendance({
+          attendanceId: record.attendanceId,
+          unit: record.department,
+        }).unwrap();
+        toast.success("Davomat o'chirildi", { autoClose: 3000 });
+      } catch (err) {
+        console.error(err);
+        toast.error(err?.data?.message || "O'chirishda xatolik yuz berdi", {
+          autoClose: 3000,
+        });
+      }
+    },
+    [attendanceData, deleteAttendance]
+  );
 
   const filteredWorkers = useMemo(() => {
     if (!workers?.length) return [];

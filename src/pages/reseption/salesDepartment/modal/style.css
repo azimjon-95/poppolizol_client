@@ -110,6 +110,21 @@
     width: 100%;
 }
 
+.invoice-delivery-form-radio{
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.invoice-delivery-form-radio label{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
 .invoice-btn.invoice-btn-success {
     display: flex;
     align-items: center;
