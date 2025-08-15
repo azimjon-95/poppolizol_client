@@ -934,7 +934,7 @@ const ProductionSystem = () => {
                     {product.category === "Stakan" ||
                       product.category === "Qop" ? (
                       <h3 className="product-name">
-                        BN-5 {capitalizeFirstLetter(product.productName)}
+                        {capitalizeFirstLetter(product.productName)}
                       </h3>
                     ) : (
                       <h3 className="product-name">

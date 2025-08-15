@@ -125,8 +125,8 @@ const DeliveryProduct = ({
             });
             toast.success(updatedSale.message || "Mahsulotlar yuborildi!");
             closeModal();
-        } catch {
-            toast.error("Mahsulotlarni yuborishda xatolik yuz berdi!");
+        } catch (err) {
+            toast.error(err.data.message || "Mahsulotlarni yuborishda xatolik yuz berdi!");
         }
     }, [validItems, modalState.activeSaleId, customerInfo.transport, customerInfo.transportCost, deliverProduct, closeModal]);
 

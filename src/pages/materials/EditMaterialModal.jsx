@@ -107,7 +107,7 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
             const selectedFirm = firmsData.find((firm) => firm._id === changedValues.firmId);
             setFirmLabel(
                 selectedFirm
-                    ? `${selectedFirm.name} | ${numberFormat(Math.abs(selectedFirm.debt))} | ${selectedFirm.debt < 0 ? "Haqdorlik" : "Qarzdorlik"}`
+                    ? `${selectedFirm.name} | ${numberFormat(Math.abs(Math.round(selectedFirm.debt)))} | ${selectedFirm.debt < 0 ? "Haqdorlik" : "Qarzdorlik"}`
                     : "Firmani tanlang"
             );
         }

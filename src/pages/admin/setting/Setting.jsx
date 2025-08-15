@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Factory, Clock, Zap, Flame, Coins, Package, Settings, Save, List, Plus, Trash2, Edit3, Phone, Percent, MessageSquare } from 'lucide-react';
+import { Factory, Clock, Zap, Flame, Settings, Save, List, Plus, Trash2, Edit3, Phone, Percent, MessageSquare } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
@@ -14,16 +14,12 @@ import {
 const initialFormData = {
     factoryName: '',
     location: '',
-    capacity: '',
     phone: '',
     workingHours: { startTime: '', endTime: '' },
     electricityPrice: '',
     methaneGasPrice: '',
     telegramApiUrl: { botToken: '', chatId: '' },
     nds: '',
-    bitumenMarkFive: { costPrice: '', profitMargin: '' },
-    ruberoidBlackPaper: { costPrice: '', profitMargin: '' },
-    otherInfo: '',
 };
 
 const FactoryConfigPanel = () => {
@@ -63,14 +59,6 @@ const FactoryConfigPanel = () => {
                 electricityPrice: Number(formData.electricityPrice),
                 methaneGasPrice: Number(formData.methaneGasPrice),
                 nds: Number(formData.nds),
-                bitumenMarkFive: {
-                    costPrice: Number(formData.bitumenMarkFive.costPrice),
-                    profitMargin: Number(formData.bitumenMarkFive.profitMargin),
-                },
-                ruberoidBlackPaper: {
-                    costPrice: Number(formData.ruberoidBlackPaper.costPrice),
-                    profitMargin: Number(formData.ruberoidBlackPaper.profitMargin),
-                },
             };
 
             if (editingId) {
@@ -161,11 +149,6 @@ const FactoryConfigPanel = () => {
         );
     };
 
-    if (error) {
-        toast.error(`Ma'lumotlarni yuklashda xato: ${error.message || 'Server xatosi'}`, {
-            toastId: 'fetch-error',
-        });
-    }
 
     return (
         <>
@@ -231,17 +214,6 @@ const FactoryConfigPanel = () => {
                                                 value={formData.location}
                                                 onChange={(e) => handleInputChange(e, 'location')}
                                                 placeholder="Zavod joylashuvini kiriting"
-                                                required
-                                            />
-                                        </div>
-                                        <div className="zavod-input-guruh">
-                                            <label className="zavod-yorliq">Ishlab Chiqarish Quvvati</label>
-                                            <input
-                                                type="text"
-                                                className="zavod-input-maydoni"
-                                                value={formData.capacity}
-                                                onChange={(e) => handleInputChange(e, 'capacity')}
-                                                placeholder="Kunlik quvvat (tonna/kun)"
                                                 required
                                             />
                                         </div>
@@ -393,103 +365,6 @@ const FactoryConfigPanel = () => {
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Products and Profit */}
-                                <div className="zavod-karta-blok">
-                                    <div className="zavod-karta-sarlavha">
-                                        <Package className="zavod-karta-ikonka" />
-                                        <h3>Mahsulotlar va Foyda</h3>
-                                    </div>
-                                    <div className="zavod-mahsulot-grid">
-                                        <div className="zavod-mahsulot-guruh">
-                                            <h4 className="zavod-mahsulot-nomi">Bitum-5 Marka</h4>
-                                            <div className="zavod-input-grid">
-                                                <div className="zavod-input-guruh">
-                                                    <label className="zavod-yorliq">Tan Narxi</label>
-                                                    <div className="zavod-narx-input">
-                                                        <input
-                                                            type="number"
-                                                            className="zavod-input-maydoni"
-                                                            value={formData.bitumenMarkFive.costPrice}
-                                                            onChange={(e) => handleInputChange(e, 'bitumenMarkFive.costPrice')}
-                                                            placeholder="0"
-                                                            required
-                                                            min="0"
-                                                        />
-                                                        <span className="zavod-valyuta-belgi">so'm</span>
-                                                    </div>
-                                                </div>
-                                                <div className="zavod-input-guruh">
-                                                    <label className="zavod-yorliq">Foyda Foizi</label>
-                                                    <div className="zavod-narx-input">
-                                                        <input
-                                                            type="number"
-                                                            className="zavod-input-maydoni"
-                                                            value={formData.bitumenMarkFive.profitMargin}
-                                                            onChange={(e) => handleInputChange(e, 'bitumenMarkFive.profitMargin')}
-                                                            placeholder="0"
-                                                            required
-                                                            min="0"
-                                                            max="100"
-                                                        />
-                                                        <span className="zavod-valyuta-belgi">%</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="zavod-mahsulot-guruh">
-                                            <h4 className="zavod-mahsulot-nomi">Ruberoid Qora Qog'oz</h4>
-                                            <div className="zavod-input-grid">
-                                                <div className="zavod-input-guruh">
-                                                    <label className="zavod-yorliq">Tan Narxi</label>
-                                                    <div className="zavod-narx-input">
-                                                        <input
-                                                            type="number"
-                                                            className="zavod-input-maydoni"
-                                                            value={formData.ruberoidBlackPaper.costPrice}
-                                                            onChange={(e) => handleInputChange(e, 'ruberoidBlackPaper.costPrice')}
-                                                            placeholder="0"
-                                                            required
-                                                            min="0"
-                                                        />
-                                                        <span className="zavod-valyuta-belgi">so'm</span>
-                                                    </div>
-                                                </div>
-                                                <div className="zavod-input-guruh">
-                                                    <label className="zavod-yorliq">Foyda Foizi</label>
-                                                    <div className="zavod-narx-input">
-                                                        <input
-                                                            type="number"
-                                                            className="zavod-input-maydoni"
-                                                            value={formData.ruberoidBlackPaper.profitMargin}
-                                                            onChange={(e) => handleInputChange(e, 'ruberoidBlackPaper.profitMargin')}
-                                                            placeholder="0"
-                                                            required
-                                                            min="0"
-                                                            max="100"
-                                                        />
-                                                        <span className="zavod-valyuta-belgi">%</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Additional Information */}
-                                <div className="zavod-karta-blok zavod-toliq-kenglik">
-                                    <div className="zavod-karta-sarlavha">
-                                        <Coins className="zavod-karta-ikonka" />
-                                        <h3>Qo'shimcha Ma'lumotlar</h3>
-                                    </div>
-                                    <textarea
-                                        className="zavod-textarea-maydoni"
-                                        value={formData.otherInfo}
-                                        onChange={(e) => handleInputChange(e, 'otherInfo')}
-                                        placeholder="Zavod haqida qo'shimcha ma'lumotlar..."
-                                        rows="4"
-                                    />
-                                </div>
                             </div>
 
                             {/* Save Button */}
@@ -537,15 +412,12 @@ const FactoryConfigPanel = () => {
                                         <tr>
                                             <th>Zavod Nomi</th>
                                             <th>Joylashuv</th>
-                                            <th>Quvvat</th>
                                             <th>Ish Vaqti</th>
                                             <th>Tel</th>
                                             <th>Elektr Narxi</th>
                                             <th>Gaz Narxi</th>
                                             <th>NDS</th>
                                             <th>Telegram Bot</th>
-                                            <th>Bitum Foyda</th>
-                                            <th>Ruberoid Foyda</th>
                                             <th>Amallar</th>
                                         </tr>
                                     </thead>
@@ -559,7 +431,6 @@ const FactoryConfigPanel = () => {
                                                     </span>
                                                 </td>
                                                 <td>{config.location}</td>
-                                                <td>{config.capacity}</td>
                                                 <td>{`${config.workingHours.startTime} - ${config.workingHours.endTime}`}</td>
                                                 <td>{config.phone || '-'}</td>
                                                 <td>
@@ -586,8 +457,7 @@ const FactoryConfigPanel = () => {
                                                         {config.telegramApiUrl?.chatId}
                                                     </span>
                                                 </td>
-                                                <td>{config.bitumenMarkFive.profitMargin}%</td>
-                                                <td>{config.ruberoidBlackPaper.profitMargin}%</td>
+
                                                 <td>
                                                     <span className="zavod-nomi-ustun">
                                                         <button

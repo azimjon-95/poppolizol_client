@@ -314,15 +314,15 @@ const RuberoidFactoryHR = () => {
     );
   }
 
-  if (isError) {
-    return (
-      <div className="ruberoid-factory-hr-loading">
-        <div className="error-message">
-          Xatolik yuz berdi: {error?.data?.message || "Noma'lum xato"}
-        </div>
-      </div>
-    );
-  }
+  // if (isError) {
+  //   return (
+  //     <div className="ruberoid-factory-hr-loading">
+  //       <div className="error-message">
+  //         Xatolik yuz berdi: {error?.data?.message || "Noma'lum xato"}
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
 
   return (

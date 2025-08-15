@@ -427,14 +427,14 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                                         onChange={(e) => handleContractPriceChange(item._id, e.target.value)}
                                                         className="card-price-input"
                                                         style={{
-                                                            width: `${inputWidth}px`,
+                                                            width: `${inputWidth + 5}px`,
                                                             textAlign: 'right',
                                                             transition: 'width 0.3s ease',
                                                             border: '1px solid #d9d9d9',
                                                         }}
                                                         aria-label={`Price for ${item.productName}`}
                                                     />
-                                                    <span> so'm / {item.size}</span>
+                                                    <span> so'm</span>
                                                 </div>
                                             </div>
                                         </div>

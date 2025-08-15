@@ -124,12 +124,7 @@ const ProductionHistoryTable = ({ startDate, endDate }) => {
         return icons[status] || null;
     };
 
-    if (historyError) {
-        toast.error(
-            historyError.data?.message || 'Ishlab chiqarish tarixini olishda xatolik yuz berdi',
-            { toastId: 'history-error' }
-        );
-    }
+    console.log(productionHistory);
 
     return (
         <>
@@ -246,7 +241,7 @@ const ProductionHistoryTable = ({ startDate, endDate }) => {
                                                         Xom ashyo: {formatCurrency(Math.floor(calculateMaterialsCost(production.materialsUsed)))}
                                                     </div>
                                                     <div className="mvb-materials-cost">
-                                                        Qo'shimcha xarajatlar: {formatCurrency(Math.floor(production?.productNormaId?.cost?.totalCost))}
+                                                        Qo'shimcha xarajatlar: {formatCurrency(Math.floor(production?.totalCost))}
                                                     </div>
                                                 </div>
                                             </td>
@@ -254,7 +249,7 @@ const ProductionHistoryTable = ({ startDate, endDate }) => {
                                                 <div className="mvb-cost-info">
                                                     <div className="mvb-total-cost">
                                                         {formatCurrency(
-                                                            Math.floor(production?.productNormaId?.cost?.totalCost || 0) +
+                                                            Math.floor(production?.totalCost || 0) +
                                                             Math.floor(calculateMaterialsCost(production.materialsUsed))
                                                         )}
                                                     </div>

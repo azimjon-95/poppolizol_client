@@ -38,7 +38,7 @@ const Bn5ProcessDialog = ({
 
   const packagingConfig = {
     bag: {
-      label: "Qop",
+      label: "BN-5 Qop",
       weight: 39,
       ropePerUnit: 1.5,
       kraftPerUnit: unitType !== "dona" ? 0.25 : 0,
@@ -202,7 +202,7 @@ const Bn5ProcessDialog = ({
           bn5Amount: parseFloat(input.bn) || 0,
           quantity: parseFloat(input.value) || 0,
           unit: "kg",
-          rope: input.label === "Qop" ? (parseFloat(input.value) * 1.5).toFixed(2) : 0,
+          rope: input.label === "BN-5 Qop" ? (parseFloat(input.value) * 1.5).toFixed(2) : 0,
         })),
         timestamp: new Date().toISOString(),
       };
@@ -249,7 +249,7 @@ const Bn5ProcessDialog = ({
         placeholder: "271000",
       },
       { label: "Kraf qog‘oz (kg)", key: "kraftPaper", placeholder: "20" },
-      { label: "Qop (dona)", key: "qop", placeholder: "87" },
+      { label: "BN-5 Qop (dona)", key: "qop", placeholder: "87" },
       {
         label: "BN-5 Tannarxi (1kg)",
         key: "price",
@@ -360,7 +360,7 @@ const Bn5ProcessDialog = ({
                 className="input-field"
                 placeholder={
                   unitType === "dona"
-                    ? "Qoplar sonini kiriting"
+                    ? "BN-5 Qoplar sonini kiriting"
                     : "Kraf qog'oz miqdorini (kg)"
                 }
                 value={quantity}
@@ -385,10 +385,10 @@ const Bn5ProcessDialog = ({
                       BN-5 + Mel: {formatNumber(input.bn)} kg
                     </span>
                     <span className="package-info">
-                      {input.label === "Qop" ? input.label : "Kraf qog'oz"}{" "}
-                      {input.value} {input.label === "Qop" ? "dona" : "kg"}
+                      {input.label === "BN-5 Qop" ? input.label : "Kraf qog'oz"}{" "}
+                      {input.value} {input.label === "BN-5 Qop" ? "dona" : "kg"}
                     </span>
-                    {input.label === "Qop" && (
+                    {input.label === "BN-5 Qop" && (
                       <span className="package-info">
                         Ip: {(parseFloat(input.value) * 1.5).toFixed(2)} g
                       </span>

@@ -24,30 +24,10 @@ export const ProductionSystemApi = api.injectEndpoints({
 
         // Initiate production process
         startProductionProcess: builder.mutation({
-            query: (
-                {
-                    productNormaId,
-                    productName,
-                    quantityToProduce,
-                    defectiveDescription,
-                    defectiveReason,
-                    isDefective,
-                    consumedMaterials,
-                    materialStatistics
-                }
-            ) => ({
+            query: (body) => ({
                 url: "/production-process",
                 method: "POST",
-                body: {
-                    productNormaId,
-                    productName,
-                    quantityToProduce,
-                    consumedMaterials,
-                    materialStatistics,
-                    defectiveDescription,
-                    defectiveReason,
-                    isDefective,
-                },
+                body,
             }),
             transformResponse: (response) => response.innerData, // Extract innerData from response
             invalidatesTags: ["FinishedProducts", "ProductionHistory"], // Invalidate related caches

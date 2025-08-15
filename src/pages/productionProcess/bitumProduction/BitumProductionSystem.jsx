@@ -202,6 +202,7 @@ const BitumProductionSystem = () => {
     </div>
   );
 
+  console.log(material?.bn);
   return (
     <div className="bitum-system-container">
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
@@ -228,9 +229,9 @@ const BitumProductionSystem = () => {
 
           <div className="bitum-inventory-card">
             <h4><TbNeedleThread style={{ marginRight: 5 }} />Xomashyo Ombori</h4>
-            <p className="ready-product-inventory">Ip: {(materialObj?.ip?.quantity || 0).toLocaleString()} kg</p>
-            <p className="ready-product-inventory">Qop qog'oz: {(materialObj?.qop?.quantity || 0).toLocaleString()} dona</p>
-            <p className="ready-product-inventory">Kraf qog'oz: {(materialObj?.kraf?.quantity || 0).toLocaleString()} kg</p>
+            <p className="ready-product-inventory">BN-5 Ip: {(materialObj?.ip?.quantity || 0).toLocaleString()} kg</p>
+            <p className="ready-product-inventory">BN-5 Qop qog'oz: {(materialObj?.qop?.quantity || 0).toLocaleString()} dona</p>
+            <p className="ready-product-inventory">BN-5 Kraf qog'oz: {(materialObj?.kraf?.quantity || 0).toLocaleString()} kg</p>
           </div>
 
           <div className="bitum-inventory-card">

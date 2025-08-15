@@ -135,18 +135,30 @@ const EmployeeModal = ({
   };
 
   const handleSubmit = async () => {
-    if (
-      !newEmployee.firstName ||
-      !newEmployee.lastName ||
-      !newEmployee.passportSeries ||
-      !newEmployee.phone ||
-      !newEmployee.address ||
-      !newEmployee.paymentType
-    ) {
-      toast.error("Iltimos, barcha majburiy maydonlarni to'ldiring!");
+    if (!newEmployee.firstName) {
+      toast.error("Iltimos, ismingizni kiriting!");
       return;
     }
-
+    if (!newEmployee.lastName) {
+      toast.error("Iltimos, familiyangizni kiriting!");
+      return;
+    }
+    if (!newEmployee.passportSeries) {
+      toast.error("Iltimos, pasport seriyasini kiriting!");
+      return;
+    }
+    if (!newEmployee.phone) {
+      toast.error("Iltimos, telefon raqamingizni kiriting!");
+      return;
+    }
+    if (!newEmployee.address) {
+      toast.error("Iltimos, manzilingizni kiriting!");
+      return;
+    }
+    if (!newEmployee.paymentType) {
+      toast.error("Iltimos, to‘lov turini kiriting!");
+      return;
+    }
     if (!isValidPassportSeries(newEmployee.passportSeries)) {
       toast.error("Pasport seriyasi noto‘g‘ri! Masalan: AB1234567");
       return;
@@ -172,12 +184,19 @@ const EmployeeModal = ({
       isOfficeWorker: newEmployee.role === "ofis xodimi" ? true : false,
       password: newEmployee.role === "ofis xodimi" ? newEmployee.password : "",
     };
-
-    if (editingEmployee) {
-      await handleUpdateEmployee(cleanedEmployee);
-    } else {
-      await handleAddEmployee(cleanedEmployee);
+    try {
+      if (editingEmployee) {
+        await handleUpdateEmployee(cleanedEmployee);
+      } else {
+        await handleAddEmployee(cleanedEmployee);
+      }
+    } catch (err) {
+      toast.error(
+        `${err.data?.message || err.message}`
+      );
     }
+
+
   };
 
   const handleClose = () => {

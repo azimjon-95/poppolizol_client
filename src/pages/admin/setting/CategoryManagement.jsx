@@ -28,8 +28,6 @@ const CatigoryManagement = () => {
     // Expense form state
     const [expenseFormData, setExpenseFormData] = useState({
         saturdayWage: '',
-        periodicExpenses: '',
-        additionalExpenses: ''
     });
     const [expenseNotification, setExpenseNotification] = useState({ message: '', type: '' });
     const [expenseEditId, setExpenseEditId] = useState(null);
@@ -107,8 +105,6 @@ const CatigoryManagement = () => {
     const clearExpenseForm = useCallback(() => {
         setExpenseFormData({
             saturdayWage: '',
-            periodicExpenses: '',
-            additionalExpenses: ''
         });
         setExpenseEditId(null);
     }, []);
@@ -178,9 +174,7 @@ const CatigoryManagement = () => {
 
         // Check if expense already exists (prevent duplicate creation)
         const existingExpense = expenses?.innerData?.find(exp =>
-            exp.saturdayWage === parseFloat(expenseFormData.saturdayWage) &&
-            exp.periodicExpenses === parseFloat(expenseFormData.periodicExpenses) &&
-            exp.additionalExpenses === parseFloat(expenseFormData.additionalExpenses)
+            exp.saturdayWage === parseFloat(expenseFormData.saturdayWage)
         );
 
         if (!expenseEditId && existingExpense) {
@@ -190,8 +184,6 @@ const CatigoryManagement = () => {
 
         const expenseData = {
             saturdayWage: parseFloat(expenseFormData.saturdayWage),
-            periodicExpenses: parseFloat(expenseFormData.periodicExpenses),
-            additionalExpenses: parseFloat(expenseFormData.additionalExpenses)
         };
 
         try {
@@ -372,14 +364,14 @@ const CatigoryManagement = () => {
                                                 <span className="hyu-label">Shanbalik Ish Haqi:</span>
                                                 <span className='hyu-expense-label'>{expense.saturdayWage.toLocaleString()} so'm</span>
                                             </div>
-                                            <div className="hyu-expense-field">
+                                            {/* <div className="hyu-expense-field">
                                                 <span className="hyu-label">Davriy Xarajatlar:</span>
                                                 <span className='hyu-expense-label'>{expense.periodicExpenses}%</span>
                                             </div>
                                             <div className="hyu-expense-field">
                                                 <span className="hyu-label">Qo'shimcha Xarajatlar:</span>
                                                 <span className='hyu-expense-label'>{expense.additionalExpenses}%</span>
-                                            </div>
+                                            </div> */}
                                             <div className="hyu-expense-actions">
                                                 <button
                                                     className="hyu-edit-btn"
@@ -408,7 +400,7 @@ const CatigoryManagement = () => {
                                     disabled={isExpensesLoading}
                                 />
                             </div>
-                            <div className="hyu-form-group">
+                            {/* <div className="hyu-form-group">
                                 <label className="hyu-label">Davriy Xarajatlar (%)</label>
                                 <input
                                     type="number"
@@ -433,7 +425,7 @@ const CatigoryManagement = () => {
                                     onKeyPress={handleExpenseKeyPress}
                                     disabled={isExpensesLoading}
                                 />
-                            </div>
+                            </div> */}
                             <div className="hyu-form-actions">
                                 <button
                                     type="submit"

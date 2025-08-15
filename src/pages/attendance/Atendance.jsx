@@ -189,10 +189,11 @@ function Attendance() {
     [attendanceData, deleteAttendance, filterUnit, existingRecords]
   );
 
+
   const filteredWorkers = useMemo(() => {
     if (!workers?.innerData) return [];
     return workers.innerData
-      .filter((w) => filterUnit === "all" || w.unit?.toLowerCase() === filterUnit)
+      .filter((w) => filterUnit === "all" || w.unit?.toLowerCase().includes(filterUnit?.toLowerCase()))
       .filter((w) => {
         if (!searchTerm.trim()) return true;
         const fio = [w.firstName, w.lastName, w.middleName]
