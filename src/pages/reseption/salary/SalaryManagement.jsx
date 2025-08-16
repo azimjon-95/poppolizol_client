@@ -1,18 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { PiCreditCard, PiWarningFill, PiCalendar } from "react-icons/pi";
-import { FaArrowLeft } from "react-icons/fa6";
+import { FaArrowLeft, FaP, FaPlus } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import {
   useGetAllEmployeesSalaryInfoQuery,
   usePaySalaryMutation,
   useAddPenaltyMutation,
 } from "../../../context/alarApi";
-import { Select, Button } from "antd";
+import {
+  Select,
+  Button,
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  DatePicker,
+  message,
+} from "antd";
 import { useSelector } from "react-redux";
 import { capitalizeFirstLetter } from "../../../hook/CapitalizeFirstLitter";
-import SalaryLoadingState from './loading/SalaryLoadingState';
-import FinanceHistory from './loading/FinanceHistory';
+import SalaryLoadingState from "./loading/SalaryLoadingState";
+import FinanceHistory from "./loading/FinanceHistory";
 import "./style.css";
+import { useCreateBonusMutation } from "../../../context/bonusApi";
+import { toast, ToastContainer } from "react-toastify";
 
 // Formatlash funksiyasi (masalan 1000000 -> "1 000 000")
 const formatNumber = (num) => {
@@ -26,6 +37,7 @@ const parseNumber = (str) => {
 };
 
 const SalaryManagement = () => {
+  const [form] = Form.useForm();
   const [employees, setEmployees] = useState([]);
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
@@ -51,6 +63,8 @@ const SalaryManagement = () => {
     penaltyType: "boshqa",
   });
 
+  const [openBonusModal, setOpenBonusModal] = useState(false);
+
   const {
     data: employeesData,
     isLoading,
@@ -61,12 +75,9 @@ const SalaryManagement = () => {
     year: selectedYear,
   });
 
-  const [paySalary, {
-    isLoading: isLoadingPayment
-  }] = usePaySalaryMutation();
-  const [addPenalty, {
-    isLoading: isLoadingPenalty
-  }] = useAddPenaltyMutation();
+  const [paySalary, { isLoading: isLoadingPayment }] = usePaySalaryMutation();
+  const [addPenalty, { isLoading: isLoadingPenalty }] = useAddPenaltyMutation();
+  const [createBonus] = useCreateBonusMutation();
 
   const months = [
     { value: 1, label: "Yanvar" },
@@ -137,7 +148,8 @@ const SalaryManagement = () => {
     // Apply search query filter
     if (searchQuery) {
       filtered = filtered.filter((emp) => {
-        const fullName = `${emp.firstName} ${emp.middleName} ${emp?.lastName}`.toLowerCase();
+        const fullName =
+          `${emp.firstName} ${emp.middleName} ${emp?.lastName}`.toLowerCase();
         const department = departmentNames[emp.department]?.toLowerCase() || "";
         const position = emp.position.toLowerCase();
         const search = searchQuery.toLowerCase();
@@ -177,10 +189,18 @@ const SalaryManagement = () => {
       }).unwrap();
 
       setShowPaymentModal(false);
-      setPaymentForm({ amount: "", paymentMethod: "naqt", salaryType: "oylik", description: "" });
+      setPaymentForm({
+        amount: "",
+        paymentMethod: "naqt",
+        salaryType: "oylik",
+        description: "",
+      });
       showAlert("To'lov muvaffaqiyatli amalga oshirildi", "success");
     } catch (error) {
-      showAlert("To'lov jarayonida xatolik yuz berdi: " + error.message, "error");
+      showAlert(
+        "To'lov jarayonida xatolik yuz berdi: " + error.message,
+        "error"
+      );
     }
   };
 
@@ -273,17 +293,36 @@ const SalaryManagement = () => {
   };
 
   const summary = calculateSummary();
-  const uniqueRoles = [...new Set(employees.map(emp => emp.role))];
+  const uniqueRoles = [...new Set(employees.map((emp) => emp.role))];
   const roleOptions = [
     { label: "Barchasi", value: null }, // Option to reset filter
-    ...uniqueRoles.map(role => ({
+    ...uniqueRoles.map((role) => ({
       label: capitalizeFirstLetter(role),
       value: role,
     })),
   ];
 
+  const onFinish = async (values) => {
+    const payload = {
+      employeeId: openBonusModal?._id,
+      amount: values.amount,
+      period: values.period.format("YYYY-MM"),
+      description: values.description || "",
+    };
+    try {
+      await createBonus(payload).unwrap();
+      toast.success("Bonus yaratildi");
+      form.resetFields();
+      setOpenBonusModal(null);
+    } catch (e) {
+      console.log("Error creating bonus:", e);
+      toast.error(e?.data?.message || "Xatolik yuz berdi");
+    }
+  };
+
   return (
     <div className="factory-salary-container">
+      <ToastContainer />
       {alert && (
         <div className={`factory-alert factory-alert-${alert.type}`}>
           <span>{alert.message}</span>
@@ -451,7 +490,8 @@ const SalaryManagement = () => {
                             setSelectedEmployee(employee);
                             setPaymentForm({
                               ...paymentForm,
-                              amount: employee.salaryPayment.remainingAmount || 0, // Pre-fill for oylik
+                              amount:
+                                employee.salaryPayment.remainingAmount || 0, // Pre-fill for oylik
                             });
                             setShowPaymentModal(true);
                           }}
@@ -468,6 +508,14 @@ const SalaryManagement = () => {
                           data-tooltip="Jarima qo'shish"
                         >
                           <PiWarningFill style={{ fontSize: "20px" }} /> Jarima
+                        </button>
+
+                        <button
+                          onClick={() => setOpenBonusModal(employee)}
+                          className="factory-btn factory-btn-success"
+                        >
+                          <FaPlus />
+                          Bonus
                         </button>
                       </div>
                     </td>
@@ -493,7 +541,42 @@ const SalaryManagement = () => {
         )}
       </div>
 
-      {/* Payment Modal */}
+      {/* Bonus Modal */}
+      <Modal
+        title={`Bonus - ${openBonusModal?.firstName} ${openBonusModal?.lastName} uchun`}
+        open={openBonusModal}
+        onCancel={() => setOpenBonusModal(null)}
+        footer={null}
+      >
+        <Form
+          layout="vertical"
+          form={form}
+          onFinish={onFinish}
+          initialValues={{ employeeId: openBonusModal?._id }}
+        >
+          <Form.Item
+            name="amount"
+            label="Bonus summasi"
+            rules={[{ required: true, message: "Summa kerak" }]}
+          >
+            <InputNumber style={{ width: "100%" }} min={0} />
+          </Form.Item>
+          <Form.Item
+            name="period"
+            label="Bonus uchun sana"
+            rules={[{ required: true, message: "Sana kerak" }]}
+          >
+            <DatePicker picker="month" style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item name="description" label="Izoh (ixtiyoriy)">
+            <Input.TextArea rows={3} placeholder="Izoh (ixtiyoriy)" />
+          </Form.Item>
+          <Button type="primary" htmlType="submit" loading={isLoading}>
+            Saqlash
+          </Button>
+        </Form>
+      </Modal>
+
       {/* Payment Modal */}
       {showPaymentModal && (
         <div className="factory-modal-overlay">
@@ -519,7 +602,10 @@ const SalaryManagement = () => {
                     className="factory-form-input"
                     value={
                       paymentForm.salaryType === "oylik"
-                        ? formatNumber(selectedEmployee?.salaryPayment?.remainingAmount || 0)
+                        ? formatNumber(
+                            selectedEmployee?.salaryPayment?.remainingAmount ||
+                              0
+                          )
                         : formatNumber(paymentForm.amount)
                     }
                     onChange={(e) => {
@@ -542,7 +628,10 @@ const SalaryManagement = () => {
                     <label className="factory-form-label">To'lov usuli</label>
                     <div className="factory-payment-method-grid">
                       {Object.entries(paymentMethods).map(([key, value]) => (
-                        <div className="factory-payment-method-option" key={key}>
+                        <div
+                          className="factory-payment-method-option"
+                          key={key}
+                        >
                           <input
                             type="radio"
                             id={`payment-${key}`}
@@ -571,7 +660,10 @@ const SalaryManagement = () => {
                     <label className="factory-form-label">Maosh turi</label>
                     <div className="factory-payment-method-grid">
                       {Object.entries(salaryMethods).map(([key, value]) => (
-                        <div className="factory-payment-method-option" key={key}>
+                        <div
+                          className="factory-payment-method-option"
+                          key={key}
+                        >
                           <input
                             type="radio"
                             id={`salary-${key}`}
@@ -586,7 +678,8 @@ const SalaryManagement = () => {
                                 salaryType: newSalaryType,
                                 amount:
                                   newSalaryType === "oylik"
-                                    ? selectedEmployee?.salaryPayment?.remainingAmount || 0
+                                    ? selectedEmployee?.salaryPayment
+                                        ?.remainingAmount || 0
                                     : "",
                               });
                             }}
@@ -716,7 +809,8 @@ const SalaryManagement = () => {
                   className="factory-btn factory-btn-warning"
                   disabled={isLoadingPenalty}
                   loading={isLoadingPenalty}
-                >Jarimani tasdiqlash
+                >
+                  Jarimani tasdiqlash
                 </Button>
               </div>
             </form>
@@ -728,7 +822,10 @@ const SalaryManagement = () => {
       {showPaymentHistoryModal && (
         <div className="ghy-factory-modal-overlay">
           <div className="ghy-factory-modal">
-            <FinanceHistory employeeId={selectedEmployee?._id} fullName={`${selectedEmployee?.firstName} ${selectedEmployee?.lastName}`} />
+            <FinanceHistory
+              employeeId={selectedEmployee?._id}
+              fullName={`${selectedEmployee?.firstName} ${selectedEmployee?.lastName}`}
+            />
             <div className="factory-modal-footer">
               <button
                 type="button"
@@ -746,5 +843,3 @@ const SalaryManagement = () => {
 };
 
 export default SalaryManagement;
-
-
