@@ -18,8 +18,7 @@ import {
   Popconfirm,
   Checkbox,
 } from "antd";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import AttendanceHistory from "./AttendanceHistory";
@@ -54,7 +53,7 @@ const DEPARTMENT_OPTIONS = [
 ];
 const LOCATION_ROLES = [
   "polizol ish boshqaruvchi",
-  "Okisleniya ish boshqaruvchi",
+  "okisleniya ish boshqaruvchi",
   "rubiroid ish boshqaruvchi",
 ];
 
@@ -578,17 +577,6 @@ function Attendance() {
 
   return (
     <div style={{ padding: "0rem 1rem" }} className="atend-boxx">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
       <Tabs
         defaultActiveKey="1"
         tabBarExtraContent={
@@ -664,9 +652,13 @@ function Attendance() {
             />
           </Card>
         </TabPane>
-        <TabPane tab="Kunlik xodimlar" key="3">
-          <DailyWorkers />
-        </TabPane>
+        {
+          !isLocationRole && (
+            <TabPane tab="Kunlik xodimlar" key="3">
+              <DailyWorkers />
+            </TabPane>
+          )
+        }
         <TabPane tab="Davomat tarixi" key="2">
           <AttendanceHistory />
         </TabPane>
