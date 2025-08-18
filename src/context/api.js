@@ -15,7 +15,7 @@ const baseQuery = fetchBaseQuery({
 });
 
 // Retry bilan o‘rash — 2 marta qayta urinish imkoniyati
-const baseQueryWithRetry = retry(baseQuery, { maxRetries: 2 });
+const baseQueryWithRetry = retry(baseQuery, { maxRetries: 3 });
 
 // RTK Query API obyektini yaratish
 export const api = createApi({
