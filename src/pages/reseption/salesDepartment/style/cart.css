@@ -226,6 +226,7 @@
 }
 
 /* Order Summary */
+/* ====================4454========================= */
 .card-cart-info {
     display: flex;
     flex-direction: column;
@@ -235,7 +236,7 @@
     border-radius: 16px;
     margin-bottom: 1.5rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    width: 650px;
+    width: 450px;
     overflow: hidden;
 }
 
@@ -261,6 +262,9 @@
     border: 1px solid #cbd5e1;
     overflow-y: auto;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
@@ -364,14 +368,7 @@
     font-weight: 600;
 }
 
-.card-price-input {
-    width: 90px;
-    padding: 6px 8px;
-    border: none;
-    outline: none;
-    border-radius: 4px;
-    font-size: 14px;
-}
+
 
 .card-price-Select {
     width: 200px;
@@ -594,6 +591,148 @@
     animation: card-fadeIn 0.5s ease-out;
 }
 
+/* Price Input Field - Optimized */
+.card-price-input {
+    padding: 8px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #334155;
+    background: #ffffff;
+    outline: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    text-align: right;
+    min-width: 80px;
+    position: relative;
+}
+
+/* Focus state */
+.card-price-input:focus {
+    border-color: #667eea;
+    box-shadow:
+        0 0 0 3px rgba(102, 126, 234, 0.1),
+        0 2px 8px rgba(0, 0, 0, 0.15);
+    background: #fefefe;
+    transform: translateY(-1px);
+}
+
+/* Hover state */
+.card-price-input:hover:not(:focus) {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Active/typing state */
+.card-price-input:not(:placeholder-shown) {
+    background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+    color: #1e293b;
+    font-weight: 600;
+}
+
+/* Valid state (when has value) */
+.card-price-input:valid {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+}
+
+/* Invalid/error state */
+.card-price-input:invalid {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+}
+
+/* Disabled state */
+.card-price-input:disabled {
+    background: #f8fafc;
+    color: #94a3b8;
+    border-color: #e2e8f0;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Placeholder styling */
+.card-price-input::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+    opacity: 1;
+}
+
+/* Number input specific styling */
+.card-price-input[type="text"]::-webkit-outer-spin-button,
+.card-price-input[type="text"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox number input */
+.card-price-input[type="text"] {
+    -moz-appearance: textfield;
+}
+
+/* Special styling for different contexts */
+.card-price-input.large {
+    padding: 10px 14px;
+    font-size: 16px;
+    border-radius: 10px;
+}
+
+.card-price-input.small {
+    padding: 6px 8px;
+    font-size: 12px;
+    border-radius: 6px;
+}
+
+/* Success state for completed inputs */
+.card-price-input.success {
+    border-color: #22c55e;
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+}
+
+.card-price-input.success:focus {
+    border-color: #22c55e;
+    box-shadow:
+        0 0 0 3px rgba(34, 197, 94, 0.1),
+        0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Warning state */
+.card-price-input.warning {
+    border-color: #f59e0b;
+    background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+}
+
+.card-price-input.warning:focus {
+    border-color: #f59e0b;
+    box-shadow:
+        0 0 0 3px rgba(245, 158, 11, 0.1),
+        0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .card-price-input {
+        padding: 10px 12px;
+        font-size: 16px;
+        /* Prevents zoom on iOS */
+        border-radius: 8px;
+        min-width: 100px;
+    }
+
+    .card-price-input:focus {
+        transform: none;
+        /* Remove transform on mobile */
+    }
+
+    .card-price-input.small {
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+}
+
 /* Print Styles */
 @media print {
 
@@ -761,11 +900,7 @@
         border-radius: 8px;
     }
 
-    .card-price-input {
-        width: 140px !important;
-        font-size: 13px;
-        padding: 7px 6px;
-    }
+
 
     .card-price-Select {
         width: 100% !important;

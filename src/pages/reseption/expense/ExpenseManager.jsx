@@ -177,7 +177,6 @@ const ExpenseTracker = () => {
 
             toast.success(`${transactionType === 'kirim' ? 'Kirim' : 'Chiqim'} muvaffaqiyatli qo'shildi!`);
         } catch (error) {
-            console.log(error);
             toast.error(error?.data?.message || 'Xatolik yuz berdi!');
         }
     };

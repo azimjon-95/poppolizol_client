@@ -212,7 +212,7 @@ function BiproPraymer() {
 
     setIsSubmitting(true);
     const data = prepareDataForServer();
-    console.log(data);
+
     try {
       const res = await createProduction(data).unwrap();
       toast.success(res.innerData.message || "Ma'lumotlar muvaffaqiyatli saqlandi!", {

@@ -1,62 +1,3 @@
-// import React from "react";
-// import { Tabs } from "antd";
-// import {
-//   useGetAllSalaryQuery,
-//   useGetSalaryBTM3Query,
-// } from "../../context/salaryApi";
-// import dayjs from "dayjs";
-// import utc from "dayjs/plugin/utc";
-// dayjs.extend(utc);
-// import "./Salary.css";
-
-// import PolizolSalary from "./PolizolSalary";
-// import OchisleniyaSalary from "./OchisleniyaSalary";
-// import RuberoidSalary from "./RuberoidSalary";
-// import WorkerPaymentsTable from "./Bitum3";
-// import Bonus from "../bonus/Bonus";
-// import { useGetBonusesQuery } from "../../context/bonusApi";
-
-// function Salary() {
-//   const { data } = useGetAllSalaryQuery();
-//   const { data: dataBTM3 } = useGetSalaryBTM3Query();
-//   const { data: dataBonus } = useGetBonusesQuery();
-
-//   let OchisleniyaData = data?.filter(
-//     (record) => record.department === "ochisleniya"
-//   );
-
-//   let PolizolData = data?.filter((record) => record.department === "polizol");
-
-//   let RuberoidData = data?.filter((record) => record.department === "ruberoid");
-
-//   return (
-//     <div style={{ padding: "0 15px" }}>
-//       <Tabs>
-//         <Tabs.TabPane tab="Polizol" key="1">
-//           <PolizolSalary data={PolizolData} />
-//         </Tabs.TabPane>
-
-//         <Tabs.TabPane tab="Okisleniya" key="2">
-//           <OchisleniyaSalary data={OchisleniyaData} />
-//         </Tabs.TabPane>
-
-//         <Tabs.TabPane tab="Ruberoid" key="3">
-//           <RuberoidSalary data={RuberoidData} />
-//         </Tabs.TabPane>
-
-//         <Tabs.TabPane tab="Bitum-3M" key="4">
-//           <WorkerPaymentsTable data={dataBTM3} />
-//         </Tabs.TabPane>
-//         <Tabs.TabPane tab="Bonuslar" key="5">
-//           <Bonus data={dataBonus?.innerData || []} />
-//         </Tabs.TabPane>
-//       </Tabs>
-//     </div>
-//   );
-// }
-
-// export default Salary;
-
 import React, { useState } from "react";
 import { Tabs, DatePicker } from "antd";
 import dayjs from "dayjs";
@@ -127,21 +68,29 @@ function Salary() {
     ? bonuses.innerData
     : bonuses;
 
-  return (
-    <div style={{ padding: "0 15px" }}>
-      {/* Sana oralig'i tanlash */}
-      <div style={{ marginBottom: "15px" }}>
-        <RangePicker
-          value={dateRange}
-          onChange={(values) =>
-            setDateRange(
-              values || [dayjs().startOf("month"), dayjs().endOf("month")]
-            )
-          }
-        />
-      </div>
+  const tabBarExtraContent = (
+    <div>
+      <RangePicker
+        value={dateRange}
+        onChange={(values) =>
+          setDateRange(
+            values || [dayjs().startOf("month"), dayjs().endOf("month")]
+          )
+        }
+      />
+    </div>
+  );
 
-      <Tabs>
+  return (
+    <div style={{ padding: "5px 15px" }}>
+      <Tabs
+        defaultActiveKey="1"
+        style={{
+          marginBottom: "15px",
+        }}
+        size="small"
+        tabBarExtraContent={tabBarExtraContent}
+      >
         <Tabs.TabPane tab="Polizol" key="1">
           <PolizolSalary data={PolizolData} />
         </Tabs.TabPane>

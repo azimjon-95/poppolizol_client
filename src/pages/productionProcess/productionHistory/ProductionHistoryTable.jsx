@@ -124,7 +124,6 @@ const ProductionHistoryTable = ({ startDate, endDate }) => {
         return icons[status] || null;
     };
 
-    console.log(productionHistory);
 
     return (
         <>

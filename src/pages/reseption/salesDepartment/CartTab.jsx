@@ -481,6 +481,7 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
                                 );
                             })}
                         </div>
+
                         <div className="card-cart-info">
                             <div className="card-order-summary">
                                 <div className="card-summary-row card-total">
@@ -676,3 +677,6 @@ const CartTab = ({ cart = [], setCart, setActiveTab, onUpdateCart, onRemoveFromC
 };
 
 export default CartTab;
+
+
+

@@ -315,7 +315,6 @@ const SalaryManagement = () => {
       form.resetFields();
       setOpenBonusModal(null);
     } catch (e) {
-      console.log("Error creating bonus:", e);
       toast.error(e?.data?.message || "Xatolik yuz berdi");
     }
   };
@@ -407,7 +406,6 @@ const SalaryManagement = () => {
               value={selectedRole}
               onChange={(value) => {
                 setSelectedRole(value); // Update selected role
-                console.log("Tanlangan role:", value);
               }}
               allowClear // Allows clearing the selection
             />
@@ -603,9 +601,9 @@ const SalaryManagement = () => {
                     value={
                       paymentForm.salaryType === "oylik"
                         ? formatNumber(
-                            selectedEmployee?.salaryPayment?.remainingAmount ||
-                              0
-                          )
+                          selectedEmployee?.salaryPayment?.remainingAmount ||
+                          0
+                        )
                         : formatNumber(paymentForm.amount)
                     }
                     onChange={(e) => {
@@ -679,7 +677,7 @@ const SalaryManagement = () => {
                                 amount:
                                   newSalaryType === "oylik"
                                     ? selectedEmployee?.salaryPayment
-                                        ?.remainingAmount || 0
+                                      ?.remainingAmount || 0
                                     : "",
                               });
                             }}

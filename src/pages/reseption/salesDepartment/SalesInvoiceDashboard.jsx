@@ -138,7 +138,6 @@ const SalesInvoiceDashboard = () => {
             }
             closeModal();
         } catch (error) {
-            // console.log(error);
             toast.error("Sotuvni o‘chirishda xatolik yuz berdi.");
         }
     };

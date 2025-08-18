@@ -202,7 +202,6 @@ const BitumProductionSystem = () => {
     </div>
   );
 
-  console.log(material?.bn);
   return (
     <div className="bitum-system-container">
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />

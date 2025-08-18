@@ -267,7 +267,6 @@ const DeliveryProduct = ({
                         </div>
                         <h4>Tanlangan mahsulotlar:</h4>
                         {deliveryItems.map((item, index) => {
-                            console.log(item);
                             const remaining =
                                 (item.quantity || 0) - (item.deliveredQuantity || 0);
                             return (

@@ -28,7 +28,14 @@ const columns = [
 ];
 
 function WorkerPaymentsTable({ data }) {
-  return <Table columns={columns} dataSource={data} rowKey="workerId" />;
+  return <Table
+    columns={columns}
+    dataSource={data}
+    bordered
+    pagination={false}
+    size="small"
+    rowKey="workerId"
+  />;
 }
 
 export default WorkerPaymentsTable;

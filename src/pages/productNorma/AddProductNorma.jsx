@@ -121,7 +121,6 @@ function AddProductNorma({ setAddModal, setModalState, renderTable }) {
       setSalePrice(0);
       setModalState((prev) => ({ ...prev, isViewOpen: false }));
     } catch (error) {
-      console.log(error);
       showMessage("error", error.data?.message || "Noma'lum xatolik yuz berdi");
     }
   };

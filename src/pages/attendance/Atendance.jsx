@@ -523,7 +523,7 @@ function Attendance() {
             ? filterUnit
             : attendanceData[record._id]?.department);
 
-        console.log(existingRecords);
+
         const isDisabled =
           (record.unit !== "transport" && markedToday[record._id]) ||
           loadingStates[`delete_${record._id}`];

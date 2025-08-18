@@ -27,6 +27,7 @@ const ExpensesSalesTable = ({ setActiveTab }) => {
     const sampleData = reports?.innerData?.expenses || [];
 
     // Ishlab chiqarish ma'lumotlari
+
     const productionData = [
         {
             product: reports?.innerData?.productionHistory?.[0]?.name || 'Polizol',
@@ -49,6 +50,11 @@ const ExpensesSalesTable = ({ setActiveTab }) => {
             product: `Bitum ${reports?.innerData?.inventory?.[0]?.name || 'BN-5'}`,
             quantity: reports?.innerData?.inventory?.[0]?.quantity || 0,
             price: (reports?.innerData?.inventory?.[0]?.quantity * reports?.innerData?.inventory?.[0]?.sellingPrice) || 0,
+        },
+        {
+            product: reports?.innerData?.praymer?.[0]?.name || 'Praymer - BIPRO',
+            quantity: reports?.innerData?.praymer?.[0]?.quantity || 0,
+            price: (reports?.innerData?.praymer?.[0]?.quantity * reports?.innerData?.praymer?.[0]?.sellingPrice) || 0,
         },
     ];
 

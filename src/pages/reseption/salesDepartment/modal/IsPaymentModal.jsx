@@ -77,7 +77,6 @@ const IsPaymentModal = ({
             closeModal()
             toast.success("To'lov muvaffaqiyatli amalga oshirildi!");
         } catch (error) {
-            console.log(error?.data?.message);
             toast.error(error?.data?.innerData || error?.data?.message || "To'lov amalga oshirishda xatolik yuz berdi.");
         }
 
