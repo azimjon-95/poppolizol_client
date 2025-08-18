@@ -159,16 +159,11 @@ const ExpenseTracker = () => {
             }
 
             if (category === "Transport xarajatlari") {
-                const result = await makePayment({
+                await makePayment({
                     _id: selectTransport,
                     amount: parsedAmount,
                     paymentMethod
                 }).unwrap();
-
-                if (!result.state) return toast.error(result.message);
-
-                setIsModalOpen(false);
-                toast.success(result.message);
             }
 
             // --- Formani tozalash ---
@@ -182,6 +177,7 @@ const ExpenseTracker = () => {
 
             toast.success(`${transactionType === 'kirim' ? 'Kirim' : 'Chiqim'} muvaffaqiyatli qo'shildi!`);
         } catch (error) {
+            console.log(error);
             toast.error(error?.data?.message || 'Xatolik yuz berdi!');
         }
     };

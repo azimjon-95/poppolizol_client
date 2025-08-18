@@ -436,6 +436,7 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
                                                 <Option value="kilo">Kilogram (kg)</Option>
                                                 <Option value="dona">Dona</Option>
                                                 <Option value="metr">Metr (m)</Option>
+                                                <Option value="litr">Litr</Option>
                                             </Select>
                                         </Col>
                                         <Col xs={24} sm={12} md={8}>
@@ -446,11 +447,14 @@ const EditMaterialModal = ({ refetch, setIsIncomeModalOpen, isIncomeModalOpen })
                                                 className="warehouse-selectoption"
                                             >
                                                 <Option value="BN-3">BN-3</Option>
+                                                <Option value="razbavitel">Razbavitel</Option>
                                                 <Option value="BN-5">BN-5</Option>
                                                 <Option value="Mel">Mel</Option>
                                                 <Option value="ip">Ip</Option>
                                                 <Option value="kraf">Kraf qog'oz</Option>
                                                 <Option value="qop">Qop</Option>
+                                                <Option value="chelak">Temir Chelak</Option>
+                                                <Option value="nakleyka">Nakleyka</Option>
                                                 <Option value="Others">Boshqalar</Option>
                                             </Select>
                                         </Col>

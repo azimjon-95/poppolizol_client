@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Tabs, Modal, Form, Input, Button, Checkbox, Select } from "antd";
 import ruberoid from "../../assets/ruberoid.jpg";
-import betumImg from "../../assets/betum.jpg";
+import praymer from "../../assets/praymer.png";
+import betumImg from "../../assets/betum.png";
 import { GiOilDrum } from "react-icons/gi";
-import { RiDeleteBinLine } from "react-icons/ri";
+import stakanBNI from "../../assets/stakanBN.png";
 import { useGetAllNormaQuery } from "../../context/normaApi";
 import {
   HiOutlineArrowTrendingDown,
@@ -16,6 +17,7 @@ import {
   useUpdateFinishedMutation,
   useDeleteFinishedMutation,
 } from "../../context/productionApi";
+import { GiEmptyMetalBucketHandle } from "react-icons/gi";
 import { capitalizeFirstLetter } from "../../hook/CapitalizeFirstLitter";
 import { NumberFormat } from "../../hook/NumberFormat";
 import { Factory, Archive, History, Plus, Minus } from "lucide-react";
@@ -26,6 +28,8 @@ import BitumProductionSystem from "./bitumProduction/BitumProductionSystem";
 import InventoryTable from "./bitumProduction/InventoryTable";
 import ProductionHistoryTable from "./productionHistory/ProductionHistoryTable";
 import CustomModal from "./mod/CustomModal";
+import BiproPraymer from "./bitumProduction/BiproPraymer";
+import ProductionTable from "./praymerHistory/ProductionTable";
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -50,7 +54,14 @@ const ProductionSystem = () => {
   const [gasConsumption, setGasConsumption] = useState(""); // New state for gas consumption (m³)
   const [electricityConsumption, setElectricityConsumption] = useState(""); // New state for electricity consumption (kWh)
   const role = localStorage.getItem("role");
-
+  const [activeTab, setActiveTab] = useState(() => {
+    // Retrieve the active tab from sessionStorage or use default based on role
+    return sessionStorage.getItem('activeTab') || (role === 'direktor' ? 'finished' : 'production');
+  });
+  // Update sessionStorage whenever the active tab changes
+  useEffect(() => {
+    sessionStorage.setItem('activeTab', activeTab);
+  }, [activeTab]);
   // RTK Query hooks
   const {
     data: normas,
@@ -527,8 +538,10 @@ const ProductionSystem = () => {
       </Modal>
 
       <Tabs
-        defaultActiveKey={role === "direktor" ? "finished" : "production"}
         className="custom-tabs"
+        defaultActiveKey={activeTab}
+        activeKey={activeTab}
+        onChange={setActiveTab} // Update active tab on change
       >
         {role !== "direktor" && (
           <TabPane
@@ -790,6 +803,19 @@ const ProductionSystem = () => {
             <BitumProductionSystem />
           </TabPane>
         )}
+        {role !== "direktor" && (
+          <TabPane
+            tab={
+              <span style={{ display: "flex", alignItems: "center" }}>
+                <GiOilDrum size={20} style={{ marginRight: 8 }} />
+                Praymer ishlab chiqarish
+              </span>
+            }
+            key="bipro"
+          >
+            <BiproPraymer />
+          </TabPane>
+        )}
         <TabPane
           tab={
             <span style={{ display: "flex", alignItems: "center" }}>
@@ -855,82 +881,125 @@ const ProductionSystem = () => {
               ) : filteredProducts?.length > 0 ? (
                 filteredProducts.map((product, inx) => (
                   <div key={inx} className="product-card-container">
-                    {/* <div className="product-card_actins">
-                      <button
-                        onClick={() => handleDelete(product._id)}
-                        disabled={deleteLoading || updateLoading}
-                        title="O'chirish"
-                        className="delete-button"
-                      >
-                        <RiDeleteBinLine size={20} />
-                      </button>
-                    </div> */}
-                    {product.category === "Stakan" ||
-                      product.category === "Qop" ? (
-                      <div className="product-imagebn">
-                        <img src={betumImg} alt="Bitum" />
-                        {product.isReturned && (
-                          <div className="return-info">
-                            <p style={{ color: "#d32f2f", fontWeight: "bold" }}>
-                              Mijozdan qaytgan
-                            </p>
-                            <Button
-                              type="link"
-                              onClick={() => handleShowReturnInfo(product)}
-                              style={{ padding: 0, color: "#1890ff" }}
-                            >
-                              Batafsil
-                            </Button>
+
+                    {
+                      product.category === "Praymer"
+                        ? (
+                          <div className="product-imageBIPRO">
+                            <img src={praymer} alt="Stakan" />
+                            {product.isReturned && (
+                              <div className="return-info">
+                                <p style={{ color: "#d32f2f", fontWeight: "bold" }}>
+                                  Mijozdan qaytgan
+                                </p>
+                                <Button
+                                  type="link"
+                                  onClick={() => handleShowReturnInfo(product)}
+                                  style={{ padding: 0, color: "#1890ff" }}
+                                >
+                                  Batafsil
+                                </Button>
+                              </div>
+                            )}
+                            {
+                              product.category === "Praymer" &&
+                              <p className="praymerKgs">{NumberFormat(product.quantity * 18)} kg</p>
+                            }
                           </div>
-                        )}
-                        {product.isDefective && (
-                          <div className="defective-info">
-                            <p style={{ color: "#ff9800", fontWeight: "bold" }}>
-                              Brak mahsulot
-                            </p>
-                            <Button
-                              type="link"
-                              onClick={() => handleShowDefectiveInfo(product)}
-                              style={{ padding: 0, color: "#1890ff" }}
-                            >
-                              Batafsil
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="product-image">
-                        <img src={ruberoid} alt="Ruberoid" />
-                        {product.isReturned && (
-                          <div className="return-info">
-                            <p style={{ color: "#d32f2f", fontWeight: "bold" }}>
-                              Mijozdan qaytgan
-                            </p>
-                            <Button
-                              type="link"
-                              onClick={() => handleShowReturnInfo(product)}
-                              style={{ padding: 0, color: "#1890ff" }}
-                            >
-                              Batafsil
-                            </Button>
-                          </div>
-                        )}
-                        {product.isDefective && (
-                          <div className="defective-infobox">
-                            <p style={{ color: "#000000", fontWeight: "bold" }}>
-                              Brak mahsulot
-                            </p>
-                            <Button
-                              type="link"
-                              onClick={() => handleShowDefectiveInfo(product)}
-                              style={{ padding: 0, color: "#0084ff" }}
-                            >
-                              Batafsil
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                        )
+                        : (
+                          <>
+                            {product.category === "Stakan"
+                              ? (
+                                <div className="product-imagebnStak">
+                                  <img src={stakanBNI} alt="Stakan" />
+                                  {product.isReturned && (
+                                    <div className="return-info">
+                                      <p style={{ color: "#d32f2f", fontWeight: "bold" }}>
+                                        Mijozdan qaytgan
+                                      </p>
+                                      <Button
+                                        type="link"
+                                        onClick={() => handleShowReturnInfo(product)}
+                                        style={{ padding: 0, color: "#1890ff" }}
+                                      >
+                                        Batafsil
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              ) :
+                              (<>
+                                {product.category === "Qop" ? (
+                                  <div className="product-imagebn">
+                                    <img src={betumImg} alt="Bitum" />
+                                    {product.isReturned && (
+                                      <div className="return-info">
+                                        <p style={{ color: "#d32f2f", fontWeight: "bold" }}>
+                                          Mijozdan qaytgan
+                                        </p>
+                                        <Button
+                                          type="link"
+                                          onClick={() => handleShowReturnInfo(product)}
+                                          style={{ padding: 0, color: "#1890ff" }}
+                                        >
+                                          Batafsil
+                                        </Button>
+                                      </div>
+                                    )}
+                                    {product.isDefective && (
+                                      <div className="defective-info">
+                                        <p style={{ color: "#ff9800", fontWeight: "bold" }}>
+                                          Brak mahsulot
+                                        </p>
+                                        <Button
+                                          type="link"
+                                          onClick={() => handleShowDefectiveInfo(product)}
+                                          style={{ padding: 0, color: "#1890ff" }}
+                                        >
+                                          Batafsil
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className="product-image">
+                                    <img src={ruberoid} alt="Ruberoid" />
+                                    {product.isReturned && (
+                                      <div className="return-info">
+                                        <p style={{ color: "#d32f2f", fontWeight: "bold" }}>
+                                          Mijozdan qaytgan
+                                        </p>
+                                        <Button
+                                          type="link"
+                                          onClick={() => handleShowReturnInfo(product)}
+                                          style={{ padding: 0, color: "#1890ff" }}
+                                        >
+                                          Batafsil
+                                        </Button>
+                                      </div>
+                                    )}
+                                    {product.isDefective && (
+                                      <div className="defective-infobox">
+                                        <p style={{ color: "#000000", fontWeight: "bold" }}>
+                                          Brak mahsulot
+                                        </p>
+                                        <Button
+                                          type="link"
+                                          onClick={() => handleShowDefectiveInfo(product)}
+                                          style={{ padding: 0, color: "#0084ff" }}
+                                        >
+                                          Batafsil
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </>)
+                            }
+                          </>
+                        )
+                    }
                     {product.category === "Stakan" ||
                       product.category === "Qop" ? (
                       <h3 className="product-name">
@@ -949,16 +1018,27 @@ const ProductionSystem = () => {
                       <span>{NumberFormat(Math.floor(product.productionCost))} so'm</span>
                     </p>
                     <div className="product-quantity-block">
-                      {product.category === "Stakan" ||
-                        product.category === "Qop" ? (
-                        <span className="product-quantity">
-                          {NumberFormat(product.quantity)} kg
-                        </span>
-                      ) : (
-                        <span className="product-quantity">
-                          {NumberFormat(product.quantity)} dona
-                        </span>
-                      )}
+
+                      {
+                        product.category === "Praymer" ? (
+                          <span className="product-quantity">
+                            {NumberFormat(product.quantity)} <GiEmptyMetalBucketHandle />
+                          </span>
+                        ) : (
+                          <>
+                            {product.category === "Stakan" ||
+                              product.category === "Qop" ? (
+                              <span className="product-quantity">
+                                {NumberFormat(product.quantity)} kg
+                              </span>
+                            ) : (
+                              <span className="product-quantity">
+                                {NumberFormat(product.quantity)} dona
+                              </span>
+                            )}
+                          </>
+                        )
+                      }
                       <span className="product-Cost">
                         Narxi:{" "}
                         {NumberFormat(
@@ -1014,6 +1094,17 @@ const ProductionSystem = () => {
               key="productionbn"
             >
               <InventoryTable startDate={startDate} endDate={endDate} />
+            </TabPane>
+            <TabPane
+              tab={
+                <span style={{ display: "flex", alignItems: "center" }}>
+                  <Factory size={20} style={{ marginRight: 8 }} />
+                  Praymer Ishlab Chiqarish Tarixi
+                </span>
+              }
+              key="praymerbn"
+            >
+              <ProductionTable startDate={startDate} endDate={endDate} />
             </TabPane>
           </Tabs>
         </TabPane>

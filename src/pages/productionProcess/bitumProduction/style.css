@@ -1,5 +1,5 @@
 .production-system-container {
-    padding: 15px 20px;
+    padding: 0px 20px 15px 20px;
 }
 
 /* Main container for bitumen production system */
@@ -7,7 +7,7 @@
     font-family: Arial, sans-serif;
     width: 100%;
     overflow-y: auto;
-    height: calc(100vh - 130px);
+    height: calc(100vh - 110px);
     background-color: #f5f7fa;
 }
 
@@ -61,7 +61,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
 }
 
 .bitum-inventory-card {
@@ -109,7 +109,7 @@
 
 .bitum-production-panel {
     background: white;
-    padding: 20px;
+    padding: 10px 20px;
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
@@ -152,7 +152,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
     margin-bottom: 15px;
 }
 
@@ -184,7 +184,7 @@
 
 .bitum-input-group label {
     display: block;
-    margin-bottom: 5px;
+    /* margin-bottom: 5px; */
     font-weight: bold;
     color: #555;
 }

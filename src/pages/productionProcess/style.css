@@ -1466,6 +1466,40 @@
     position: relative;
 }
 
+.product-imageBIPRO {
+    width: 100%;
+    height: 160px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.product-imageBIPRO img {
+    width: 80%;
+    height: 180px;
+}
+
+.praymerKgs {
+    position: absolute !important;
+    bottom: -1px !important;
+    left: -1px !important;
+    padding: 0 10px;
+    border-radius: 0 4px 0 4px;
+    border: 1px solid #e5e7eb;
+    background-color: #f3f4f6;
+    color: #1f2937;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
 .product-imagebn {
     width: 100%;
     height: 160px;
@@ -1477,6 +1511,27 @@
     align-items: center;
     overflow: hidden;
     position: relative;
+}
+
+.product-imagebnStak {
+    width: 100%;
+    height: 160px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #e5e7eb;
+    background: #fbf9f7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.product-imagebnStak img {
+    width: 70%;
+    height: 260px;
+    /* margin-left: 30px; */
+    /* transform: scale(1.17); */
 }
 
 .product-imagebn img {
@@ -1532,6 +1587,7 @@
     font-weight: 700;
     color: #10b981;
     text-wrap: nowrap;
+
 }
 
 .product-unit {

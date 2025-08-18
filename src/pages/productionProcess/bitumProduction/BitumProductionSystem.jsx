@@ -269,15 +269,14 @@ const BitumProductionSystem = () => {
           electricityPrice={electricityPrice}
           materialObj={materialObj}
         />
+
       </div>
 
       {showBn3Dialog && (
         <div className="bitum-dialog-overlay">
           <div className="bitum-dialog-box">
             <h3>BN-5 Ishlab Chiqarish Natijasi</h3>
-            <p>
-              Hisoblangan BN-5 miqdori: <strong>{calculatedBn5.toLocaleString()} kg</strong>
-            </p>
+            <p> Hisoblangan BN-5 miqdori: <strong>{calculatedBn5.toLocaleString()} kg</strong></p>
             <div className="bitum-dialog-input">
               <label>Haqiqiy BN-5 miqdori (kg)</label>
               <input
