@@ -459,6 +459,7 @@ const WarehouseManagement = () => {
                   type="primary"
                   htmlType="submit"
                   loading={updateMaterialLoading}
+                  disabled={updateMaterialLoading}
                   icon={<EditOutlined />}
                   size="large"
                   className="warehouse-submit-btn"
