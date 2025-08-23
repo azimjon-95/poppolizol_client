@@ -345,6 +345,7 @@ const EmployeeModal = ({
                         "buxgalteriya",
                         "menejir",
                         "ombor",
+                        "Muhandis",
                         "sifat nazorati",
                         "elektrik",
                         "transport",
