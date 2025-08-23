@@ -125,15 +125,13 @@ const CatigoryManagement = () => {
 
     // Validate expense form
     const validateExpenseForm = useCallback(() => {
-        const { saturdayWage, periodicExpenses, additionalExpenses } = expenseFormData;
-        if (!saturdayWage || !periodicExpenses || !additionalExpenses) {
+        const { saturdayWage } = expenseFormData;
+        if (!saturdayWage) {
             showExpenseNotification("Barcha maydonlarni to'ldiring!", 'error');
             return false;
         }
         if (
-            isNaN(parseFloat(saturdayWage)) ||
-            isNaN(parseFloat(periodicExpenses)) ||
-            isNaN(parseFloat(additionalExpenses))
+            isNaN(parseFloat(saturdayWage))
         ) {
             showExpenseNotification("Barcha qiymatlar raqam bo'lishi kerak!", 'error');
             return false;
@@ -214,9 +212,7 @@ const CatigoryManagement = () => {
     // Handle edit expense
     const handleEditExpense = useCallback((expense) => {
         setExpenseFormData({
-            saturdayWage: expense.saturdayWage.toString(),
-            periodicExpenses: expense.periodicExpenses.toString(),
-            additionalExpenses: expense.additionalExpenses.toString()
+            saturdayWage: expense.saturdayWage.toString()
         });
         setExpenseEditId(expense._id);
     }, []);
@@ -400,32 +396,7 @@ const CatigoryManagement = () => {
                                     disabled={isExpensesLoading}
                                 />
                             </div>
-                            {/* <div className="hyu-form-group">
-                                <label className="hyu-label">Davriy Xarajatlar (%)</label>
-                                <input
-                                    type="number"
-                                    name="periodicExpenses"
-                                    className="hyu-input"
-                                    placeholder="Misol: 4%"
-                                    value={expenseFormData.periodicExpenses}
-                                    onChange={handleExpenseInputChange}
-                                    onKeyPress={handleExpenseKeyPress}
-                                    disabled={isExpensesLoading}
-                                />
-                            </div>
-                            <div className="hyu-form-group">
-                                <label className="hyu-label">Qo'shimcha Xarajatlar (%)</label>
-                                <input
-                                    type="number"
-                                    name="additionalExpenses"
-                                    className="hyu-input"
-                                    placeholder="Misol: 2%"
-                                    value={expenseFormData.additionalExpenses}
-                                    onChange={handleExpenseInputChange}
-                                    onKeyPress={handleExpenseKeyPress}
-                                    disabled={isExpensesLoading}
-                                />
-                            </div> */}
+
                             <div className="hyu-form-actions">
                                 <button
                                     type="submit"
