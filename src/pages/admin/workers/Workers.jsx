@@ -63,6 +63,8 @@ const RuberoidFactoryHR = () => {
       oshxona: "Oshxona",
       sotuvchi: "Sotuvchi",
       sotuvchi_eksport: "Sotuvchi Eksport",
+      avto_kara: "Avto kara",
+      muhandis: "Muhandis",
       sotuvchi_menejir: "Sotuvchi Menejir",
       polizol: "Polizol",
       polizol_ish_boshqar: "Polizol Ish Boshqaruvchi",
@@ -72,7 +74,6 @@ const RuberoidFactoryHR = () => {
       Okisleniya: "Okisleniya",
       Okisleniya_ish_boshqaruvchi: "Okisleniya Ish Boshqaruvchi",
       boshqa: "Boshqa",
-      avto_kara: "Avto kara",
     }),
     []
   );

@@ -109,7 +109,7 @@ const SalesInvoiceDashboard = () => {
 
     const filteredSalesData = useMemo(() => {
         return salesData.filter(sale => {
-            const matchesSalesperson = role === "sotuvchi"
+            const matchesSalesperson = role === "sotuvchi" || role === "sotuvchi eksport"
                 ? sale.salerId === workerId
                 : selectedSalesperson === 'all' || sale.salesperson === selectedSalesperson;
 
@@ -385,7 +385,7 @@ const SalesInvoiceDashboard = () => {
                                 ))}
                             </Select>
                         </div>
-                        {role !== "sotuvchi" && (
+                        {role !== "sotuvchi" || role !== "sotuvchi eksport" && (
                             <div className="invoice-filter-group">
                                 <Select
                                     id="salesperson-filter"

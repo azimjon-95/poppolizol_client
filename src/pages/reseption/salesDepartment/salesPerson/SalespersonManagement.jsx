@@ -89,7 +89,7 @@ const SalespersonDashboard = () => {
 
     // Safely filter employees based on role
     const salesEmployees = employeesData?.innerData?.length
-        ? role === "sotuvchi"
+        ? role === "sotuvchi" || role === "sotuvchi eksport"
             ? employeesData?.innerData.filter((employee) => employee?._id === workersId) ?? []
             : employeesData?.innerData
         : [];
@@ -428,7 +428,7 @@ const SalespersonDashboard = () => {
                                     />
                                     <td className="sdash-data-cell">
                                         <div className="sdash-action-group">
-                                            {employee.currentPlan && role !== "sotuvchi" ? (
+                                            {employee.currentPlan && role !== "sotuvchi" || role !== "sotuvchi eksport" ? (
                                                 <>
                                                     <button
                                                         onClick={() => openEditPlanModal(employee.currentPlan)}
@@ -449,7 +449,7 @@ const SalespersonDashboard = () => {
                                                 </>
                                             ) : (
                                                 <>
-                                                    {role !== "sotuvchi" &&
+                                                    {role !== "sotuvchi" || role !== "sotuvchi eksport" &&
                                                         <button button
                                                             onClick={() => openCreatePlanModal(employee._id)}
                                                             className="sdash-action-btn sdash-create-btn"

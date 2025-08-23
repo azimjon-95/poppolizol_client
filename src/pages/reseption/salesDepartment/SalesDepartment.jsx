@@ -320,7 +320,7 @@ const SacodSalesModule = () => {
               <span className="navsaler_bottom">Sotuvchilar</span>
             </button>
           </div>
-          {role === "saler_meneger" || role === "sotuvchi" ? (
+          {role === "saler_meneger" || role === "sotuvchi" || role !== "sotuvchi eksport" ? (
             <button
               className="profile-btn about-log"
               ref={searchPanelRef}
@@ -334,7 +334,7 @@ const SacodSalesModule = () => {
         </div>
       }
       {activeTab === "products" && (
-        <div className={`sacod-products-grid ${role === "sotuvchi" || role === "saler_meneger" ? "sacod-products-gridMedia" : "sacod-products-gridDack"}`}>
+        <div className={`sacod-products-grid ${role === "sotuvchi" || role !== "sotuvchi eksport" || role === "saler_meneger" ? "sacod-products-gridMedia" : "sacod-products-gridDack"}`}>
           {finishedProducts?.map((product, inx) => (
             <div
               key={inx}
