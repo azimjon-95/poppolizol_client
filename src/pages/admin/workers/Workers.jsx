@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Ensure ToastContainer CSS is imported
+import "react-toastify/dist/ReactToastify.css";
 import * as XLSX from "xlsx";
 import {
   Users,
@@ -16,6 +16,7 @@ import {
   Phone,
   MapPin,
   Download,
+  Cake,
 } from "lucide-react";
 import { PhoneNumberFormat } from "../../../hook/NumberFormat";
 import { capitalizeFirstLetter } from "../../../hook/CapitalizeFirstLitter";
@@ -33,6 +34,7 @@ const RuberoidFactoryHR = () => {
   const [selectedUnit, setSelectedUnit] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
+  const [todayBirthdays, setTodayBirthdays] = useState(new Set());
   const { searchQuery } = useSelector((state) => state.search);
   const role = localStorage.getItem("role");
 
@@ -97,11 +99,53 @@ const RuberoidFactoryHR = () => {
     []
   );
 
+  // Check for birthdays and set todayBirthdays
+  useEffect(() => {
+    const today = new Date(); // August 23, 2025, 02:39 PM +05
+    const todayMonth = today.getMonth(); // 7 (August, 0-based)
+    const todayDay = today.getDate(); // 23
+    const birthdayIds = new Set();
+
+    const employeeList = Array.isArray(employees?.innerData)
+      ? employees.innerData
+      : [];
+
+    employeeList.forEach((employee) => {
+      if (employee.dateOfBirth) {
+        const birthDate = new Date(employee.dateOfBirth);
+        const birthMonth = birthDate.getMonth();
+        const birthDay = birthDate.getDate();
+
+        if (todayMonth === birthMonth && todayDay === birthDay) {
+          birthdayIds.add(employee._id);
+          toast(
+            <div className="birthday-toast">
+              <span>
+                🎉 Bugun {capitalizeFirstLetter(employee.firstName)}{" "}
+                {capitalizeFirstLetter(employee.lastName)}ning tug'ilgan kuni!
+              </span>
+            </div>,
+            {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              className: "birthday-toast-container",
+            }
+          );
+        }
+      }
+    });
+
+    setTodayBirthdays(birthdayIds);
+  }, [employees]);
+
   useEffect(() => {
     const employeeList = Array.isArray(employees?.innerData)
       ? employees.innerData
       : [];
-    // Normalize unit values by replacing spaces with underscores
     const normalizedEmployeeList = employeeList.map((emp) => ({
       ...emp,
       unit: emp.unit ? emp.unit.replace(/\s+/g, "_") : emp.unit,
@@ -123,6 +167,9 @@ const RuberoidFactoryHR = () => {
           emp.experience || "",
           emp.phone || "",
           emp.address || "",
+          emp.dateOfBirth
+            ? new Date(emp.dateOfBirth).toLocaleDateString("uz-UZ")
+            : "",
         ].some((field) => field.toLowerCase().includes(lowerQuery))
       );
     }
@@ -139,12 +186,13 @@ const RuberoidFactoryHR = () => {
       const employee = {
         ...newEmployee,
         salary: Number(newEmployee.salary),
+        dateOfBirth: newEmployee.dateOfBirth || null,
       };
       await addWorker(employee).unwrap();
       setShowAddModal(false);
       toast.success("Ishchi muvaffaqiyatli qo'shildi!");
     } catch (err) {
-      console.error("Add employee error:", err); // Debug: Log error
+      console.error("Add employee error:", err);
       toast.error(
         `Ishchi qo'shishda xatolik: ${err.data?.message || err.message}`
       );
@@ -154,7 +202,11 @@ const RuberoidFactoryHR = () => {
   const handleUpdateEmployee = async (updatedEmployee) => {
     try {
       const { id, ...employeeData } = updatedEmployee;
-      await updateWorker({ id: editingEmployee._id, ...employeeData }).unwrap();
+      await updateWorker({
+        id: editingEmployee._id,
+        ...employeeData,
+        dateOfBirth: employeeData.dateOfBirth || null,
+      }).unwrap();
       setEditingEmployee(null);
       toast.success("Ishchi ma'lumotlari muvaffaqiyatli yangilandi!");
     } catch (err) {
@@ -220,6 +272,15 @@ const RuberoidFactoryHR = () => {
     }
   };
 
+  const formatDateOfBirth = (date) => {
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString("uz-UZ", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
   const exportToExcel = () => {
     const excelData = filteredEmployees.map((emp, index) => ({
       "№": index + 1,
@@ -236,6 +297,7 @@ const RuberoidFactoryHR = () => {
       "Ofis xodimi": emp.isOfficeWorker ? "Ha" : "Yo'q",
       Login: emp.login || "Tayinlanmagan",
       Rol: emp.role ? roles[emp.role] : "Tayinlanmagan",
+      "Tug'ilgan kun": formatDateOfBirth(emp.dateOfBirth),
     }));
 
     const wb = XLSX.utils.book_new();
@@ -255,6 +317,7 @@ const RuberoidFactoryHR = () => {
       { wch: 20 },
       { wch: 12 },
       { wch: 20 },
+      { wch: 15 },
       { wch: 15 },
     ];
     ws["!cols"] = colWidths;
@@ -317,19 +380,9 @@ const RuberoidFactoryHR = () => {
     );
   }
 
-  // if (isError) {
-  //   return (
-  //     <div className="ruberoid-factory-hr-loading">
-  //       <div className="error-message">
-  //         Xatolik yuz berdi: {error?.data?.message || "Noma'lum xato"}
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="ruberoid-factory-hr-container">
-      <ToastContainer /> {/* Add ToastContainer for react-toastify */}
+      <ToastContainer />
       <div className="hr-dashboard-header">
         <div className="header-content-wrapper">
           <div className="factory-brand-section">
@@ -353,8 +406,8 @@ const RuberoidFactoryHR = () => {
               <Shield className="stat-icon" />
               <div className="stat-details">
                 <span className="stat-number">
-                  {employees?.innerData?.filter((e) => e.isOfficeWorker)
-                    .length || 0}
+                  {employees?.innerData?.filter((e) => e.isOfficeWorker).length ||
+                    0}
                 </span>
                 <span className="stat-label">Ofis xodimlari</span>
               </div>
@@ -409,6 +462,7 @@ const RuberoidFactoryHR = () => {
                 <th>Pasport</th>
                 <th>Telefon</th>
                 <th>Manzil</th>
+                <th>Tug'ilgan kun</th>
                 <th>Miqdor</th>
                 <th>Login ma'lumotlari</th>
                 {role !== "direktor" && <th>Amallar</th>}
@@ -449,6 +503,14 @@ const RuberoidFactoryHR = () => {
                       <td className="address-cell">
                         <MapPin className="address-icon" />
                         {capitalizeFirstLetter(employee.address || "")}
+                      </td>
+                      <td>
+                        <span
+                          className={`date-of-birth-cell ${todayBirthdays.has(employee._id) ? "birthday-today" : ""
+                            }`}>
+                          <Cake className="date-of-birth-icon" />
+                          {formatDateOfBirth(employee.dateOfBirth)}
+                        </span>
                       </td>
                       <td className="salary-amount-cell">
                         {employee.salary === 0
@@ -501,7 +563,7 @@ const RuberoidFactoryHR = () => {
                 })
               ) : (
                 <tr>
-                  <td colSpan={role !== "direktor" ? 9 : 8} className="no-data">
+                  <td colSpan={role !== "direktor" ? 10 : 9} className="no-data">
                     Ma'lumot topilmadi
                   </td>
                 </tr>

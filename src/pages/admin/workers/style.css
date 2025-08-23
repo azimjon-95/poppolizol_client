@@ -26,6 +26,63 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+/* style.css */
+
+/* Styling for the date-of-birth-cell in the employees table */
+.date-of-birth-cell {
+    font-size: 14px;
+    color: #333;
+    vertical-align: middle;
+    padding: 4px 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+/* Styling for the Cake icon */
+.date-of-birth-cell .date-of-birth-icon {
+    width: 18px;
+    height: 18px;
+    color: #6c757d;
+    flex-shrink: 0;
+}
+
+/* Hover effect for better interactivity */
+.date-of-birth-cell:hover {
+    background-color: #f8f9fa;
+}
+
+/* Highlight for today's birthday */
+.date-of-birth-cell.birthday-today {
+    background-color: #d4edda;
+    /* Light green background */
+    color: #28a745;
+    /* Green text color */
+    font-weight: 500;
+}
+
+/* Green color for the Cake icon on birthday */
+.date-of-birth-cell.birthday-today .date-of-birth-icon {
+    color: #28a745;
+    /* Green color for the Cake icon */
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .date-of-birth-cell {
+        font-size: 12px;
+        padding: 8px 6px;
+        gap: 6px;
+    }
+
+    .date-of-birth-cell .date-of-birth-icon {
+        width: 16px;
+        height: 16px;
+    }
+}
+
 .header-content-wrapper {
     display: flex;
     justify-content: space-between;
