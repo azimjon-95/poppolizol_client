@@ -97,7 +97,9 @@ const RuberoidFactoryHR = () => {
   );
 
   useEffect(() => {
-    const employeeList = Array.isArray(employees?.innerData) ? employees.innerData : [];
+    const employeeList = Array.isArray(employees?.innerData)
+      ? employees.innerData
+      : [];
     // Normalize unit values by replacing spaces with underscores
     const normalizedEmployeeList = employeeList.map((emp) => ({
       ...emp,
@@ -131,7 +133,6 @@ const RuberoidFactoryHR = () => {
     });
   }, [employees, selectedUnit, searchQuery, units]);
 
-
   const handleAddEmployee = async (newEmployee) => {
     try {
       const employee = {
@@ -152,7 +153,7 @@ const RuberoidFactoryHR = () => {
   const handleUpdateEmployee = async (updatedEmployee) => {
     try {
       const { id, ...employeeData } = updatedEmployee;
-      await updateWorker({ id, ...employeeData }).unwrap();
+      await updateWorker({ id: editingEmployee._id, ...employeeData }).unwrap();
       setEditingEmployee(null);
       toast.success("Ishchi ma'lumotlari muvaffaqiyatli yangilandi!");
     } catch (err) {
@@ -325,7 +326,6 @@ const RuberoidFactoryHR = () => {
   //   );
   // }
 
-
   return (
     <div className="ruberoid-factory-hr-container">
       <ToastContainer /> {/* Add ToastContainer for react-toastify */}
@@ -352,7 +352,8 @@ const RuberoidFactoryHR = () => {
               <Shield className="stat-icon" />
               <div className="stat-details">
                 <span className="stat-number">
-                  {employees?.innerData?.filter((e) => e.isOfficeWorker).length || 0}
+                  {employees?.innerData?.filter((e) => e.isOfficeWorker)
+                    .length || 0}
                 </span>
                 <span className="stat-label">Ofis xodimlari</span>
               </div>
@@ -395,7 +396,6 @@ const RuberoidFactoryHR = () => {
           </div>
         </div>
       </div>
-
       <div className="hr-main-content">
         <div className="employees-table-container">
           <table className="employees-data-table">
@@ -416,7 +416,6 @@ const RuberoidFactoryHR = () => {
             <tbody className="table-body-section">
               {filteredEmployees.length > 0 ? (
                 filteredEmployees.map((employee, inx) => {
-
                   return (
                     <tr key={inx} className="employee-table-row">
                       <td>
@@ -451,7 +450,9 @@ const RuberoidFactoryHR = () => {
                         {capitalizeFirstLetter(employee.address || "")}
                       </td>
                       <td className="salary-amount-cell">
-                        {employee.salary === 0 ? employee.paymentType : formatSalary(employee.salary, employee.paymentType)}
+                        {employee.salary === 0
+                          ? employee.paymentType
+                          : formatSalary(employee.salary, employee.paymentType)}
                       </td>
                       <td className="login-credentials-cell">
                         {employee.isOfficeWorker ? (
@@ -508,7 +509,6 @@ const RuberoidFactoryHR = () => {
           </table>
         </div>
       </div>
-
       {(showAddModal || editingEmployee) && (
         <EmployeeModal
           roles={roles}
@@ -526,4 +526,3 @@ const RuberoidFactoryHR = () => {
 };
 
 export default RuberoidFactoryHR;
-
