@@ -264,26 +264,7 @@ const ProductNorma = () => {
             </Col>
           </Row>
           <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item name={["cost", "gasPerUnit"]} label="Gaz (kub metr)" rules={[{ required: true, message: "Gaz miqdorini kiriting!" }]}>
-                <InputNumber placeholder="Gaz miqdori" min={0} style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name={["cost", "electricityPerUnit"]} label="Elektr energiyasi (kVt)" rules={[{ required: true, message: "Elektr miqdorini kiriting!" }]}>
-                <InputNumber placeholder="Elektr miqdori" min={0} style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name={["cost", "laborCost"]} label="Ishchilar xarajati (so'm)" rules={[{ required: true, message: "Ishchilar xarajatini kiriting!" }]}>
-                <InputNumber placeholder="Ishchilar xarajati" min={0} style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name={["cost", "otherExpenses"]} label="Boshqa xarajatlar (so'm)" rules={[{ required: true, message: "Boshqa xarajatlar kiriting!" }]}>
-                <InputNumber placeholder="Boshqa xarajatlar" min={0} style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
+
           </Row>
           <Form.List name="materials">
             {(fields, { add, remove }) => (
@@ -327,13 +308,6 @@ const ProductNorma = () => {
               </>
             )}
           </Form.List>
-          <Row gutter={16}>
-            <Col span={24}>
-              <Form.Item label="Tavsif" name="description">
-                <Input.TextArea placeholder="Qo‘shimcha ma'lumot" rows={4} />
-              </Form.Item>
-            </Col>
-          </Row>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={updateLoading}>
               {updateLoading ? "Yangilanmoqda..." : "Normani yangilash"}
