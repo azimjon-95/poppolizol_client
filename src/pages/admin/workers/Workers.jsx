@@ -55,6 +55,7 @@ const RuberoidFactoryHR = () => {
       menejir: "Menejir",
       ombor: "Ombor",
       sifat_nazorati: "Sifat nazorati",
+      svarshik: "Svarshik",
       elektrik: "Elektrik",
       transport: "Transport",
       xavfsizlik: "Xavfsizlik",

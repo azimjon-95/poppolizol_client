@@ -34,6 +34,7 @@ const EmployeeModal = ({
     firstName: "",
     middleName: "",
     lastName: "",
+    dateOfBirth: "",
     experience: "",
     passportSeries: "",
     phone: "",
@@ -55,6 +56,9 @@ const EmployeeModal = ({
         firstName: editingEmployee.firstName || "",
         middleName: editingEmployee.middleName || "",
         lastName: editingEmployee.lastName || "",
+        dateOfBirth: editingEmployee.dateOfBirth
+          ? new Date(editingEmployee.dateOfBirth).toISOString().split("T")[0]
+          : "",
         experience: editingEmployee.experience || "",
         passportSeries: editingEmployee.passportSeries || "",
         phone: editingEmployee.phone || "",
@@ -74,6 +78,7 @@ const EmployeeModal = ({
         firstName: "",
         middleName: "",
         lastName: "",
+        dateOfBirth: "",
         experience: "",
         passportSeries: "",
         phone: "",
@@ -120,6 +125,20 @@ const EmployeeModal = ({
   // Pasport seriya validatsiyasi: 2ta harf + 7ta raqam
   const isValidPassportSeries = (value) => /^[A-Z]{2}[0-9]{7}$/.test(value);
 
+  // Tug‘ilgan sana validatsiyasi
+  const isValidDateOfBirth = (value) => {
+    if (!value) return false;
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return false; // Invalid date
+    const today = new Date();
+    const age = today.getFullYear() - date.getFullYear();
+    const monthDiff = today.getMonth() - date.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
+      return age - 1 >= 18; // Check if at least 18 years old
+    }
+    return age >= 18;
+  };
+
   const handleInputChange = (field, value) => {
     setNewEmployee((prev) => {
       const updated = { ...prev, [field]: value };
@@ -143,6 +162,10 @@ const EmployeeModal = ({
       toast.error("Iltimos, familiyangizni kiriting!");
       return;
     }
+    if (!newEmployee.dateOfBirth) {
+      toast.error("Iltimos, tug‘ilgan sanani kiriting!");
+      return;
+    }
     if (!newEmployee.passportSeries) {
       toast.error("Iltimos, pasport seriyasini kiriting!");
       return;
@@ -163,12 +186,14 @@ const EmployeeModal = ({
       toast.error("Pasport seriyasi noto‘g‘ri! Masalan: AB1234567");
       return;
     }
-
     if (!isValidPhone(newEmployee.phone)) {
       toast.error("Telefon raqam noto‘g‘ri! Masalan: +998 90 123 45 67");
       return;
     }
-
+    if (!isValidDateOfBirth(newEmployee.dateOfBirth)) {
+      toast.error("Tug‘ilgan sana noto‘g‘ri yoki xodim 18 yoshdan kichik!");
+      return;
+    }
     if (newEmployee.role === "ofis xodimi" && (!newEmployee.login || !newEmployee.password)) {
       toast.error("Ofis xodimi uchun login va parol majburiy!");
       return;
@@ -179,11 +204,13 @@ const EmployeeModal = ({
       passportSeries: newEmployee.passportSeries.toUpperCase(),
       phone: cleanPhoneNumber(newEmployee.phone),
       salary: Number(newEmployee.salary) || 0,
+      dateOfBirth: newEmployee.dateOfBirth ? new Date(newEmployee.dateOfBirth) : null,
       unitHeadPassword: newEmployee.unit === "boshqa" ? "" : newEmployee.unitHeadPassword,
       login: newEmployee.role === "ofis xodimi" ? newEmployee.login : "",
       isOfficeWorker: newEmployee.role === "ofis xodimi" ? true : false,
       password: newEmployee.role === "ofis xodimi" ? newEmployee.password : "",
     };
+
     try {
       if (editingEmployee) {
         await handleUpdateEmployee(cleanedEmployee);
@@ -191,12 +218,8 @@ const EmployeeModal = ({
         await handleAddEmployee(cleanedEmployee);
       }
     } catch (err) {
-      toast.error(
-        `${err.data?.message || err.message}`
-      );
+      toast.error(`${err.data?.message || err.message}`);
     }
-
-
   };
 
   const handleClose = () => {
@@ -277,6 +300,23 @@ const EmployeeModal = ({
                       }
                       className="form-input-field"
                       placeholder="Ishchining familyasi"
+                    />
+                  </div>
+                </div>
+                <div className="form-row-layout">
+                  <div className="input-field-group">
+                    <label className="field-label">
+                      <Calendar className="label-icon" />
+                      Tug‘ilgan sana
+                    </label>
+                    <input
+                      type="date"
+                      value={newEmployee.dateOfBirth}
+                      onChange={(e) =>
+                        handleInputChange("dateOfBirth", e.target.value)
+                      }
+                      className="form-input-field"
+                      placeholder="YYYY-MM-DD"
                     />
                   </div>
                 </div>
@@ -571,7 +611,3 @@ const EmployeeModal = ({
 };
 
 export default EmployeeModal;
-
-
-
-
